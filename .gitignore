@@ -10,3 +10,9 @@
 .vscode/settings.json
 .checkpoints/imagebind_huge.pth
 .ipynb_checkpoints/README-checkpoint.md
+*.egg-info/
+build/
+dist/
+temp.txt
+v0_generate_vector_db.py
+artifacts/
