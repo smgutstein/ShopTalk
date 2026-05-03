@@ -1,0 +1,12 @@
+faiss-gpu-cu12
+flask
+ijson
+langchain
+langchain_community
+langchain_openai
+nltk
+openai
+python-dotenv==1.0.0
+six
+spacy
+transformers
