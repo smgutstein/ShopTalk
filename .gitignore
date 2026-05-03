@@ -7,3 +7,6 @@
 *__pycache__*
 *pkl
 *bin
+.vscode/settings.json
+.checkpoints/imagebind_huge.pth
+.ipynb_checkpoints/README-checkpoint.md
