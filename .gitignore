@@ -2,4 +2,8 @@
 .env
 *ipynb
 *jpg
-
+*.DS_Store
+*png
+*__pycache__*
+*pkl
+*bin
