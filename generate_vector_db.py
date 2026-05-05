@@ -1,8 +1,8 @@
-"""Build a multimodal FAISS vector database for ShopTalk products.
+"""Build multimodal vector-database artifacts for ShopTalk products.
 
 This script reads product blurbs and an image-id-to-file-path mapping, embeds each
 product with Meta ImageBind text and vision encoders, combines the two embeddings,
-and writes a FAISS inner-product index plus a FAISS-row-to-product-id mapping.
+and writes the resulting product embeddings through a runtime-selected backend.
 
 The intended pipeline is:
 
@@ -11,8 +11,13 @@ The intended pipeline is:
 3. Filter products down to those with usable image files.
 4. Batch text/image inputs through ImageBind.
 5. Average normalized text and image embeddings for each product.
-6. Normalize the final product embeddings and store them in FAISS.
+6. Normalize the final product embeddings.
 7. Save generated artifacts under ``artifacts/vector_db`` by default.
+
+Supported vector backends:
+
+- ``faiss``: writes ``faiss/embeddings.faiss`` plus ``faiss/product_ids.json``.
+- ``numpy``: writes ``numpy/embeddings.npy`` plus ``numpy/product_ids.json``.
 
 Only lightweight validation and bookkeeping live in helper functions. The expensive
 model inference path is intentionally concentrated in ``load_multimodal_embeddings``.
@@ -28,7 +33,7 @@ import warnings
 warnings.filterwarnings("ignore")  # Suppress noisy third-party warnings during long embedding runs.
 
 import faiss
-import pickle
+import numpy as np
 import torch
 from tqdm import tqdm
 
@@ -36,10 +41,9 @@ from imagebind import data
 from imagebind.models.imagebind_model import imagebind_huge, ModalityType
 
 
-# Keep generated binary artifacts out of the repo root by default.
-DEFAULT_VECTOR_DB_DIR = Path("artifacts/vector_db")
-DEFAULT_FAISS_INDEX_OUTPUT = DEFAULT_VECTOR_DB_DIR / "faiss_index.bin"
-DEFAULT_INDEX_MAPPING_OUTPUT = DEFAULT_VECTOR_DB_DIR / "index_to_product_id.pkl"
+# Keep generated vector-database artifacts out of the repo root by default.
+DEFAULT_VECTOR_DB_OUTPUT_DIR = Path("artifacts/vector_db")
+SUPPORTED_VECTOR_BACKENDS = {"faiss", "numpy"}
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +93,13 @@ def validate_args(args):
     """Validate parsed command-line arguments."""
     if args.batch_size <= 0:
         raise ValueError(f"--batch_size must be positive; got {args.batch_size}")
+
+    if args.vector_backend not in SUPPORTED_VECTOR_BACKENDS:
+        supported = ", ".join(sorted(SUPPORTED_VECTOR_BACKENDS))
+        raise ValueError(
+            f"--vector_backend must be one of {{{supported}}}; "
+            f"got {args.vector_backend!r}"
+        )
 
     validate_input_paths(args.product_blurbs, args.image_root, args.images_csv)
 
@@ -329,7 +340,7 @@ def load_multimodal_embeddings(
     return multimodal_embeddings
 
 
-def create_vectordb(
+def create_embedding_matrix(
     blurbs_by_id,
     img_root,
     images_csv,
@@ -337,11 +348,12 @@ def create_vectordb(
     batch_size,
     skip_missing_images=False,
 ):
-    """Create a FAISS index and row-to-product-id mapping.
+    """Create a normalized embedding matrix and aligned product-id list.
 
-    The FAISS index stores normalized multimodal product embeddings. The separate
-    ``index_to_product_id`` dictionary is required because FAISS only returns row
-    numbers; the application needs to translate those rows back to product IDs.
+    The returned ``embedding_matrix`` has one row per product. The returned
+    ``product_ids`` list uses the same order, so row ``i`` corresponds to
+    ``product_ids[i]``. Backend-specific code can then decide how to store or
+    index those rows.
     """
     multimodal_embeddings_by_id = load_multimodal_embeddings(
         blurbs_by_id,
@@ -353,61 +365,173 @@ def create_vectordb(
     )
 
     logger.info("All multimodal embeddings created")
-
-    multimodal_embeddings = []
-    index_to_product_id = {}
-
     logger.info(f"Total multimodal embeddings: {len(multimodal_embeddings_by_id)}")
 
-    for index, (product_id, embedding) in enumerate(multimodal_embeddings_by_id):
+    product_ids = []
+    multimodal_embeddings = []
+
+    for product_id, embedding in multimodal_embeddings_by_id:
+        product_ids.append(product_id)
         multimodal_embeddings.append(embedding)
-        index_to_product_id[index] = product_id
 
     if not multimodal_embeddings:
         raise ValueError("No embeddings found in multimodal_embeddings")
 
     logger.info(f"Embedding shape: {multimodal_embeddings[0].shape}")
-    embedding_dim = multimodal_embeddings[0].shape[0]
-    logger.info(f"Total embeddings to add to FAISS index: {len(multimodal_embeddings)}")
+    logger.info(f"Total embeddings to save/index: {len(multimodal_embeddings)}")
 
-    # Normalize the averaged multimodal embeddings before inner-product indexing
-    # so FAISS scores behave like cosine similarities.
-    normalized_embeddings = normalize(torch.vstack(multimodal_embeddings).to(dtype=torch.float32))
+    # Normalize the averaged multimodal embeddings before storage. For FAISS
+    # inner-product indexing, this makes scores behave like cosine similarities.
+    embedding_matrix = normalize(torch.vstack(multimodal_embeddings).to(dtype=torch.float32))
+
+    return embedding_matrix, product_ids
+
+
+def build_faiss_index(embedding_matrix):
+    """Build a FAISS inner-product index from a normalized embedding matrix."""
+    embedding_dim = embedding_matrix.shape[1]
+    logger.info(f"Building FAISS IndexFlatIP with embedding_dim={embedding_dim}")
 
     index = faiss.IndexFlatIP(embedding_dim)
-    index.add(normalized_embeddings.cpu().numpy())
+    index.add(embedding_matrix.cpu().numpy())
+    return index
 
+
+def write_product_ids(product_ids, output_path):
+    """Write row-aligned product IDs as JSON.
+
+    The list position is the vector row number. For example, row ``17`` maps to
+    ``product_ids[17]``. This avoids a separate integer-keyed pickle mapping and
+    keeps the artifact easy to inspect.
+    """
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as file:
+        json.dump(list(product_ids), file, indent=2)
+
+
+class FaissVectorBackend:
+    """Persist embeddings as a FAISS index plus row-aligned product IDs."""
+
+    name = "faiss"
+
+    def save(self, embedding_matrix, product_ids, output_dir):
+        backend_dir = Path(output_dir) / self.name
+        backend_dir.mkdir(parents=True, exist_ok=True)
+
+        embeddings_output = backend_dir / "embeddings.faiss"
+        product_ids_output = backend_dir / "product_ids.json"
+
+        index = build_faiss_index(embedding_matrix)
+        faiss.write_index(index, str(embeddings_output))
+        write_product_ids(product_ids, product_ids_output)
+
+        logger.info(f"FAISS embeddings saved to {embeddings_output}")
+        logger.info(f"Product IDs saved to {product_ids_output}")
+
+
+class NumpyVectorBackend:
+    """Persist embeddings as a transparent NumPy matrix plus product IDs."""
+
+    name = "numpy"
+
+    def save(self, embedding_matrix, product_ids, output_dir):
+        backend_dir = Path(output_dir) / self.name
+        backend_dir.mkdir(parents=True, exist_ok=True)
+
+        embeddings_output = backend_dir / "embeddings.npy"
+        product_ids_output = backend_dir / "product_ids.json"
+
+        np.save(embeddings_output, embedding_matrix.cpu().numpy())
+        write_product_ids(product_ids, product_ids_output)
+
+        logger.info(f"NumPy embeddings saved to {embeddings_output}")
+        logger.info(f"Product IDs saved to {product_ids_output}")
+
+
+def get_vector_backend(name):
+    """Return the vector backend selected at runtime."""
+    if name == FaissVectorBackend.name:
+        return FaissVectorBackend()
+    if name == NumpyVectorBackend.name:
+        return NumpyVectorBackend()
+
+    supported = ", ".join(sorted(SUPPORTED_VECTOR_BACKENDS))
+    raise ValueError(f"Unsupported vector backend {name!r}; expected one of {{{supported}}}")
+
+
+def save_vector_artifacts(embedding_matrix, product_ids, vector_backend, vector_db_output_dir):
+    """Save embeddings through the selected vector backend."""
+    backend = get_vector_backend(vector_backend)
+    backend.save(embedding_matrix, product_ids, vector_db_output_dir)
+
+
+def create_vectordb(
+    blurbs_by_id,
+    img_root,
+    images_csv,
+    device,
+    batch_size,
+    skip_missing_images=False,
+):
+    """Backward-compatible helper that returns a FAISS index and row mapping.
+
+    New code should prefer ``create_embedding_matrix`` plus a selected backend.
+    This wrapper is kept so older callers/tests can still ask for a FAISS index
+    directly without going through the CLI backend abstraction.
+    """
+    embedding_matrix, product_ids = create_embedding_matrix(
+        blurbs_by_id,
+        img_root,
+        images_csv,
+        device,
+        batch_size,
+        skip_missing_images=skip_missing_images,
+    )
+    index = build_faiss_index(embedding_matrix)
+    index_to_product_id = {index: product_id for index, product_id in enumerate(product_ids)}
     return index, index_to_product_id
 
 
 def save_vectordb(index, index_to_product_id, faiss_index_output, index_mapping_output):
-    """Persist the FAISS index and product-id mapping to disk."""
+    """Persist a FAISS index and row-to-product-id mapping to disk.
+
+    This compatibility helper writes the historical artifact format. New backend
+    code writes ``embeddings.faiss``/``embeddings.npy`` and ``product_ids.json``.
+    """
     faiss_index_output = Path(faiss_index_output)
     index_mapping_output = Path(index_mapping_output)
 
-    # Parent directories are created here instead of in main() so callers can reuse
-    # this helper safely with arbitrary output locations.
     faiss_index_output.parent.mkdir(parents=True, exist_ok=True)
     index_mapping_output.parent.mkdir(parents=True, exist_ok=True)
 
     faiss.write_index(index, str(faiss_index_output))
     logger.info(f"FAISS index saved to {faiss_index_output}")
 
-    with open(index_mapping_output, "wb") as file:
-        pickle.dump(index_to_product_id, file)
+    with open(index_mapping_output, "w", encoding="utf-8") as file:
+        json.dump(index_to_product_id, file, indent=2)
     logger.info(f"Index mapping saved to {index_mapping_output}")
-
 
 def parse_args():
     """Parse command-line arguments for vector DB generation."""
     parser = argparse.ArgumentParser(
-        description="Generate a multimodal FAISS vector database for ShopTalk products."
+        description="Generate multimodal vector-database artifacts for ShopTalk products."
     )
     parser.add_argument("--product_blurbs", type=str, default="EDA/product_blurbs/combined_blurb_dict.json")
     parser.add_argument("--image_root", type=str, default="server/static/images")
     parser.add_argument("--images_csv", type=str, default="images.csv")
-    parser.add_argument("--faiss_index_output", type=str, default=str(DEFAULT_FAISS_INDEX_OUTPUT))
-    parser.add_argument("--index_mapping_output", type=str, default=str(DEFAULT_INDEX_MAPPING_OUTPUT))
+    parser.add_argument(
+        "--vector_backend",
+        choices=sorted(SUPPORTED_VECTOR_BACKENDS),
+        default="faiss",
+        help="Vector artifact backend to write.",
+    )
+    parser.add_argument(
+        "--vector_db_output_dir",
+        type=str,
+        default=str(DEFAULT_VECTOR_DB_OUTPUT_DIR),
+        help="Base directory for generated vector backend artifacts.",
+    )
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--skip_missing_images", action="store_true")
     parser.add_argument("--debug", action="store_true")
@@ -433,15 +557,15 @@ def main(args):
     logger.info(f"Using device: {device}")
     logger.info(f"Generating VectorDB from images in {args.image_root}")
     logger.info(f"Using image mapping CSV: {args.images_csv}")
-    logger.info(f"FAISS index output: {args.faiss_index_output}")
-    logger.info(f"Index mapping output: {args.index_mapping_output}")
+    logger.info(f"Vector backend: {args.vector_backend}")
+    logger.info(f"Vector DB output directory: {args.vector_db_output_dir}")
     logger.info(f"Skip missing images: {args.skip_missing_images}")
 
     logger.info(f"Loading data from {args.product_blurbs}...")
     with open(args.product_blurbs, "r", encoding="utf-8") as f:
         blurbs_by_id = json.load(f)
 
-    index, index_to_product_id = create_vectordb(
+    embedding_matrix, product_ids = create_embedding_matrix(
         blurbs_by_id,
         args.image_root,
         args.images_csv,
@@ -450,11 +574,11 @@ def main(args):
         skip_missing_images=args.skip_missing_images,
     )
 
-    save_vectordb(
-        index,
-        index_to_product_id,
-        args.faiss_index_output,
-        args.index_mapping_output,
+    save_vector_artifacts(
+        embedding_matrix,
+        product_ids,
+        args.vector_backend,
+        args.vector_db_output_dir,
     )
 
     logger.info("VectorDB saved")

@@ -1,10 +1,11 @@
 import importlib
-import pickle
+import json
 import sys
 import types
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 import torch
 
@@ -121,6 +122,7 @@ def test_validate_args_accepts_existing_inputs(tmp_path, gvdb):
         product_blurbs=str(product_blurbs),
         image_root=str(image_root),
         images_csv=str(images_csv),
+        vector_backend="faiss",
     )
 
     gvdb.validate_args(args)
@@ -132,9 +134,33 @@ def test_validate_args_rejects_nonpositive_batch_size(tmp_path, gvdb):
         product_blurbs=str(tmp_path / "blurbs.json"),
         image_root=str(tmp_path),
         images_csv=str(tmp_path / "images.csv"),
+        vector_backend="faiss",
     )
 
     with pytest.raises(ValueError, match="batch_size must be positive"):
+        gvdb.validate_args(args)
+
+
+
+
+def test_validate_args_rejects_unknown_vector_backend(tmp_path, gvdb):
+    product_blurbs = tmp_path / "blurbs.json"
+    image_root = tmp_path / "images"
+    images_csv = tmp_path / "images.csv"
+
+    product_blurbs.write_text("{}", encoding="utf-8")
+    image_root.mkdir()
+    images_csv.write_text("image_id,path\n", encoding="utf-8")
+
+    args = SimpleNamespace(
+        batch_size=1,
+        product_blurbs=str(product_blurbs),
+        image_root=str(image_root),
+        images_csv=str(images_csv),
+        vector_backend="bogus",
+    )
+
+    with pytest.raises(ValueError, match="vector_backend"):
         gvdb.validate_args(args)
 
 
@@ -210,22 +236,71 @@ def test_build_image_paths(tmp_path, gvdb):
     ]
 
 
-def test_save_vectordb_creates_output_dirs_and_mapping_file(tmp_path, gvdb, monkeypatch):
-    index_output = tmp_path / "artifacts" / "vector_db" / "faiss_index.bin"
-    mapping_output = tmp_path / "artifacts" / "vector_db" / "index_to_product_id.pkl"
+def test_create_embedding_matrix_returns_normalized_embeddings_and_product_ids(gvdb, monkeypatch):
+    raw_embeddings = [
+        ("product-1", torch.tensor([3.0, 4.0])),
+        ("product-2", torch.tensor([0.0, 2.0])),
+    ]
+
+    def fake_load_multimodal_embeddings(*args, **kwargs):
+        return raw_embeddings
+
+    monkeypatch.setattr(gvdb, "load_multimodal_embeddings", fake_load_multimodal_embeddings)
+
+    embedding_matrix, product_ids = gvdb.create_embedding_matrix(
+        blurbs_by_id={},
+        img_root="unused",
+        images_csv="unused",
+        device="cpu",
+        batch_size=128,
+    )
+
+    assert product_ids == ["product-1", "product-2"]
+    assert torch.allclose(
+        embedding_matrix,
+        torch.tensor([[0.6, 0.8], [0.0, 1.0]]),
+    )
+
+
+def test_faiss_backend_saves_embeddings_and_product_ids(tmp_path, gvdb, monkeypatch):
+    output_dir = tmp_path / "artifacts" / "vector_db"
     calls = []
 
     def fake_write_index(index, path):
         calls.append((index, path))
-        Path(path).write_text("fake index", encoding="utf-8")
+        Path(path).write_text("fake faiss index", encoding="utf-8")
 
     monkeypatch.setattr(gvdb.faiss, "write_index", fake_write_index)
 
-    index = object()
-    mapping = {0: "product-1"}
-    gvdb.save_vectordb(index, mapping, index_output, mapping_output)
+    embedding_matrix = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)
+    product_ids = ["product-1", "product-2"]
 
-    assert calls == [(index, str(index_output))]
-    assert index_output.read_text(encoding="utf-8") == "fake index"
-    with open(mapping_output, "rb") as file:
-        assert pickle.load(file) == mapping
+    backend = gvdb.FaissVectorBackend()
+    backend.save(embedding_matrix, product_ids, output_dir)
+
+    expected_index_path = output_dir / "faiss" / "embeddings.faiss"
+    expected_product_ids_path = output_dir / "faiss" / "product_ids.json"
+
+    assert calls == [(calls[0][0], str(expected_index_path))]
+    assert expected_index_path.read_text(encoding="utf-8") == "fake faiss index"
+    assert json.loads(expected_product_ids_path.read_text(encoding="utf-8")) == product_ids
+
+
+def test_numpy_backend_saves_embeddings_and_product_ids(tmp_path, gvdb):
+    output_dir = tmp_path / "artifacts" / "vector_db"
+    embedding_matrix = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)
+    product_ids = ["product-1", "product-2"]
+
+    backend = gvdb.NumpyVectorBackend()
+    backend.save(embedding_matrix, product_ids, output_dir)
+
+    embeddings_path = output_dir / "numpy" / "embeddings.npy"
+    product_ids_path = output_dir / "numpy" / "product_ids.json"
+
+    assert np.allclose(np.load(embeddings_path), embedding_matrix.numpy())
+    assert json.loads(product_ids_path.read_text(encoding="utf-8")) == product_ids
+
+
+def test_get_vector_backend_rejects_unknown_backend(gvdb):
+    with pytest.raises(ValueError, match="Unsupported vector backend"):
+        gvdb.get_vector_backend("bogus")
