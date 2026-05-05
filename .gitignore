@@ -18,3 +18,4 @@ v0_generate_vector_db.py
 artifacts/
 EDA/product_blurbs/combined_blurb_dict.json
 images.csv
+*patch
