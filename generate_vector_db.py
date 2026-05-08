@@ -97,7 +97,7 @@ def validate_args(args):
     if args.vector_backend not in SUPPORTED_VECTOR_BACKENDS:
         supported = ", ".join(sorted(SUPPORTED_VECTOR_BACKENDS))
         raise ValueError(
-            f"--vector_backend must be one of {{{supported}}}; "
+            f"--vector_backend must be one of: {supported}; "
             f"got {args.vector_backend!r}"
         )
 
@@ -233,19 +233,19 @@ def build_image_paths(batch_pairs, img_root, img_id_to_server_filename):
     ]
 
 
-def load_multimodal_embeddings(
+def prepare_embedding_inputs(
     blurbs_by_id,
     img_root,
     images_csv,
-    device,
-    batch_size=128,
     skip_missing_images=False,
 ):
-    """Generate one combined text+image embedding per eligible product.
+    """Load image mappings and prepare aligned product/text inputs.
 
-    Text and image embeddings are independently L2-normalized, then averaged.
-    The final stack is normalized again in ``create_vectordb`` before being added
-    to the FAISS inner-product index.
+    Returns:
+        Tuple of ``(img_root, img_id_to_server_filename, id_blurb_pairs, descriptions)``.
+        ``id_blurb_pairs`` and ``descriptions`` are aligned by position: row ``i``
+        in ``descriptions`` describes the product stored at row ``i`` in
+        ``id_blurb_pairs``.
     """
     img_root = Path(img_root)
 
@@ -266,7 +266,80 @@ def load_multimodal_embeddings(
     if not id_blurb_pairs:
         raise ValueError("No products with valid image IDs found.")
 
+    # Create product-description strings in the same order as id_blurb_pairs.
     descriptions = [build_product_description(blurb) for _, blurb in id_blurb_pairs]
+
+    return img_root, img_id_to_server_filename, id_blurb_pairs, descriptions
+
+
+def embed_batch(ibind_model, batch_descriptions, batch_img_load_paths, device):
+    """Run one aligned batch of product text/images through ImageBind.
+
+    ``batch_descriptions[i]`` and ``batch_img_load_paths[i]`` must describe the
+    same product. The returned text and vision embedding tensors preserve this
+    order, so row ``i`` in both outputs corresponds to the same product.
+    """
+    logger.debug(f"Number of images to load for this batch: {len(batch_img_load_paths)}")
+
+    inputs = {
+        ModalityType.TEXT: data.load_and_transform_text(batch_descriptions, device),
+        ModalityType.VISION: data.load_and_transform_vision_data(
+            tqdm(batch_img_load_paths, desc="Loading images", leave=False),
+            device,
+        ),
+    }
+
+    logger.debug(f"Text data shape: {inputs[ModalityType.TEXT].shape}")
+    if inputs[ModalityType.VISION] is not None:
+        logger.debug(f"Vision data shape before model: {inputs[ModalityType.VISION].shape}")
+        logger.debug(f"Vision data type: {inputs[ModalityType.VISION].dtype}")
+    else:
+        logger.debug("No vision data for this batch")
+
+    logger.debug("Running model inference for batch...")
+    with torch.no_grad():
+        embeddings = ibind_model(inputs)
+
+    text_embeddings = normalize(embeddings[ModalityType.TEXT])
+    vision_embeddings = normalize(embeddings[ModalityType.VISION])
+
+    logger.debug(f"Text embeddings shape: {text_embeddings.shape}")
+    logger.debug(f"Vision embeddings shape: {vision_embeddings.shape}")
+
+    if len(text_embeddings) != len(vision_embeddings):
+        raise ValueError(
+            f"Mismatched text/image embedding counts: "
+            f"{len(text_embeddings)} text vs {len(vision_embeddings)} vision"
+        )
+
+    return text_embeddings, vision_embeddings
+
+
+def load_multimodal_embeddings(
+    blurbs_by_id,
+    img_root,
+    images_csv,
+    device,
+    batch_size=128,
+    skip_missing_images=False,
+):
+    """Generate one combined text+image embedding per eligible product.
+
+    Text and image embeddings are independently L2-normalized, then averaged.
+    The final stack is normalized again in ``create_embedding_matrix`` before being
+    saved or indexed by the selected vector backend.
+    """
+    (
+        img_root,
+        img_id_to_server_filename,
+        id_blurb_pairs,
+        descriptions,
+    ) = prepare_embedding_inputs(
+        blurbs_by_id,
+        img_root,
+        images_csv,
+        skip_missing_images=skip_missing_images,
+    )
 
     multimodal_embeddings = []
 
@@ -294,38 +367,12 @@ def load_multimodal_embeddings(
                 img_id_to_server_filename,
             )
 
-            logger.debug(f"Number of images to load for this batch: {len(batch_img_load_paths)}")
-
-            inputs = {
-                ModalityType.TEXT: data.load_and_transform_text(batch_descriptions, device),
-                ModalityType.VISION: data.load_and_transform_vision_data(
-                    tqdm(batch_img_load_paths, desc="Loading images", leave=False),
-                    device,
-                ),
-            }
-
-            logger.debug(f"Text data shape: {inputs[ModalityType.TEXT].shape}")
-            if inputs[ModalityType.VISION] is not None:
-                logger.debug(f"Vision data shape before model: {inputs[ModalityType.VISION].shape}")
-                logger.debug(f"Vision data type: {inputs[ModalityType.VISION].dtype}")
-            else:
-                logger.debug("No vision data for this batch")
-
-            logger.debug("Running model inference for batch...")
-            with torch.no_grad():
-                embeddings = ibind_model(inputs)
-
-            text_embeddings = normalize(embeddings[ModalityType.TEXT])
-            vision_embeddings = normalize(embeddings[ModalityType.VISION])
-
-            logger.debug(f"Text embeddings shape: {text_embeddings.shape}")
-            logger.debug(f"Vision embeddings shape: {vision_embeddings.shape}")
-
-            if len(text_embeddings) != len(vision_embeddings):
-                raise ValueError(
-                    f"Mismatched text/image embedding counts: "
-                    f"{len(text_embeddings)} text vs {len(vision_embeddings)} vision"
-                )
+            text_embeddings, vision_embeddings = embed_batch(
+                ibind_model,
+                batch_descriptions,
+                batch_img_load_paths,
+                device,
+            )
 
             # The text and image batches were built in the same product order, so
             # the embeddings at position idx correspond to the same product_id.
@@ -465,52 +512,6 @@ def save_vector_artifacts(embedding_matrix, product_ids, vector_backend, vector_
     backend = get_vector_backend(vector_backend)
     backend.save(embedding_matrix, product_ids, vector_db_output_dir)
 
-
-def create_vectordb(
-    blurbs_by_id,
-    img_root,
-    images_csv,
-    device,
-    batch_size,
-    skip_missing_images=False,
-):
-    """Backward-compatible helper that returns a FAISS index and row mapping.
-
-    New code should prefer ``create_embedding_matrix`` plus a selected backend.
-    This wrapper is kept so older callers/tests can still ask for a FAISS index
-    directly without going through the CLI backend abstraction.
-    """
-    embedding_matrix, product_ids = create_embedding_matrix(
-        blurbs_by_id,
-        img_root,
-        images_csv,
-        device,
-        batch_size,
-        skip_missing_images=skip_missing_images,
-    )
-    index = build_faiss_index(embedding_matrix)
-    index_to_product_id = {index: product_id for index, product_id in enumerate(product_ids)}
-    return index, index_to_product_id
-
-
-def save_vectordb(index, index_to_product_id, faiss_index_output, index_mapping_output):
-    """Persist a FAISS index and row-to-product-id mapping to disk.
-
-    This compatibility helper writes the historical artifact format. New backend
-    code writes ``embeddings.faiss``/``embeddings.npy`` and ``product_ids.json``.
-    """
-    faiss_index_output = Path(faiss_index_output)
-    index_mapping_output = Path(index_mapping_output)
-
-    faiss_index_output.parent.mkdir(parents=True, exist_ok=True)
-    index_mapping_output.parent.mkdir(parents=True, exist_ok=True)
-
-    faiss.write_index(index, str(faiss_index_output))
-    logger.info(f"FAISS index saved to {faiss_index_output}")
-
-    with open(index_mapping_output, "w", encoding="utf-8") as file:
-        json.dump(index_to_product_id, file, indent=2)
-    logger.info(f"Index mapping saved to {index_mapping_output}")
 
 def parse_args():
     """Parse command-line arguments for vector DB generation."""
