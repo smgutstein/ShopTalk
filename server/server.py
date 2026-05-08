@@ -1,5 +1,4 @@
 import argparse
-import collections
 import csv
 from dotenv import load_dotenv
 
@@ -10,7 +9,6 @@ import numpy as np
 import os
 import pickle
 import random
-import time
 import torch
 
 # Suppress warnings from torchvision.transforms._functional_video (ImageBind import's fault.)
@@ -26,14 +24,14 @@ from imagebind import data
 from imagebind.models.imagebind_model import imagebind_huge
 from imagebind.models.imagebind_model import ModalityType
 
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ConversationBufferMemory
-from langchain.memory import ConversationBufferMemory
-from langchain.schema import Document
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
+#from langchain.chains import ConversationalRetrievalChain
+#from langchain.memory import ConversationBufferMemory
+#from langchain.memory import ConversationBufferMemory
+#from langchain.schema import Document
+from langchain_classic.schema import SystemMessage, HumanMessage, AIMessage
 from langchain_community.vectorstores import FAISS
-from langchain_core.runnables import RunnableSequence
-from langchain_core.prompts import PromptTemplate
+#from langchain_core.runnables import RunnableSequence
+#from langchain_core.prompts import PromptTemplate
 from langchain_core.embeddings.embeddings import Embeddings
 from langchain_openai import ChatOpenAI
 
@@ -122,7 +120,7 @@ logging.info(f"Loading Database...")
 start_time = datetime.now()
 # Load the FAISS index and metadata when the app starts
 faiss_index, id_map, blurbs = load_vector_db("faiss_index.bin", 
-                                             "product_blurbs/combined_blurb_dict.json", 
+                                             "EDA/product_blurbs/combined_blurb_dict.json", 
                                              "index_to_product_id.pkl")
 stop_time = datetime.now()
 delta_time = stop_time - start_time 
@@ -214,7 +212,8 @@ def generate():
     caption_please = "Based on the current conversation, what sort of product should we search for? " + \
             "Please ignore your personality and limit your answer to a maximum of 10 words - " + \
             "words an automated search system would find useful."
-    llm_search_query = chat_openai(conversation_history + [SystemMessage(content=caption_please)]).content
+    llm_search_query = chat_openai.invoke(conversation_history + \
+                                          [SystemMessage(content=caption_please)]).content
     logging.info(f"LLM's suggested search query: {llm_search_query}")
 
     start_time = datetime.now()
@@ -262,7 +261,7 @@ def generate():
 
     logging.info(f"conversation_history: {conversation_history}\n\n")
 
-    llm_response = chat_openai(conversation_history).content
+    llm_response = chat_openai.invoke(conversation_history).content
     ai_ans = AIMessage(content=llm_response)
     logging.info(f"Initial LLM Response: {llm_response}")
 
@@ -287,7 +286,7 @@ def generate():
         reprompt = SystemMessage(content=reprompt_str)
 
         temp_history = conversation_history + [AI_ans, reprompt]
-        llm_response = chat_openai(temp_history).content
+        llm_response = chat_openai.invoke(temp_history).content
         ai_ans = AIMessage(content=llm_response)
         logging.info(f"No-PID LLM Response: {llm_response}")
     else:
@@ -309,7 +308,7 @@ def generate():
         reprompt = SystemMessage(content=reprompt_str)
 
         temp_history = conversation_history + [AI_ans, reprompt]
-        llm_response = chat_openai(temp_history).content
+        llm_response = chat_openai.invoke(temp_history).content
         ai_ans = AIMessage(content=llm_response)
         logging.info(f"No-rec LLM Response: {llm_response}")
 
