@@ -4,13 +4,12 @@ import gzip
 import json
 import shutil
 
-from collections import  defaultdict
+from collections import defaultdict
 from pathlib import Path
 from preprocessor import Preprocessor
 
 
-
-class DescriptionGenerator():
+class DescriptionGenerator:
     def __init__(self, root_dir, listing_dir, data_file, 
                  country, language, config_file):
 
@@ -31,7 +30,7 @@ class DescriptionGenerator():
         '''Init product list filtered for items available in
            chosen country. Returns a list of dicts'''
         country_list = []
-        with open(self.data_path, 'r') as file:
+        with open(self.data_path, "r", encoding="utf-8") as file:
             for ctr,line in enumerate(file):
                 new_item = json.loads(line)
                 if new_item['country'] == self.country:
@@ -120,8 +119,14 @@ class DescriptionGenerator():
         else:
             for text_option in self.config['Text Options']:
                 if self.config.getboolean('Text Options', text_option, fallback=False):
+                    method_name = f"get_{text_option}"
+                    method = getattr(self, method_name, None)
+                    if method is None:
+                        raise ValueError(
+                            f"Unknown text generation option in config: {text_option}"
+                        )
                     print(f"  Generating {text_option}")
-                    getattr(self, f"get_{text_option}")()
+                    method()
 
             
         return  
@@ -437,6 +442,13 @@ class DescriptionGenerator():
         '''Make dictionary of blurbs'''
         out_dict = defaultdict(dict)
         for curr_id in self.item_id_dict.keys():
+            if (
+                'item_name' not in self.item_id_dict[curr_id]
+                or not self.item_id_dict[curr_id]['item_name']
+                or 'value' not in self.item_id_dict[curr_id]['item_name'][0]
+            ):
+                raise ValueError(f"Missing item_name for product {curr_id}")
+
             out_dict[curr_id]['llm_str'] = self.item_id_dict[curr_id]['llm_str']
             out_dict[curr_id]['item_name'] = self.item_id_dict[curr_id]['item_name'][0]['value']
             out_dict[curr_id]['feature_fields'] = self.item_id_dict[curr_id]['feature_fields']
@@ -464,7 +476,7 @@ class DescriptionGenerator():
         
         # Save the full dictionary
         #print(f"Saving full blurb dictionary to {output_dir}/{output_json}")
-        with open(Path(output_path) / Path(output_json), 'w') as f:
+        with open(Path(output_path) / Path(output_json), "w", encoding="utf-8") as f:
             json.dump(full_blurb_dict, f, indent=4)
 
         return
@@ -474,13 +486,12 @@ class DescriptionGenerator():
 if __name__ == '__main__':      
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--root_dir', type=str, 
-                        default='/media/steven/LocalRepo1/ShopTalkData/')
+    parser.add_argument('--root_dir', type=str, default ='./data')
     parser.add_argument('--listing_dir', type=str, default='abo-listings/listings/metadata')
     parser.add_argument('--country', type=str, default='US')
     parser.add_argument('--language', type=str, default='en_US')
-    parser.add_argument('--output_dir', type=str, default='product_blurbs')
-    parser.add_argument('--config_file', type=str, default='config.ini')
+    parser.add_argument('--output_dir', type=str, default='./EDA/product_blurbs')
+    parser.add_argument('--config_file', type=str, default='./EDA/config.ini')
     parser.add_argument('-o','--output_json', type=str, default='combined_blurb_dict.json')
     parser.add_argument('-t', '--test', action='store_true')
     parser.add_argument('-z', '--zipped', action='store_true')
