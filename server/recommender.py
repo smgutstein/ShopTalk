@@ -232,96 +232,31 @@ class ShopTalkRecommender:
 
     def generate_reply(self, user_input):
         logging.info(f"\n\n\nUser input: {user_input}")
+        start_time = datetime.now()
 
         self.conversation_history.append(HumanMessage(content=user_input))
 
-        caption_please = (
-            "Based on the current conversation, what sort of product should we search for? "
-            "Please ignore your personality and limit your answer to a maximum of 10 words - "
-            "words an automated search system would find useful."
-        )
-        llm_search_query = self.chat_openai.invoke(
-            self.conversation_history + [SystemMessage(content=caption_please)]
-        ).content
-        logging.info(f"LLM's suggested search query: {llm_search_query}")
-
-        start_time = datetime.now()
-        embedded_query = self.query_embedder.embed_query(llm_search_query).flatten().tolist()
-
-        distances, indices = self.faiss_index.search(
-            np.array([embedded_query]).astype(np.float32),
-            k=10,
-        )
-
-        found_products = self._deduplicate_products(distances, indices)
+        llm_search_query = self._build_search_query()
+        found_products = self._search_products(llm_search_query, top_k=10)
         source_knowledge = self._format_source_knowledge(found_products)
-        augmented_prompt = self._build_augmented_prompt(source_knowledge)
 
-        product_names = [info["item_name"] for info in found_products.values()]
-        logging.info(f"VectorDB search results: {product_names}")
-        self.conversation_history.append(SystemMessage(augmented_prompt))
+        initial_llm_response = self._choose_product_or_next_action(
+            found_products=found_products,
+            source_knowledge=source_knowledge,
+        )
+        chosen_pid, chosen_product, dive_deeper = self._parse_product_choice(
+            llm_response=initial_llm_response,
+            found_products=found_products,
+        )
 
-        logging.info(f"conversation_history: {self.conversation_history}\n\n")
-
-        llm_response = self.chat_openai.invoke(self.conversation_history).content
-        ai_ans = AIMessage(content=llm_response)
-        logging.info(f"Initial LLM Response: {llm_response}")
-
-        dive_deeper = "DIVE DEEPER" in llm_response
-        if (
-            not dive_deeper
-            and "WRONG TRACK" not in llm_response
-            and "<" in llm_response
-            and ">" in llm_response
-        ):
-            chosen_pid = llm_response.split("<")[1].split(">") [0]
-            chosen_product = found_products.get(chosen_pid, None)
-        else:
-            chosen_pid = None
-            chosen_product = {}
-
-        self.conversation_history = self.conversation_history[:-1]
-
-        if chosen_pid:
-            AI_ans = AIMessage(content=llm_response)
-            reprompt_str = (
-                "Let's continue the conversation while recommending the following product "
-                "(you don't need to describe every detail of the product, just whatever seems relevant "
-                "for the buyer based on this conversation): "
-            )
-            reprompt_str += chosen_product["llm_str"]
-            reprompt = SystemMessage(content=reprompt_str)
-
-            temp_history = self.conversation_history + [AI_ans, reprompt]
-            llm_response = self.chat_openai.invoke(temp_history).content
-            ai_ans = AIMessage(content=llm_response)
-            logging.info(f"No-PID LLM Response: {llm_response}")
-        else:
-            AI_ans = AIMessage(content=llm_response)
-            if dive_deeper:
-                reprompt_str = (
-                    "Let's continue the conversation so we can find better product matches. "
-                    "Don't recommend any specific products - we're trying to learn more so we can make better recommendations. "
-                    "For context, here are the latest top search results, which we find promising and want to be able to dive deeper into:\n"
-                    f"{source_knowledge}"
-                )
-                logging.info("Asking the user for more details")
-            else:
-                reprompt_str = (
-                    "Let's continue the conversation to see if we can find a search area that's better served by our stock. "
-                    "Don't recommend any specific products - we're trying to learn more so we can see if we have anything that suits the buyer. "
-                    "You may want to apologize to them, since we're not finding any relevant products in our searches so far. "
-                    "For context, here are the latest top search results, which we're finding lacking:\n"
-                    f"{source_knowledge}"
-                )
-                logging.info("Redirect the user to another search area")
-            reprompt = SystemMessage(content=reprompt_str)
-
-            temp_history = self.conversation_history + [AI_ans, reprompt]
-            llm_response = self.chat_openai.invoke(temp_history).content
-            ai_ans = AIMessage(content=llm_response)
-            logging.info(f"No-rec LLM Response: {llm_response}")
-
+        final_llm_response = self._build_final_response(
+            initial_llm_response=initial_llm_response,
+            chosen_pid=chosen_pid,
+            chosen_product=chosen_product,
+            dive_deeper=dive_deeper,
+            source_knowledge=source_knowledge,
+        )
+        ai_ans = AIMessage(content=final_llm_response)
         self.conversation_history += [ai_ans]
 
         logging.info(f"Chosen pid: {chosen_pid}")
@@ -342,7 +277,7 @@ class ShopTalkRecommender:
                 max_score_dict=max_score_dict,
                 minutes=minutes,
                 seconds=seconds,
-                llm_response=llm_response,
+                llm_response=final_llm_response,
                 found_products=found_products,
             )
 
@@ -351,6 +286,109 @@ class ShopTalkRecommender:
             "chosen_product": chosen_product,
             "personality": self.personality,
         }
+
+    def _build_search_query(self):
+        caption_please = (
+            "Based on the current conversation, what sort of product should we search for? "
+            "Please ignore your personality and limit your answer to a maximum of 10 words - "
+            "words an automated search system would find useful."
+        )
+        llm_search_query = self.chat_openai.invoke(
+            self.conversation_history + [SystemMessage(content=caption_please)]
+        ).content
+        logging.info(f"LLM's suggested search query: {llm_search_query}")
+        return llm_search_query
+
+    def _search_products(self, search_query, top_k=10):
+        embedded_query = self.query_embedder.embed_query(search_query).flatten().tolist()
+        distances, indices = self.faiss_index.search(
+            np.array([embedded_query]).astype(np.float32),
+            k=top_k,
+        )
+
+        found_products = self._deduplicate_products(distances, indices)
+        product_names = [info["item_name"] for info in found_products.values()]
+        logging.info(f"VectorDB search results: {product_names}")
+        return found_products
+
+    def _choose_product_or_next_action(self, found_products, source_knowledge):
+        augmented_prompt = self._build_augmented_prompt(source_knowledge)
+        self.conversation_history.append(SystemMessage(augmented_prompt))
+
+        logging.info(f"conversation_history: {self.conversation_history}\n\n")
+        llm_response = self.chat_openai.invoke(self.conversation_history).content
+        logging.info(f"Initial LLM Response: {llm_response}")
+
+        # Delete search result info from conversation.
+        self.conversation_history = self.conversation_history[:-1]
+        return llm_response
+
+    def _parse_product_choice(self, llm_response, found_products):
+        dive_deeper = "DIVE DEEPER" in llm_response
+        if (
+            not dive_deeper
+            and "WRONG TRACK" not in llm_response
+            and "<" in llm_response
+            and ">" in llm_response
+        ):
+            chosen_pid = llm_response.split("<")[1].split(">") [0]
+            chosen_product = found_products.get(chosen_pid, None)
+        else:
+            chosen_pid = None
+            chosen_product = {}
+
+        return chosen_pid, chosen_product, dive_deeper
+
+    def _build_final_response(
+        self,
+        initial_llm_response,
+        chosen_pid,
+        chosen_product,
+        dive_deeper,
+        source_knowledge,
+    ):
+        ai_ans = AIMessage(content=initial_llm_response)
+
+        if chosen_pid:
+            reprompt_str = (
+                "Let's continue the conversation while recommending the following product "
+                "(you don't need to describe every detail of the product, just whatever seems relevant "
+                "for the buyer based on this conversation): "
+            )
+            reprompt_str += chosen_product["llm_str"]
+            log_message = "No-PID LLM Response"
+        else:
+            reprompt_str, log_message = self._build_no_product_reprompt(
+                dive_deeper=dive_deeper,
+                source_knowledge=source_knowledge,
+            )
+
+        reprompt = SystemMessage(content=reprompt_str)
+        temp_history = self.conversation_history + [ai_ans, reprompt]
+        final_llm_response = self.chat_openai.invoke(temp_history).content
+        logging.info(f"{log_message}: {final_llm_response}")
+        return final_llm_response
+
+    def _build_no_product_reprompt(self, dive_deeper, source_knowledge):
+        if dive_deeper:
+            reprompt_str = (
+                "Let's continue the conversation so we can find better product matches. "
+                "Don't recommend any specific products - we're trying to learn more so we can make better recommendations. "
+                "For context, here are the latest top search results, which we find promising and want to be able to dive deeper into:\n"
+                f"{source_knowledge}"
+            )
+            logging.info("Asking the user for more details")
+        else:
+            reprompt_str = (
+                "Let's continue the conversation to see if we can find a search area that's better served by our stock. "
+                "Don't recommend any specific products - we're trying to learn more so we can see if we have anything that suits the buyer. "
+                "You may want to apologize to them, since we're not finding any relevant products in our searches so far. "
+                "For context, here are the latest top search results, which we're finding lacking:\n"
+                f"{source_knowledge}"
+            )
+            logging.info("Redirect the user to another search area")
+
+        return reprompt_str, "No-rec LLM Response"
 
     def _deduplicate_products(self, distances, indices):
         found_products = {}
