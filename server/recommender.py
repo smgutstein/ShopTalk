@@ -2,7 +2,6 @@ import csv
 import json
 import logging
 import os
-import pickle
 import random
 import warnings
 from datetime import datetime
@@ -49,20 +48,43 @@ def normalize(vectors):
     return vectors / norms
 
 
-def load_vector_db(index_path, blurbs_path, id_map_path):
-    index = faiss.read_index(index_path)
+def load_vector_db(index_path, blurbs_path, product_ids_path):
+    """Load vector-search artifacts and product metadata.
+
+    The vector DB generator writes a FAISS index plus a row-aligned
+    ``product_ids.json`` file. Row ``i`` in the FAISS index corresponds to
+    ``product_ids[i]``.
+    """
+    index_path = Path(index_path)
+    blurbs_path = Path(blurbs_path)
+    product_ids_path = Path(product_ids_path)
+
+    if not index_path.is_file():
+        raise FileNotFoundError(f"FAISS index file not found: {index_path}")
+    if not product_ids_path.is_file():
+        raise FileNotFoundError(f"Product IDs file not found: {product_ids_path}")
+    if not blurbs_path.is_file():
+        raise FileNotFoundError(f"Product blurbs file not found: {blurbs_path}")
+
+    index = faiss.read_index(str(index_path))
     logging.info(f"Vector DB info: # of vectors = {index.ntotal}, dims = {index.d}")
 
-    with open(id_map_path, "rb") as f:
-        id_map = pickle.load(f)
-        logging.info(f"Vector DB index->pid map size: {len(id_map)}")
+    with open(product_ids_path, "r", encoding="utf-8") as f:
+        product_ids = json.load(f)
+        logging.info(f"Vector DB product ID count: {len(product_ids)}")
 
-    with open(blurbs_path, "rb") as f:
+    if index.ntotal != len(product_ids):
+        raise ValueError(
+            f"Vector DB artifact mismatch: FAISS index contains {index.ntotal} "
+            f"vectors, but product_ids.json contains {len(product_ids)} product IDs."
+        )
+
+    with open(blurbs_path, "r", encoding="utf-8") as f:
         logging.info(f"Reading {blurbs_path}")
         blurbs = json.load(f)
         logging.info(f"Blurbs loaded for {len(blurbs)} products.")
 
-    return index, id_map, blurbs
+    return index, product_ids, blurbs
 
 
 # Warning: I don't recommend trying to simplify this code.
@@ -118,15 +140,25 @@ class ShopTalkRecommender:
         debug=False,
         force_cpu=False,
         model_name="gpt-4o",
-        index_path="faiss_index.bin",
+        vector_db_output_dir="artifacts/vector_db",
+        vector_backend="faiss",
+        index_path=None,
         blurbs_path="EDA/product_blurbs/combined_blurb_dict.json",
-        id_map_path="index_to_product_id.pkl",
+        product_ids_path=None,
         images_csv_path="images.csv",
     ):
         self.debug = debug
 
         self.device = "cpu" if force_cpu else "cuda:0" if torch.cuda.is_available() else "cpu"
         logging.info(f"Using device: {self.device}")
+
+        self.faiss_index, self.product_ids, self.blurbs, self.db_load_time = self._load_database(
+            vector_db_output_dir=vector_db_output_dir,
+            vector_backend=vector_backend,
+            index_path=index_path,
+            blurbs_path=blurbs_path,
+            product_ids_path=product_ids_path,
+        )
 
         self.ibind_model, self.embed_load_time = self._load_imagebind_model()
         self.query_embedder = QueryEmbedder(self.ibind_model, self.device)
@@ -139,12 +171,6 @@ class ShopTalkRecommender:
             )
         os.environ["OPENAI_API_KEY"] = self.api_key
         os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
-        self.faiss_index, self.id_map, self.blurbs, self.db_load_time = self._load_database(
-            index_path=index_path,
-            blurbs_path=blurbs_path,
-            id_map_path=id_map_path,
-        )
 
         self.personality = self._choose_personality(personality_index)
         self.chosen_personality = self.personality
@@ -175,18 +201,36 @@ class ShopTalkRecommender:
         logging.info(f"{minutes} minutes, {seconds} seconds")
         return ibind_model, load_time
 
-    def _load_database(self, index_path, blurbs_path, id_map_path):
+    def _load_database(
+        self,
+        vector_db_output_dir,
+        vector_backend,
+        index_path,
+        blurbs_path,
+        product_ids_path,
+    ):
         logging.info("Loading Database...")
         start_time = datetime.now()
-        faiss_index, id_map, blurbs = load_vector_db(
+
+        if vector_backend != "faiss":
+            raise ValueError(
+                "ShopTalkRecommender currently supports only the FAISS vector backend. "
+                f"Got vector_backend={vector_backend!r}."
+            )
+
+        backend_dir = Path(vector_db_output_dir) / vector_backend
+        index_path = index_path or backend_dir / "embeddings.faiss"
+        product_ids_path = product_ids_path or backend_dir / "product_ids.json"
+
+        faiss_index, product_ids, blurbs = load_vector_db(
             index_path,
             blurbs_path,
-            id_map_path,
+            product_ids_path,
         )
         stop_time = datetime.now()
         minutes, seconds, load_time = elapsed_time_string(start_time, stop_time)
         logging.info(f"{minutes} minutes, {seconds} seconds")
-        return faiss_index, id_map, blurbs, load_time
+        return faiss_index, product_ids, blurbs, load_time
 
     def _choose_personality(self, personality_index):
         if personality_index == -1 or personality_index >= len(PERSONALITIES):
@@ -393,7 +437,14 @@ class ShopTalkRecommender:
     def _deduplicate_products(self, distances, indices):
         found_products = {}
         for idx, score in zip(indices[0], distances[0]):
-            pid = self.id_map[idx]
+            if idx < 0:
+                continue
+            if idx >= len(self.product_ids):
+                raise IndexError(
+                    f"FAISS returned row {idx}, but only {len(self.product_ids)} product IDs are loaded."
+                )
+
+            pid = self.product_ids[int(idx)]
             blurb = self.blurbs[pid]
             if pid not in found_products:
                 found_products[pid] = {
