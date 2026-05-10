@@ -483,20 +483,30 @@ class ShopTalkRecommender:
         return llm_response
 
     def _parse_product_choice(self, llm_response, found_products):
-        dive_deeper = "DIVE DEEPER" in llm_response
-        if (
-            not dive_deeper
-            and "WRONG TRACK" not in llm_response
-            and "<" in llm_response
-            and ">" in llm_response
-        ):
-            chosen_pid = llm_response.split("<")[1].split(">") [0]
-            chosen_product = found_products.get(chosen_pid, None)
-        else:
-            chosen_pid = None
-            chosen_product = {}
+        choice = self._extract_bracketed_choice(llm_response)
+        dive_deeper = choice == "DIVE DEEPER"
 
-        return chosen_pid, chosen_product, dive_deeper
+        if choice is None or dive_deeper or choice == "WRONG TRACK":
+            return None, {}, dive_deeper
+
+        chosen_product = found_products.get(choice, {})
+        if not chosen_product:
+            return None, {}, False
+
+        return choice, chosen_product, False
+
+    @staticmethod
+    def _extract_bracketed_choice(llm_response):
+        start = llm_response.find("<")
+        if start == -1:
+            return None
+
+        end = llm_response.find(">", start + 1)
+        if end == -1:
+            return None
+
+        choice = llm_response[start + 1:end].strip()
+        return choice or None
 
     def _build_final_response(
         self,
