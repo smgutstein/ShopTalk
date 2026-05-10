@@ -62,6 +62,7 @@ def test_search_maps_faiss_rows_to_product_records():
         "item_name": "Beta",
         "score": pytest.approx(0.91),
         "image_paths": ["beta.jpg", "beta_detail.jpg"],
+        "image_urls": ["/static/images/beta.jpg", "/static/images/beta_detail.jpg"],
         "product_type": "test product",
         "llm_str": "Description for Beta",
     }

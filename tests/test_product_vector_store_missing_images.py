@@ -1,6 +1,15 @@
 import logging
+from pathlib import Path
+import sys
 
 import numpy as np
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SERVER_DIR = PROJECT_ROOT / "server"
+STUBS_DIR = PROJECT_ROOT / "tests" / "stubs"
+for path in (str(STUBS_DIR), str(SERVER_DIR)):
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
 from recommender import ProductVectorStore, all_img_paths
 
@@ -56,4 +65,5 @@ def test_product_vector_store_search_does_not_crash_on_missing_image_id(caplog):
         )
 
     assert found_products["P1"]["image_paths"] == []
+    assert found_products["P1"]["image_urls"] == []
     assert "Skipping image_id missing-main" in caplog.text

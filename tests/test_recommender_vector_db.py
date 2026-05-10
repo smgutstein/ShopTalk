@@ -138,10 +138,12 @@ def test_product_vector_store_search_maps_rows_to_product_records():
         "item_name": "One",
         "score": 0.9,
         "image_paths": ["one.jpg", "one-extra.jpg"],
+        "image_urls": ["/static/images/one.jpg", "/static/images/one-extra.jpg"],
         "product_type": "widget",
         "llm_str": "Description for One",
     }
     assert found_products["product-0"]["image_paths"] == ["zero.jpg"]
+    assert found_products["product-0"]["image_urls"] == ["/static/images/zero.jpg"]
 
 
 def test_product_vector_store_search_deduplicates_repeated_product_ids():
@@ -172,6 +174,10 @@ def test_product_vector_store_search_deduplicates_repeated_product_ids():
     assert found_products["product-1"]["image_paths"] == [
         "one.jpg",
         "one-extra.jpg",
+    ]
+    assert found_products["product-1"]["image_urls"] == [
+        "/static/images/one.jpg",
+        "/static/images/one-extra.jpg",
     ]
 
 
