@@ -113,6 +113,39 @@ def all_img_paths(blurb, image_id_to_path):
     return image_paths
 
 
+def image_path_to_static_url(image_path):
+    """Convert an images.csv path into a Flask static URL.
+
+    ``images.csv`` stores paths used by the local image files. For browser
+    display, the frontend needs a URL under Flask's ``/static`` route. The
+    common case is a path relative to ``server/static/images``.
+    """
+    normalized = str(image_path).replace("\\", "/").lstrip("/")
+
+    if normalized.startswith("server/static/"):
+        return "/" + normalized.removeprefix("server/")
+    if normalized.startswith("static/"):
+        return "/" + normalized
+    if normalized.startswith("images/"):
+        return "/static/" + normalized
+    return "/static/images/" + normalized
+
+
+def image_paths_to_static_urls(image_paths):
+    return [image_path_to_static_url(image_path) for image_path in image_paths]
+
+
+def load_openai_api_key():
+    """Load and validate the OpenAI API key before expensive setup work."""
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    if api_key is None:
+        raise ValueError(
+            "OpenAI API key not found. Please set the OPENAI_API_KEY environment variable."
+        )
+    return api_key
+
+
 def serialize_convo(conversation_history):
     return [
         {"type": msg.__class__.__name__, "content": msg.content}
@@ -164,6 +197,7 @@ class ProductVectorStore:
                     "item_name": blurb["item_name"],
                     "score": float(score),
                     "image_paths": image_paths,
+                    "image_urls": image_paths_to_static_urls(image_paths),
                     "product_type": blurb["feature_fields"]["product_type"],
                     "llm_str": blurb["llm_str"],
                 }
@@ -217,6 +251,10 @@ class ShopTalkRecommender:
         self.device = "cpu" if force_cpu else "cuda:0" if torch.cuda.is_available() else "cpu"
         logging.info(f"Using device: {self.device}")
 
+        self.api_key = load_openai_api_key()
+        os.environ["OPENAI_API_KEY"] = self.api_key
+        os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
         self.product_store, self.db_load_time = self._load_database(
             vector_db_output_dir=vector_db_output_dir,
             vector_backend=vector_backend,
@@ -227,15 +265,6 @@ class ShopTalkRecommender:
 
         self.ibind_model, self.embed_load_time = self._load_imagebind_model()
         self.query_embedder = QueryEmbedder(self.ibind_model, self.device)
-
-        load_dotenv()
-        self.api_key = os.getenv("OPENAI_API_KEY")
-        if self.api_key is None:
-            raise ValueError(
-                "OpenAI API key not found. Please set the OPENAI_API_KEY environment variable."
-            )
-        os.environ["OPENAI_API_KEY"] = self.api_key
-        os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
         self.personality = self._choose_personality(personality_index)
         self.chosen_personality = self.personality
