@@ -111,6 +111,62 @@ def serialize_convo(conversation_history):
     ]
 
 
+class ProductVectorStore:
+    """Search row-aligned product vectors and return product metadata."""
+
+    def __init__(self, faiss_index, product_ids, blurbs):
+        self.faiss_index = faiss_index
+        self.product_ids = product_ids
+        self.blurbs = blurbs
+
+    @classmethod
+    def from_paths(cls, index_path, blurbs_path, product_ids_path):
+        faiss_index, product_ids, blurbs = load_vector_db(
+            index_path=index_path,
+            blurbs_path=blurbs_path,
+            product_ids_path=product_ids_path,
+        )
+        return cls(faiss_index=faiss_index, product_ids=product_ids, blurbs=blurbs)
+
+    def search(self, embedded_query, top_k, image_id_to_path):
+        distances, indices = self.faiss_index.search(
+            np.array([embedded_query]).astype(np.float32),
+            k=top_k,
+        )
+        return self._deduplicate_products(distances, indices, image_id_to_path)
+
+    def _deduplicate_products(self, distances, indices, image_id_to_path):
+        found_products = {}
+        for idx, score in zip(indices[0], distances[0]):
+            if idx < 0:
+                continue
+            if idx >= len(self.product_ids):
+                raise IndexError(
+                    f"FAISS returned row {idx}, but only "
+                    f"{len(self.product_ids)} product IDs are loaded."
+                )
+
+            pid = self.product_ids[int(idx)]
+            blurb = self.blurbs[pid]
+            image_paths = all_img_paths(blurb, image_id_to_path)
+
+            if pid not in found_products:
+                found_products[pid] = {
+                    "item_name": blurb["item_name"],
+                    "score": float(score),
+                    "image_paths": image_paths,
+                    "product_type": blurb["feature_fields"]["product_type"],
+                    "llm_str": blurb["llm_str"],
+                }
+            else:
+                found_products[pid]["image_paths"] = found_products[pid]["image_paths"] + [
+                    new_img
+                    for new_img in image_paths
+                    if new_img not in found_products[pid]["image_paths"]
+                ]
+        return found_products
+
+
 class QueryEmbedder(Embeddings):
     def __init__(self, ibind_model, device):
         self.ibind_model = ibind_model
@@ -152,7 +208,7 @@ class ShopTalkRecommender:
         self.device = "cpu" if force_cpu else "cuda:0" if torch.cuda.is_available() else "cpu"
         logging.info(f"Using device: {self.device}")
 
-        self.faiss_index, self.product_ids, self.blurbs, self.db_load_time = self._load_database(
+        self.product_store, self.db_load_time = self._load_database(
             vector_db_output_dir=vector_db_output_dir,
             vector_backend=vector_backend,
             index_path=index_path,
@@ -222,15 +278,15 @@ class ShopTalkRecommender:
         index_path = index_path or backend_dir / "embeddings.faiss"
         product_ids_path = product_ids_path or backend_dir / "product_ids.json"
 
-        faiss_index, product_ids, blurbs = load_vector_db(
-            index_path,
-            blurbs_path,
-            product_ids_path,
+        product_store = ProductVectorStore.from_paths(
+            index_path=index_path,
+            blurbs_path=blurbs_path,
+            product_ids_path=product_ids_path,
         )
         stop_time = datetime.now()
         minutes, seconds, load_time = elapsed_time_string(start_time, stop_time)
         logging.info(f"{minutes} minutes, {seconds} seconds")
-        return faiss_index, product_ids, blurbs, load_time
+        return product_store, load_time
 
     def _choose_personality(self, personality_index):
         if personality_index == -1 or personality_index >= len(PERSONALITIES):
@@ -345,12 +401,11 @@ class ShopTalkRecommender:
 
     def _search_products(self, search_query, top_k=10):
         embedded_query = self.query_embedder.embed_query(search_query).flatten().tolist()
-        distances, indices = self.faiss_index.search(
-            np.array([embedded_query]).astype(np.float32),
-            k=top_k,
+        found_products = self.product_store.search(
+            embedded_query=embedded_query,
+            top_k=top_k,
+            image_id_to_path=self.image_id_to_path,
         )
-
-        found_products = self._deduplicate_products(distances, indices)
         product_names = [info["item_name"] for info in found_products.values()]
         logging.info(f"VectorDB search results: {product_names}")
         return found_products
@@ -433,34 +488,6 @@ class ShopTalkRecommender:
             logging.info("Redirect the user to another search area")
 
         return reprompt_str, "No-rec LLM Response"
-
-    def _deduplicate_products(self, distances, indices):
-        found_products = {}
-        for idx, score in zip(indices[0], distances[0]):
-            if idx < 0:
-                continue
-            if idx >= len(self.product_ids):
-                raise IndexError(
-                    f"FAISS returned row {idx}, but only {len(self.product_ids)} product IDs are loaded."
-                )
-
-            pid = self.product_ids[int(idx)]
-            blurb = self.blurbs[pid]
-            if pid not in found_products:
-                found_products[pid] = {
-                    "item_name": blurb["item_name"],
-                    "score": float(score),
-                    "image_paths": all_img_paths(blurb, self.image_id_to_path),
-                    "product_type": blurb["feature_fields"]["product_type"],
-                    "llm_str": self.blurbs[pid]["llm_str"],
-                }
-            else:
-                found_products[pid]["image_paths"] = found_products[pid]["image_paths"] + [
-                    new_img
-                    for new_img in all_img_paths(blurb, self.image_id_to_path)
-                    if new_img not in found_products[pid]["image_paths"]
-                ]
-        return found_products
 
     def _format_source_knowledge(self, found_products):
         return "\n\n;\n\n".join(
