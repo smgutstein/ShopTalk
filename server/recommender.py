@@ -202,6 +202,33 @@ def build_augmented_prompt(source_knowledge):
     )
 
 
+def extract_bracketed_choice(llm_response):
+    start = llm_response.find("<")
+    if start == -1:
+        return None
+
+    end = llm_response.find(">", start + 1)
+    if end == -1:
+        return None
+
+    choice = llm_response[start + 1:end].strip()
+    return choice or None
+
+
+def parse_product_choice(llm_response, found_products):
+    choice = extract_bracketed_choice(llm_response)
+    dive_deeper = choice == "DIVE DEEPER"
+
+    if choice is None or dive_deeper or choice == "WRONG TRACK":
+        return None, {}, dive_deeper
+
+    chosen_product = found_products.get(choice, {})
+    if not chosen_product:
+        return None, {}, False
+
+    return choice, chosen_product, False
+
+
 def build_no_product_reprompt(dive_deeper, source_knowledge):
     """Build a follow-up prompt when no product should be recommended yet."""
     if dive_deeper:
@@ -528,30 +555,11 @@ class ShopTalkRecommender:
         return llm_response
 
     def _parse_product_choice(self, llm_response, found_products):
-        choice = self._extract_bracketed_choice(llm_response)
-        dive_deeper = choice == "DIVE DEEPER"
-
-        if choice is None or dive_deeper or choice == "WRONG TRACK":
-            return None, {}, dive_deeper
-
-        chosen_product = found_products.get(choice, {})
-        if not chosen_product:
-            return None, {}, False
-
-        return choice, chosen_product, False
+        return parse_product_choice(llm_response, found_products)
 
     @staticmethod
     def _extract_bracketed_choice(llm_response):
-        start = llm_response.find("<")
-        if start == -1:
-            return None
-
-        end = llm_response.find(">", start + 1)
-        if end == -1:
-            return None
-
-        choice = llm_response[start + 1:end].strip()
-        return choice or None
+        return extract_bracketed_choice(llm_response)
 
     def _build_final_response(
         self,
