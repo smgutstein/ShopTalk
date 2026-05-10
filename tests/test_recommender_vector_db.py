@@ -79,3 +79,116 @@ def test_load_vector_db_rejects_mismatched_index_and_product_id_counts(monkeypat
             blurbs_path=blurbs_path,
             product_ids_path=product_ids_path,
         )
+
+
+class FakeSearchIndex:
+    ntotal = 3
+    d = 1024
+
+    def __init__(self, distances, indices):
+        self.distances = distances
+        self.indices = indices
+        self.seen_queries = []
+        self.seen_k = []
+
+    def search(self, query, k):
+        self.seen_queries.append(query)
+        self.seen_k.append(k)
+        return self.distances, self.indices
+
+
+def make_blurb(item_name, main_image_id, other_image_id=None):
+    return {
+        "item_name": item_name,
+        "main_image_id": main_image_id,
+        "other_image_id": other_image_id or [],
+        "feature_fields": {"product_type": "widget"},
+        "llm_str": f"Description for {item_name}",
+    }
+
+
+def test_product_vector_store_search_maps_rows_to_product_records():
+    fake_index = FakeSearchIndex(
+        distances=[[0.9, 0.8]],
+        indices=[[1, 0]],
+    )
+    store = recommender.ProductVectorStore(
+        faiss_index=fake_index,
+        product_ids=["product-0", "product-1"],
+        blurbs={
+            "product-0": make_blurb("Zero", "img-zero"),
+            "product-1": make_blurb("One", "img-one", ["img-one-extra"]),
+        },
+    )
+    image_id_to_path = {
+        "img-zero": "zero.jpg",
+        "img-one": "one.jpg",
+        "img-one-extra": "one-extra.jpg",
+    }
+
+    found_products = store.search(
+        embedded_query=[0.1, 0.2, 0.3],
+        top_k=2,
+        image_id_to_path=image_id_to_path,
+    )
+
+    assert fake_index.seen_k == [2]
+    assert list(found_products) == ["product-1", "product-0"]
+    assert found_products["product-1"] == {
+        "item_name": "One",
+        "score": 0.9,
+        "image_paths": ["one.jpg", "one-extra.jpg"],
+        "product_type": "widget",
+        "llm_str": "Description for One",
+    }
+    assert found_products["product-0"]["image_paths"] == ["zero.jpg"]
+
+
+def test_product_vector_store_search_deduplicates_repeated_product_ids():
+    fake_index = FakeSearchIndex(
+        distances=[[0.95, 0.90]],
+        indices=[[0, 1]],
+    )
+    store = recommender.ProductVectorStore(
+        faiss_index=fake_index,
+        product_ids=["product-1", "product-1"],
+        blurbs={
+            "product-1": make_blurb("One", "img-one", ["img-one-extra"]),
+        },
+    )
+    image_id_to_path = {
+        "img-one": "one.jpg",
+        "img-one-extra": "one-extra.jpg",
+    }
+
+    found_products = store.search(
+        embedded_query=[0.1],
+        top_k=2,
+        image_id_to_path=image_id_to_path,
+    )
+
+    assert list(found_products) == ["product-1"]
+    assert found_products["product-1"]["score"] == 0.95
+    assert found_products["product-1"]["image_paths"] == [
+        "one.jpg",
+        "one-extra.jpg",
+    ]
+
+
+def test_product_vector_store_search_rejects_out_of_range_faiss_row():
+    fake_index = FakeSearchIndex(
+        distances=[[0.7]],
+        indices=[[3]],
+    )
+    store = recommender.ProductVectorStore(
+        faiss_index=fake_index,
+        product_ids=["product-0"],
+        blurbs={"product-0": make_blurb("Zero", "img-zero")},
+    )
+
+    with pytest.raises(IndexError, match="FAISS returned row 3"):
+        store.search(
+            embedded_query=[0.1],
+            top_k=1,
+            image_id_to_path={"img-zero": "zero.jpg"},
+        )
