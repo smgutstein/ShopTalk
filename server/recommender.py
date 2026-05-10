@@ -251,6 +251,72 @@ def parse_product_choice(llm_response, found_products):
     return choice, chosen_product, False
 
 
+
+def determine_embedding_mode(user_input, image_path):
+    """Describe which query modalities are being used for retrieval."""
+    has_text = bool(user_input)
+    has_image = image_path is not None
+
+    if has_text and has_image:
+        return "text_image"
+    if has_image:
+        return "image"
+    if has_text:
+        return "text"
+    raise ValueError("At least one query modality is required.")
+
+
+def summarize_top_products(found_products):
+    """Create compact diagnostics for retrieved products."""
+    summaries = []
+    for product_id, product in found_products.items():
+        summaries.append(
+            {
+                "product_id": product_id,
+                "item_name": product.get("item_name"),
+                "score": product.get("score"),
+                "product_type": product.get("product_type"),
+            }
+        )
+    return summaries
+
+
+def infer_recommendation_decision(chosen_pid, dive_deeper, initial_llm_response):
+    """Convert the LLM control response into a coarse diagnostic decision."""
+    if chosen_pid:
+        return "recommend"
+    if dive_deeper:
+        return "dive_deeper"
+    if "WRONG TRACK" in initial_llm_response:
+        return "wrong_track"
+    return "unknown"
+
+
+def build_recommendation_diagnostics(
+    *,
+    embedding_mode,
+    llm_search_query,
+    found_products,
+    initial_llm_response,
+    chosen_pid,
+    dive_deeper,
+    total_seconds,
+):
+    """Build internal diagnostics for retrieval and LLM-control behavior."""
+    return {
+        "embedding_mode": embedding_mode,
+        "llm_search_query": llm_search_query,
+        "top_products": summarize_top_products(found_products),
+        "initial_llm_response": initial_llm_response,
+        "chosen_pid": chosen_pid,
+        "decision": infer_recommendation_decision(
+            chosen_pid=chosen_pid,
+            dive_deeper=dive_deeper,
+            initial_llm_response=initial_llm_response,
+        ),
+        "timings": {"total_seconds": total_seconds},
+    }
+
 def build_no_product_reprompt(dive_deeper, source_knowledge):
     """Build a follow-up prompt when no product should be recommended yet."""
     if dive_deeper:
@@ -507,6 +573,7 @@ class ShopTalkRecommender:
         if image_path is not None:
             logging.info(f"User image input: {image_path}")
         start_time = datetime.now()
+        embedding_mode = determine_embedding_mode(user_input, image_path)
 
         message_content = user_input or "The user uploaded an image and wants product recommendations based on it."
         if user_input and image_path is not None:
@@ -545,11 +612,21 @@ class ShopTalkRecommender:
 
         stop_time = datetime.now()
         minutes, seconds, _ = elapsed_time_string(start_time, stop_time)
+        total_seconds = (stop_time - start_time).total_seconds()
         logging.info(
             f"Took {minutes} minutes, {seconds} seconds to prepare a response to the user's message."
         )
 
         max_score_dict = max(found_products.values(), key=lambda x: x["score"])
+        diagnostics = build_recommendation_diagnostics(
+            embedding_mode=embedding_mode,
+            llm_search_query=llm_search_query,
+            found_products=found_products,
+            initial_llm_response=initial_llm_response,
+            chosen_pid=chosen_pid,
+            dive_deeper=dive_deeper,
+            total_seconds=total_seconds,
+        )
 
         if self.debug:
             self._write_debug_info(
@@ -566,6 +643,7 @@ class ShopTalkRecommender:
             "conversation": serialize_convo(self.conversation_history),
             "chosen_product": chosen_product,
             "personality": self.personality,
+            "diagnostics": diagnostics,
         }
 
     def _build_search_query(self):
