@@ -101,7 +101,16 @@ def all_img_ids(blurb):
 
 
 def all_img_paths(blurb, image_id_to_path):
-    return [image_id_to_path[img_id] for img_id in all_img_ids(blurb)]
+    image_paths = []
+    for img_id in all_img_ids(blurb):
+        if img_id not in image_id_to_path:
+            logging.warning(
+                "Skipping image_id %s because it was not found in images.csv",
+                img_id,
+            )
+            continue
+        image_paths.append(image_id_to_path[img_id])
+    return image_paths
 
 
 def serialize_convo(conversation_history):
