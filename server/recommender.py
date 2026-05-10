@@ -135,6 +135,32 @@ def image_paths_to_static_urls(image_paths):
     return [image_path_to_static_url(image_path) for image_path in image_paths]
 
 
+def load_image_paths_csv(images_csv_path):
+    """Load image-id to image-path mappings from ``images.csv``.
+
+    The CSV must contain at least ``image_id`` and ``path`` columns.
+    """
+    images_csv_path = Path(images_csv_path)
+    if not images_csv_path.is_file():
+        raise FileNotFoundError(f"Image mapping CSV not found: {images_csv_path}")
+
+    image_id_to_path = {}
+    with open(images_csv_path, mode="r", newline="", encoding="utf-8") as infile:
+        reader = csv.DictReader(infile)
+        required_columns = {"image_id", "path"}
+        missing_columns = required_columns - set(reader.fieldnames or [])
+        if missing_columns:
+            raise ValueError(
+                f"Image mapping CSV {images_csv_path} is missing required columns: "
+                f"{sorted(missing_columns)}"
+            )
+
+        for row in reader:
+            image_id_to_path[row["image_id"]] = row["path"]
+
+    return image_id_to_path
+
+
 def load_openai_api_key():
     """Load and validate the OpenAI API key before expensive setup work."""
     load_dotenv()
@@ -349,11 +375,7 @@ class ShopTalkRecommender:
     def _load_image_paths(self, images_csv_path):
         logging.info("Loading Image paths...")
         start_time = datetime.now()
-        image_id_to_path = {}
-        with open(images_csv_path, mode="r") as infile:
-            reader = csv.DictReader(infile)
-            for row in reader:
-                image_id_to_path[row["image_id"]] = row["path"]
+        image_id_to_path = load_image_paths_csv(images_csv_path)
         stop_time = datetime.now()
         minutes, seconds, load_time = elapsed_time_string(start_time, stop_time)
         logging.info(f"{minutes} minutes, {seconds} seconds")
