@@ -25,7 +25,7 @@ class FakeRecommender:
                 "item_name": "Test Product",
                 "score": 0.875,
                 "product_type": "widget",
-                "image_paths": ["test.jpg"],
+                "image_paths": ["test.jpg", "detail.jpg"],
             },
             "personality": "test",
             "diagnostics": {
@@ -46,7 +46,7 @@ class FakeRecommender:
 def test_handle_message_passes_text_query_to_recommender():
     fake = FakeRecommender()
 
-    history, cleared_text, cleared_image, product_md, diagnostics_summary, diagnostics = gradio_app.handle_message(
+    history, cleared_text, cleared_image, product_md, product_images, diagnostics_summary, diagnostics = gradio_app.handle_message(
         " red shoes ",
         None,
         [],
@@ -59,6 +59,7 @@ def test_handle_message_passes_text_query_to_recommender():
     assert cleared_image is None
     assert "Test Product" in product_md
     assert "0.8750" in product_md
+    assert product_images == ["test.jpg", "detail.jpg"]
     assert "text_image" in diagnostics_summary
     assert "recommend" in diagnostics_summary
     assert "red shoes" in diagnostics_summary
@@ -69,7 +70,7 @@ def test_handle_message_passes_text_query_to_recommender():
 def test_handle_message_passes_image_only_query_to_recommender():
     fake = FakeRecommender()
 
-    history, _, _, product_md, _, _ = gradio_app.handle_message(
+    history, _, _, product_md, product_images, _, _ = gradio_app.handle_message(
         "",
         "/tmp/query.jpg",
         [],
@@ -79,12 +80,13 @@ def test_handle_message_passes_image_only_query_to_recommender():
     assert fake.calls == [{"user_input": None, "image_path": "/tmp/query.jpg"}]
     assert history == [("[image uploaded]", "Here is a recommendation.")]
     assert "Test Product" in product_md
+    assert product_images == ["test.jpg", "detail.jpg"]
 
 
 def test_handle_message_passes_text_and_image_query_to_recommender():
     fake = FakeRecommender()
 
-    history, _, _, _, _, _ = gradio_app.handle_message(
+    history, _, _, _, _, _, _ = gradio_app.handle_message(
         "match this style",
         "/tmp/query.jpg",
         [],
@@ -98,7 +100,7 @@ def test_handle_message_passes_text_and_image_query_to_recommender():
 def test_handle_message_rejects_empty_submission_without_calling_recommender():
     fake = FakeRecommender()
 
-    history, cleared_text, cleared_image, product_md, diagnostics_summary, diagnostics = gradio_app.handle_message(
+    history, cleared_text, cleared_image, product_md, product_images, diagnostics_summary, diagnostics = gradio_app.handle_message(
         "   ",
         None,
         [("previous", "reply")],
@@ -110,12 +112,21 @@ def test_handle_message_rejects_empty_submission_without_calling_recommender():
     assert cleared_text == ""
     assert cleared_image is None
     assert "Enter text" in product_md
+    assert product_images == []
     assert diagnostics_summary == "No diagnostics reported yet."
     assert diagnostics == "{}"
 
 
 def test_format_chosen_product_handles_empty_product():
     assert gradio_app.format_chosen_product({}) == "No product selected yet."
+
+
+def test_chosen_product_image_paths_returns_local_image_paths():
+    assert gradio_app.chosen_product_image_paths({"image_paths": ["one.jpg", "two.jpg"]}) == [
+        "one.jpg",
+        "two.jpg",
+    ]
+    assert gradio_app.chosen_product_image_paths({}) == []
 
 
 def test_latest_ai_message_returns_last_ai_content():

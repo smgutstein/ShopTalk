@@ -94,6 +94,13 @@ def format_chosen_product(chosen_product):
     return "\n\n".join(lines)
 
 
+def chosen_product_image_paths(chosen_product):
+    """Return local image paths suitable for Gradio image/gallery components."""
+    if not chosen_product:
+        return []
+    return list(chosen_product.get("image_paths") or [])
+
+
 def format_top_products(top_products):
     """Create a compact Markdown list of retrieved products."""
     if not top_products:
@@ -156,7 +163,7 @@ def handle_message(user_text, image_path, chat_history, recommender):
 
     Returns:
         Tuple of ``(chat_history, cleared_text, cleared_image, product_markdown,
-        diagnostics_summary, diagnostics_json)`` for Gradio outputs.
+        product_images, diagnostics_summary, diagnostics_json)`` for Gradio outputs.
     """
     chat_history = list(chat_history or [])
     clean_text = (user_text or "").strip()
@@ -168,6 +175,7 @@ def handle_message(user_text, image_path, chat_history, recommender):
             "",
             None,
             "Enter text, upload an image, or do both.",
+            [],
             "No diagnostics reported yet.",
             "{}",
         )
@@ -179,12 +187,14 @@ def handle_message(user_text, image_path, chat_history, recommender):
     assistant_text = latest_ai_message(result.get("conversation", []))
     user_display = format_user_display(text_arg, image_path)
     chat_history.append((user_display, assistant_text))
+    chosen_product = result.get("chosen_product")
 
     return (
         chat_history,
         "",
         None,
-        format_chosen_product(result.get("chosen_product")),
+        format_chosen_product(chosen_product),
+        chosen_product_image_paths(chosen_product),
         format_diagnostics_summary(result),
         format_diagnostics(result),
     )
@@ -223,13 +233,22 @@ def create_gradio_interface(recommender):
 
         submit = gr.Button("Search")
         chosen_product = gr.Markdown(label="Chosen product")
+        chosen_product_images = gr.Gallery(label="Chosen product images", columns=3, height="auto")
         diagnostics_summary = gr.Markdown(label="Diagnostics summary")
         diagnostics = gr.Code(label="Raw diagnostics", language="json")
 
         submit.click(
             fn=lambda text, image, history: handle_message(text, image, history, recommender),
             inputs=[user_text, image_input, chatbot],
-            outputs=[chatbot, user_text, image_input, chosen_product, diagnostics_summary, diagnostics],
+            outputs=[
+                chatbot,
+                user_text,
+                image_input,
+                chosen_product,
+                chosen_product_images,
+                diagnostics_summary,
+                diagnostics,
+            ],
         )
 
     return demo
