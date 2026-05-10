@@ -21,7 +21,7 @@ def test_format_source_knowledge_lists_product_ids_and_names_in_order():
         "B002": {"item_name": "Second product"},
     }
 
-    source_knowledge = instance._format_source_knowledge(found_products)
+    source_knowledge = recommender.format_source_knowledge(found_products)
 
     assert source_knowledge == (
         "product_id: B001, item_name: First product"
@@ -33,14 +33,14 @@ def test_format_source_knowledge_lists_product_ids_and_names_in_order():
 def test_format_source_knowledge_returns_empty_string_for_no_products():
     instance = make_recommender_without_init()
 
-    assert instance._format_source_knowledge({}) == ""
+    assert recommender.format_source_knowledge({}) == ""
 
 
 def test_build_augmented_prompt_contains_control_options_and_source_knowledge():
     instance = make_recommender_without_init()
     source_knowledge = "product_id: B001, item_name: First product"
 
-    prompt = instance._build_augmented_prompt(source_knowledge)
+    prompt = recommender.build_augmented_prompt(source_knowledge)
 
     assert "<B071K17SWD>" in prompt
     assert "<WRONG TRACK>" in prompt
@@ -53,7 +53,7 @@ def test_build_no_product_reprompt_for_dive_deeper_includes_source_knowledge():
     instance = make_recommender_without_init()
     source_knowledge = "product_id: B001, item_name: First product"
 
-    reprompt, log_message = instance._build_no_product_reprompt(
+    reprompt, log_message = recommender.build_no_product_reprompt(
         dive_deeper=True,
         source_knowledge=source_knowledge,
     )
@@ -68,7 +68,7 @@ def test_build_no_product_reprompt_for_wrong_track_includes_source_knowledge():
     instance = make_recommender_without_init()
     source_knowledge = "product_id: B001, item_name: First product"
 
-    reprompt, log_message = instance._build_no_product_reprompt(
+    reprompt, log_message = recommender.build_no_product_reprompt(
         dive_deeper=False,
         source_knowledge=source_knowledge,
     )
@@ -78,3 +78,14 @@ def test_build_no_product_reprompt_for_wrong_track_includes_source_knowledge():
     assert "apologize" in reprompt
     assert "Don't recommend any specific products" in reprompt
     assert source_knowledge in reprompt
+
+
+def test_shoptalk_prompt_methods_delegate_to_module_helpers():
+    instance = make_recommender_without_init()
+    found_products = {"B001": {"item_name": "First product"}}
+    source_knowledge = recommender.format_source_knowledge(found_products)
+
+    assert instance._format_source_knowledge(found_products) == source_knowledge
+    assert instance._build_augmented_prompt(source_knowledge) == recommender.build_augmented_prompt(source_knowledge)
+    assert instance._build_no_product_reprompt(True, source_knowledge) == recommender.build_no_product_reprompt(True, source_knowledge)
+    assert instance._build_no_product_reprompt(False, source_knowledge) == recommender.build_no_product_reprompt(False, source_knowledge)
