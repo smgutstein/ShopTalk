@@ -94,8 +94,53 @@ def format_chosen_product(chosen_product):
     return "\n\n".join(lines)
 
 
+def format_top_products(top_products):
+    """Create a compact Markdown list of retrieved products."""
+    if not top_products:
+        return "No retrieved products reported."
+
+    lines = []
+    for rank, product in enumerate(top_products, start=1):
+        product_id = product.get("product_id", "unknown")
+        item_name = product.get("item_name", "Unknown product")
+        score = product.get("score")
+        if isinstance(score, (int, float)):
+            lines.append(f"{rank}. `{product_id}` — {item_name} — score: {score:.4f}")
+        else:
+            lines.append(f"{rank}. `{product_id}` — {item_name}")
+    return "\n".join(lines)
+
+
+def format_diagnostics_summary(result):
+    """Create a readable Markdown diagnostics summary for the Gradio UI."""
+    diagnostics = result.get("diagnostics") or {}
+    if not diagnostics:
+        return "No diagnostics reported yet."
+
+    timings = diagnostics.get("timings") or {}
+    total_seconds = timings.get("total_seconds")
+
+    lines = [
+        f"**Embedding mode:** {diagnostics.get('embedding_mode', 'unknown')}",
+        f"**Decision:** {diagnostics.get('decision', 'unknown')}",
+    ]
+
+    if diagnostics.get("chosen_pid"):
+        lines.append(f"**Chosen product ID:** `{diagnostics['chosen_pid']}`")
+    if diagnostics.get("llm_search_query"):
+        lines.append(f"**LLM search query:** {diagnostics['llm_search_query']}")
+    if isinstance(total_seconds, (int, float)):
+        lines.append(f"**Total response time:** {total_seconds:.3f} seconds")
+    if diagnostics.get("initial_llm_response"):
+        lines.append(f"**Raw LLM control response:** `{diagnostics['initial_llm_response']}`")
+
+    lines.append("\n**Top retrieved products:**")
+    lines.append(format_top_products(diagnostics.get("top_products") or []))
+    return "\n\n".join(lines)
+
+
 def format_diagnostics(result):
-    """Return diagnostics as pretty JSON, even before rich diagnostics exist."""
+    """Return diagnostics as pretty JSON for raw inspection."""
     diagnostics = result.get("diagnostics") or {}
     return json.dumps(diagnostics, indent=2, sort_keys=True)
 
@@ -111,7 +156,7 @@ def handle_message(user_text, image_path, chat_history, recommender):
 
     Returns:
         Tuple of ``(chat_history, cleared_text, cleared_image, product_markdown,
-        diagnostics_json)`` for Gradio outputs.
+        diagnostics_summary, diagnostics_json)`` for Gradio outputs.
     """
     chat_history = list(chat_history or [])
     clean_text = (user_text or "").strip()
@@ -123,6 +168,7 @@ def handle_message(user_text, image_path, chat_history, recommender):
             "",
             None,
             "Enter text, upload an image, or do both.",
+            "No diagnostics reported yet.",
             "{}",
         )
 
@@ -139,6 +185,7 @@ def handle_message(user_text, image_path, chat_history, recommender):
         "",
         None,
         format_chosen_product(result.get("chosen_product")),
+        format_diagnostics_summary(result),
         format_diagnostics(result),
     )
 
@@ -176,12 +223,13 @@ def create_gradio_interface(recommender):
 
         submit = gr.Button("Search")
         chosen_product = gr.Markdown(label="Chosen product")
-        diagnostics = gr.Code(label="Diagnostics", language="json")
+        diagnostics_summary = gr.Markdown(label="Diagnostics summary")
+        diagnostics = gr.Code(label="Raw diagnostics", language="json")
 
         submit.click(
             fn=lambda text, image, history: handle_message(text, image, history, recommender),
             inputs=[user_text, image_input, chatbot],
-            outputs=[chatbot, user_text, image_input, chosen_product, diagnostics],
+            outputs=[chatbot, user_text, image_input, chosen_product, diagnostics_summary, diagnostics],
         )
 
     return demo

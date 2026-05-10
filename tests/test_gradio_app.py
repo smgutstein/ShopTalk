@@ -28,14 +28,25 @@ class FakeRecommender:
                 "image_paths": ["test.jpg"],
             },
             "personality": "test",
-            "diagnostics": {"embedding_mode": "test"},
+            "diagnostics": {
+                "embedding_mode": "text_image",
+                "decision": "recommend",
+                "llm_search_query": "red shoes",
+                "chosen_pid": "product-1",
+                "initial_llm_response": "<product-1>",
+                "top_products": [
+                    {"product_id": "product-1", "item_name": "Test Product", "score": 0.875},
+                    {"product_id": "product-2", "item_name": "Backup Product", "score": 0.5},
+                ],
+                "timings": {"total_seconds": 1.23456},
+            },
         }
 
 
 def test_handle_message_passes_text_query_to_recommender():
     fake = FakeRecommender()
 
-    history, cleared_text, cleared_image, product_md, diagnostics = gradio_app.handle_message(
+    history, cleared_text, cleared_image, product_md, diagnostics_summary, diagnostics = gradio_app.handle_message(
         " red shoes ",
         None,
         [],
@@ -48,13 +59,17 @@ def test_handle_message_passes_text_query_to_recommender():
     assert cleared_image is None
     assert "Test Product" in product_md
     assert "0.8750" in product_md
-    assert '"embedding_mode": "test"' in diagnostics
+    assert "text_image" in diagnostics_summary
+    assert "recommend" in diagnostics_summary
+    assert "red shoes" in diagnostics_summary
+    assert "Test Product" in diagnostics_summary
+    assert '"embedding_mode": "text_image"' in diagnostics
 
 
 def test_handle_message_passes_image_only_query_to_recommender():
     fake = FakeRecommender()
 
-    history, _, _, product_md, _ = gradio_app.handle_message(
+    history, _, _, product_md, _, _ = gradio_app.handle_message(
         "",
         "/tmp/query.jpg",
         [],
@@ -69,7 +84,7 @@ def test_handle_message_passes_image_only_query_to_recommender():
 def test_handle_message_passes_text_and_image_query_to_recommender():
     fake = FakeRecommender()
 
-    history, _, _, _, _ = gradio_app.handle_message(
+    history, _, _, _, _, _ = gradio_app.handle_message(
         "match this style",
         "/tmp/query.jpg",
         [],
@@ -83,7 +98,7 @@ def test_handle_message_passes_text_and_image_query_to_recommender():
 def test_handle_message_rejects_empty_submission_without_calling_recommender():
     fake = FakeRecommender()
 
-    history, cleared_text, cleared_image, product_md, diagnostics = gradio_app.handle_message(
+    history, cleared_text, cleared_image, product_md, diagnostics_summary, diagnostics = gradio_app.handle_message(
         "   ",
         None,
         [("previous", "reply")],
@@ -95,6 +110,7 @@ def test_handle_message_rejects_empty_submission_without_calling_recommender():
     assert cleared_text == ""
     assert cleared_image is None
     assert "Enter text" in product_md
+    assert diagnostics_summary == "No diagnostics reported yet."
     assert diagnostics == "{}"
 
 
@@ -110,3 +126,20 @@ def test_latest_ai_message_returns_last_ai_content():
     ]
 
     assert gradio_app.latest_ai_message(conversation) == "second"
+
+
+def test_format_diagnostics_summary_handles_empty_result():
+    assert gradio_app.format_diagnostics_summary({}) == "No diagnostics reported yet."
+
+
+def test_format_top_products_handles_scores_and_missing_scores():
+    markdown = gradio_app.format_top_products([
+        {"product_id": "p1", "item_name": "One", "score": 0.12345},
+        {"product_id": "p2", "item_name": "Two"},
+    ])
+
+    assert "`p1`" in markdown
+    assert "One" in markdown
+    assert "0.1235" in markdown
+    assert "`p2`" in markdown
+    assert "Two" in markdown
