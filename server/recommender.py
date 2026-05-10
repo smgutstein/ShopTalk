@@ -267,7 +267,11 @@ def determine_embedding_mode(user_input, image_path):
 
 
 def summarize_top_products(found_products):
-    """Create compact diagnostics for retrieved products."""
+    """Create compact diagnostics for retrieved products.
+
+    Include image paths/URLs so UIs can show retrieval thumbnails alongside
+    scores. These are already lightweight strings, not image payloads.
+    """
     summaries = []
     for product_id, product in found_products.items():
         summaries.append(
@@ -276,6 +280,8 @@ def summarize_top_products(found_products):
                 "item_name": product.get("item_name"),
                 "score": product.get("score"),
                 "product_type": product.get("product_type"),
+                "image_paths": list(product.get("image_paths") or []),
+                "image_urls": list(product.get("image_urls") or []),
             }
         )
     return summaries

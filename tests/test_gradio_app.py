@@ -35,8 +35,18 @@ class FakeRecommender:
                 "chosen_pid": "product-1",
                 "initial_llm_response": "<product-1>",
                 "top_products": [
-                    {"product_id": "product-1", "item_name": "Test Product", "score": 0.875},
-                    {"product_id": "product-2", "item_name": "Backup Product", "score": 0.5},
+                    {
+                        "product_id": "product-1",
+                        "item_name": "Test Product",
+                        "score": 0.875,
+                        "image_paths": ["test.jpg", "detail.jpg"],
+                    },
+                    {
+                        "product_id": "product-2",
+                        "item_name": "Backup Product",
+                        "score": 0.5,
+                        "image_paths": ["backup.jpg", "test.jpg"],
+                    },
                 ],
                 "timings": {"total_seconds": 1.23456},
             },
@@ -46,7 +56,7 @@ class FakeRecommender:
 def test_handle_message_passes_text_query_to_recommender():
     fake = FakeRecommender()
 
-    history, cleared_text, cleared_image, product_md, product_images, diagnostics_summary, diagnostics = gradio_app.handle_message(
+    history, cleared_text, cleared_image, product_md, product_images, top_product_images, diagnostics_summary, diagnostics = gradio_app.handle_message(
         " red shoes ",
         None,
         [],
@@ -60,6 +70,7 @@ def test_handle_message_passes_text_query_to_recommender():
     assert "Test Product" in product_md
     assert "0.8750" in product_md
     assert product_images == ["test.jpg", "detail.jpg"]
+    assert top_product_images == ["test.jpg", "detail.jpg", "backup.jpg"]
     assert "text_image" in diagnostics_summary
     assert "recommend" in diagnostics_summary
     assert "red shoes" in diagnostics_summary
@@ -70,7 +81,7 @@ def test_handle_message_passes_text_query_to_recommender():
 def test_handle_message_passes_image_only_query_to_recommender():
     fake = FakeRecommender()
 
-    history, _, _, product_md, product_images, _, _ = gradio_app.handle_message(
+    history, _, _, product_md, product_images, top_product_images, _, _ = gradio_app.handle_message(
         "",
         "/tmp/query.jpg",
         [],
@@ -81,12 +92,13 @@ def test_handle_message_passes_image_only_query_to_recommender():
     assert history == [("[image uploaded]", "Here is a recommendation.")]
     assert "Test Product" in product_md
     assert product_images == ["test.jpg", "detail.jpg"]
+    assert top_product_images == ["test.jpg", "detail.jpg", "backup.jpg"]
 
 
 def test_handle_message_passes_text_and_image_query_to_recommender():
     fake = FakeRecommender()
 
-    history, _, _, _, _, _, _ = gradio_app.handle_message(
+    history, _, _, _, _, _, _, _ = gradio_app.handle_message(
         "match this style",
         "/tmp/query.jpg",
         [],
@@ -100,7 +112,7 @@ def test_handle_message_passes_text_and_image_query_to_recommender():
 def test_handle_message_rejects_empty_submission_without_calling_recommender():
     fake = FakeRecommender()
 
-    history, cleared_text, cleared_image, product_md, product_images, diagnostics_summary, diagnostics = gradio_app.handle_message(
+    history, cleared_text, cleared_image, product_md, product_images, top_product_images, diagnostics_summary, diagnostics = gradio_app.handle_message(
         "   ",
         None,
         [("previous", "reply")],
@@ -113,6 +125,7 @@ def test_handle_message_rejects_empty_submission_without_calling_recommender():
     assert cleared_image is None
     assert "Enter text" in product_md
     assert product_images == []
+    assert top_product_images == []
     assert diagnostics_summary == "No diagnostics reported yet."
     assert diagnostics == "{}"
 
@@ -127,6 +140,23 @@ def test_chosen_product_image_paths_returns_local_image_paths():
         "two.jpg",
     ]
     assert gradio_app.chosen_product_image_paths({}) == []
+
+
+
+
+def test_top_product_image_paths_returns_unique_retrieval_images_in_order():
+    result = {
+        "diagnostics": {
+            "top_products": [
+                {"image_paths": ["one.jpg", "shared.jpg"]},
+                {"image_paths": ["two.jpg", "shared.jpg"]},
+            ]
+        }
+    }
+
+    assert gradio_app.top_product_image_paths(result) == ["one.jpg", "shared.jpg", "two.jpg"]
+    assert gradio_app.top_product_image_paths(result, max_images=2) == ["one.jpg", "shared.jpg"]
+    assert gradio_app.top_product_image_paths({}) == []
 
 
 def test_latest_ai_message_returns_last_ai_content():

@@ -51,12 +51,16 @@ def test_summarize_top_products_keeps_compact_retrieval_details():
             "item_name": "Red Shoes",
             "score": 0.91,
             "product_type": "shoes",
+            "image_paths": ["red.jpg"],
+            "image_urls": ["/static/images/red.jpg"],
         },
         {
             "product_id": "pid-2",
             "item_name": "Blue Shoes",
             "score": 0.82,
             "product_type": "shoes",
+            "image_paths": ["blue.jpg"],
+            "image_urls": ["/static/images/blue.jpg"],
         },
     ]
 
@@ -87,6 +91,8 @@ def test_build_recommendation_diagnostics():
     assert diagnostics["timings"] == {"total_seconds": 1.25}
     assert diagnostics["top_products"][0]["product_id"] == "pid-1"
     assert diagnostics["top_products"][0]["score"] == 0.91
+    assert diagnostics["top_products"][0]["image_paths"] == ["red.jpg"]
+    assert diagnostics["top_products"][0]["image_urls"] == ["/static/images/red.jpg"]
 
 
 def make_minimal_recommender(found_products, initial_llm_response="<pid-1>"):
