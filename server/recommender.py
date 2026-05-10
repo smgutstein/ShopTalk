@@ -135,6 +135,19 @@ def image_paths_to_static_urls(image_paths):
     return [image_path_to_static_url(image_path) for image_path in image_paths]
 
 
+def combine_query_embeddings(embeddings):
+    """Average one or more query embeddings and return a normalized vector."""
+    if not embeddings:
+        raise ValueError("At least one query embedding is required.")
+
+    embedding_matrix = np.vstack([np.asarray(embedding, dtype=np.float32) for embedding in embeddings])
+    combined = embedding_matrix.mean(axis=0)
+    norm = np.linalg.norm(combined)
+    if norm == 0:
+        raise ValueError("Cannot combine query embeddings with zero vector norm.")
+    return combined / norm
+
+
 def load_image_paths_csv(images_csv_path):
     """Load image-id to image-path mappings from ``images.csv``.
 
@@ -338,6 +351,21 @@ class QueryEmbedder(Embeddings):
             logging.info(f"after normalization.  : {normalized.shape}")
         return normalized.cpu().numpy().flatten()
 
+    def embed_image(self, image_path):
+        logging.info(f"embedding one image: {image_path}")
+        inputs = {
+            ModalityType.VISION: data.load_and_transform_vision_data(
+                [str(image_path)],
+                self.device,
+            )
+        }
+        with torch.no_grad():
+            outputs = self.ibind_model(inputs)
+            normalized = normalize(outputs[ModalityType.VISION])
+            logging.info(f"image embedding's shape: {outputs[ModalityType.VISION].shape}")
+            logging.info(f"after normalization.  : {normalized.shape}")
+        return normalized.cpu().numpy().flatten()
+
 
 class ShopTalkRecommender:
     def __init__(
@@ -471,14 +499,26 @@ class ShopTalkRecommender:
             f.write(f"Chosen Personality: {self.chosen_personality}\n")
             f.write("\n\n")
 
-    def generate_reply(self, user_input):
+    def generate_reply(self, user_input=None, image_path=None):
+        if not user_input and image_path is None:
+            raise ValueError("generate_reply requires user_input, image_path, or both.")
+
         logging.info(f"\n\n\nUser input: {user_input}")
+        if image_path is not None:
+            logging.info(f"User image input: {image_path}")
         start_time = datetime.now()
 
-        self.conversation_history.append(HumanMessage(content=user_input))
+        message_content = user_input or "The user uploaded an image and wants product recommendations based on it."
+        if user_input and image_path is not None:
+            message_content = f"{user_input}\n\n[The user also uploaded an image for the product search.]"
+        self.conversation_history.append(HumanMessage(content=message_content))
 
-        llm_search_query = self._build_search_query()
-        found_products = self._search_products(llm_search_query, top_k=10)
+        llm_search_query = self._build_search_query() if user_input else None
+        found_products = self._search_products(
+            llm_search_query,
+            top_k=10,
+            image_path=image_path,
+        )
         source_knowledge = self._format_source_knowledge(found_products)
 
         initial_llm_response = self._choose_product_or_next_action(
@@ -536,8 +576,14 @@ class ShopTalkRecommender:
         logging.info(f"LLM's suggested search query: {llm_search_query}")
         return llm_search_query
 
-    def _search_products(self, search_query, top_k=10):
-        embedded_query = self.query_embedder.embed_query(search_query).flatten().tolist()
+    def _search_products(self, search_query=None, top_k=10, image_path=None):
+        query_embeddings = []
+        if search_query:
+            query_embeddings.append(self.query_embedder.embed_query(search_query).flatten())
+        if image_path is not None:
+            query_embeddings.append(self.query_embedder.embed_image(image_path).flatten())
+
+        embedded_query = combine_query_embeddings(query_embeddings).tolist()
         found_products = self.product_store.search(
             embedded_query=embedded_query,
             top_k=top_k,
