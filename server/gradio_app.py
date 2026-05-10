@@ -7,6 +7,7 @@ image-query support without changing the existing Flask route behavior.
 
 import argparse
 import json
+from pathlib import Path
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run the ShopTalk Gradio application.")
@@ -77,6 +78,36 @@ def format_user_display(user_text, image_path):
     if image_path is not None:
         return "[image uploaded]"
     return ""
+
+
+def normalize_image_input(image_input):
+    """Normalize Gradio image input into a local filepath or ``None``.
+
+    With ``gr.Image(type="filepath")``, Gradio usually returns a string path.
+    Some Gradio versions/components may hand back a ``pathlib.Path`` or a small
+    metadata dict containing a path-like value. Keeping this normalization in one
+    helper makes the callback easier to test and keeps the recommender interface
+    stable.
+    """
+    if image_input is None:
+        return None
+
+    if isinstance(image_input, (str, Path)):
+        image_path = str(image_input).strip()
+        return image_path or None
+
+    if isinstance(image_input, dict):
+        for key in ("path", "name", "file", "filepath"):
+            value = image_input.get(key)
+            if isinstance(value, (str, Path)):
+                image_path = str(value).strip()
+                if image_path:
+                    return image_path
+
+    raise TypeError(
+        "Unsupported Gradio image input type. Expected a filepath string, "
+        "pathlib.Path, metadata dict, or None."
+    )
 
 
 def format_chosen_product(chosen_product):
@@ -183,8 +214,9 @@ def handle_message(user_text, image_path, chat_history, recommender):
     chat_history = list(chat_history or [])
     clean_text = (user_text or "").strip()
     text_arg = clean_text or None
+    normalized_image_path = normalize_image_input(image_path)
 
-    if not text_arg and image_path is None:
+    if not text_arg and normalized_image_path is None:
         return (
             chat_history,
             "",
@@ -198,10 +230,10 @@ def handle_message(user_text, image_path, chat_history, recommender):
 
     result = recommender.generate_reply(
         user_input=text_arg,
-        image_path=image_path,
+        image_path=normalized_image_path,
     )
     assistant_text = latest_ai_message(result.get("conversation", []))
-    user_display = format_user_display(text_arg, image_path)
+    user_display = format_user_display(text_arg, normalized_image_path)
     chat_history.append((user_display, assistant_text))
     chosen_product = result.get("chosen_product")
 

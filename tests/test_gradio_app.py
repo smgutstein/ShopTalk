@@ -184,3 +184,34 @@ def test_format_top_products_handles_scores_and_missing_scores():
     assert "0.1235" in markdown
     assert "`p2`" in markdown
     assert "Two" in markdown
+
+
+def test_normalize_image_input_accepts_common_gradio_shapes():
+    assert gradio_app.normalize_image_input(None) is None
+    assert gradio_app.normalize_image_input(" /tmp/query.jpg ") == "/tmp/query.jpg"
+    assert gradio_app.normalize_image_input(Path("/tmp/query.jpg")) == "/tmp/query.jpg"
+    assert gradio_app.normalize_image_input({"path": "/tmp/query.jpg"}) == "/tmp/query.jpg"
+    assert gradio_app.normalize_image_input({"name": "/tmp/from-name.jpg"}) == "/tmp/from-name.jpg"
+
+
+def test_normalize_image_input_rejects_unsupported_shape():
+    try:
+        gradio_app.normalize_image_input(["/tmp/query.jpg"])
+    except TypeError as exc:
+        assert "Unsupported Gradio image input type" in str(exc)
+    else:
+        raise AssertionError("Expected TypeError for unsupported image input shape")
+
+
+def test_handle_message_normalizes_image_metadata_dict_before_calling_recommender():
+    fake = FakeRecommender()
+
+    history, _, _, _, _, _, _, _ = gradio_app.handle_message(
+        "match this",
+        {"path": "/tmp/query.jpg"},
+        [],
+        fake,
+    )
+
+    assert fake.calls == [{"user_input": "match this", "image_path": "/tmp/query.jpg"}]
+    assert history == [("match this\n\n[image uploaded]", "Here is a recommendation.")]
