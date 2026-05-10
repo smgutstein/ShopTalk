@@ -179,6 +179,15 @@ def serialize_convo(conversation_history):
     ]
 
 
+def build_search_query_prompt():
+    """Build the prompt that asks the LLM for compact vector-search terms."""
+    return (
+        "Based on the current conversation, what sort of product should we search for? "
+        "Please ignore your personality and limit your answer to a maximum of 10 words - "
+        "words an automated search system would find useful."
+    )
+
+
 def format_source_knowledge(found_products):
     """Format product search results as source text for the LLM."""
     return "\n\n;\n\n".join(
@@ -520,13 +529,9 @@ class ShopTalkRecommender:
         }
 
     def _build_search_query(self):
-        caption_please = (
-            "Based on the current conversation, what sort of product should we search for? "
-            "Please ignore your personality and limit your answer to a maximum of 10 words - "
-            "words an automated search system would find useful."
-        )
+        search_query_prompt = build_search_query_prompt()
         llm_search_query = self.chat_openai.invoke(
-            self.conversation_history + [SystemMessage(content=caption_please)]
+            self.conversation_history + [SystemMessage(content=search_query_prompt)]
         ).content
         logging.info(f"LLM's suggested search query: {llm_search_query}")
         return llm_search_query
