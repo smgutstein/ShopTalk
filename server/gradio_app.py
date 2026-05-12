@@ -7,6 +7,7 @@ image-query support without changing the existing Flask route behavior.
 
 import argparse
 import json
+import logging
 from pathlib import Path
 
 def parse_args():
@@ -124,26 +125,55 @@ def format_chosen_product(chosen_product):
         lines.append(f"**Images:** {len(chosen_product['image_paths'])}")
     return "\n\n".join(lines)
 
+def gradio_image_path(image_path):
+    image_path = str(image_path).replace("\\", "/").lstrip("/")
+
+    candidates = [
+        Path(image_path),
+        Path("./server/static/images") / image_path,
+        Path("./static/images") / image_path,
+    ]
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+
+    print(f"DEBUG image not found: {image_path}")
+    print("DEBUG checked:")
+    for candidate in candidates:
+        print("   ", candidate.resolve())
+
+    return None
 
 def chosen_product_image_paths(chosen_product):
     """Return local image paths suitable for Gradio image/gallery components."""
     if not chosen_product:
         return []
-    return list(chosen_product.get("image_paths") or [])
+    
+    image_list = chosen_product.get("image_paths") or []
+    normed_image_list = []
+    for curr_image_path in image_list:
+        temp=gradio_image_path(curr_image_path)
+        if temp is not None:
+            normed_image_list.append(temp)
+
+
+    return list(normed_image_list)
 
 
 def top_product_image_paths(result, max_images=12):
     """Return local image paths for retrieved products in diagnostics order."""
     diagnostics = result.get("diagnostics") or {}
     top_products = diagnostics.get("top_products") or []
-    image_paths = []
+    normed_image_paths = []
     for product in top_products:
-        for image_path in product.get("image_paths") or []:
-            if image_path not in image_paths:
-                image_paths.append(image_path)
-            if len(image_paths) >= max_images:
-                return image_paths
-    return image_paths
+        for curr_image_path in product.get("image_paths") or []:
+            normed_image_path=gradio_image_path(curr_image_path)
+            if normed_image_path not in normed_image_paths:
+                normed_image_paths.append(normed_image_path)
+            if len(normed_image_paths) >= max_images:
+                return normed_image_paths
+    return normed_image_paths
 
 
 def format_top_products(top_products):
@@ -234,7 +264,8 @@ def handle_message(user_text, image_path, chat_history, recommender):
     )
     assistant_text = latest_ai_message(result.get("conversation", []))
     user_display = format_user_display(text_arg, normalized_image_path)
-    chat_history.append((user_display, assistant_text))
+    chat_history.append({"role": "user", "content": user_display})
+    chat_history.append({"role": "assistant", "content": assistant_text})
     chosen_product = result.get("chosen_product")
 
     return (
