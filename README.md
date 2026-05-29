@@ -59,3 +59,4 @@ Download the ~3 GB file [`abo-images-small.tar`](https://amazon-berkeley-objects
 This step, a pre-requisite to running the server.
 
 Run `python generate_vector_db.py`. Various flags are available, though the defaults are suitable for typical use. This script has an updating progress bar that shows process of embedding ~25k total products. It may take 1-2 hours to complete on a highly capable machine.
+
