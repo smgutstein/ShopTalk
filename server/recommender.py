@@ -1,16 +1,17 @@
 import csv
+import faiss
 import json
 import logging
+import numpy as np
 import os
 import random
+import torch
 import warnings
+
 from datetime import datetime
+from dotenv import load_dotenv
 from pathlib import Path
 
-import faiss
-import numpy as np
-import torch
-from dotenv import load_dotenv
 from imagebind import data
 from imagebind.models.imagebind_model import ModalityType, imagebind_huge
 from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
