@@ -10,6 +10,7 @@ import json
 import logging
 from pathlib import Path
 
+from .recommender_core.shop_talk_recommender import ShopTalkRecommender
 from .shoptalk_paths import(
     SERVER_DIR,
     PROJECT_ROOT,
@@ -297,16 +298,16 @@ def handle_message(user_text, image_path, chat_history, recommender):
     )
 
 
-def build_recommender_from_args(args):
-    """Build the backend recommender using the Flask server's shared factory."""
-    from .server import build_recommender
-
-    return build_recommender(args)
+#def build_recommender_from_args(args):
+#    """Build the backend recommender using the Flask server's shared factory."""
+#    from .server import build_recommender
+#
+#    return build_recommender(args)
 
 
 def configure_runtime_logging():
     """Configure logging using the shared Flask server helper."""
-    from .server import configure_logging
+    from .recommender_core.utils import configure_logging
 
     configure_logging()
 
@@ -356,7 +357,7 @@ def create_gradio_interface(recommender):
 def main():
     args = parse_args()
     configure_runtime_logging()
-    recommender = build_recommender_from_args(args)
+    recommender = ShopTalkRecommender.from_args(args)
     demo = create_gradio_interface(recommender)
     demo.launch(
         share=args.share,

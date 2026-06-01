@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -40,3 +41,9 @@ def serialize_convo(conversation_history):
         {"type": msg.__class__.__name__, "content": msg.content}
         for msg in conversation_history
     ]
+
+def configure_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )

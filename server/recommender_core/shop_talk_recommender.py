@@ -87,6 +87,19 @@ class ShopTalkRecommender:
         if self.debug and Path("debug.txt").exists():
             self._initialize_debug_file()
 
+    @classmethod
+    def from_args(cls, args):
+        return cls(
+            personality_index=args.personality,
+            debug=args.debug,
+            force_cpu=args.cpu,
+            model_name=args.model,
+            vector_db_output_dir=args.vector_db_output_dir,
+            vector_backend=args.vector_backend,
+            blurbs_path=args.product_blurbs,
+            images_csv_path=args.images_csv,
+        )
+
     def _load_imagebind_model(self):
         logging.info("Loading ImageBind model...")
         start_time = datetime.now()
