@@ -3,7 +3,7 @@ import logging
 
 from flask import Flask, jsonify, render_template, request
 
-from recommender import ShopTalkRecommender
+from .recommender import ShopTalkRecommender
 
 
 def parse_args():

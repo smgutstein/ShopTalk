@@ -10,6 +10,23 @@ import json
 import logging
 from pathlib import Path
 
+from .shoptalk_paths import(
+    SERVER_DIR,
+    PROJECT_ROOT,
+
+    DATA_DIR,
+    VECTOR_DB_DIR,
+    PRODUCT_DATA_DIR,
+
+    IMAGES_CSV,
+    FAISS_INDEX_PATH,
+    BLURBS_PATH,
+    PRODUCT_IDS_PATH,
+
+    STATIC_DIR,
+    STATIC_IMAGES_DIR,
+)
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Run the ShopTalk Gradio application.")
     parser.add_argument("-p", "--personality", type=int, default=-1, help="Choose a personality")
@@ -282,14 +299,14 @@ def handle_message(user_text, image_path, chat_history, recommender):
 
 def build_recommender_from_args(args):
     """Build the backend recommender using the Flask server's shared factory."""
-    from server import build_recommender
+    from .server import build_recommender
 
     return build_recommender(args)
 
 
 def configure_runtime_logging():
     """Configure logging using the shared Flask server helper."""
-    from server import configure_logging
+    from .server import configure_logging
 
     configure_logging()
 
