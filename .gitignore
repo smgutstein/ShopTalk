@@ -19,3 +19,9 @@ artifacts/
 EDA/product_blurbs/combined_blurb_dict.json
 images.csv
 *patch
+*orig
+\#*\#
+*txt
+*zip
+*pth
+data
