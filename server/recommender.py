@@ -14,6 +14,7 @@ from pathlib import Path
 
 from imagebind import data
 from imagebind.models.imagebind_model import ModalityType, imagebind_huge
+
 from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
 from langchain_core.embeddings.embeddings import Embeddings
 from langchain_openai import ChatOpenAI
