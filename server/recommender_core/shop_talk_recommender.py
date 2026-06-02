@@ -53,6 +53,7 @@ class ShopTalkRecommender:
         model_name="gpt-4o",
         vector_db_output_dir="artifacts/vector_db",
         vector_backend="faiss",
+        top_k=10,
         index_path=None,
         blurbs_path="EDA/product_blurbs/combined_blurb_dict.json",
         product_ids_path=None,
@@ -74,7 +75,7 @@ class ShopTalkRecommender:
             blurbs_path=blurbs_path,
             product_ids_path=product_ids_path,
         )
-        self.top_k = 10
+        self.top_k = top_k
 
         self.ibind_model, self.embed_load_time = self._load_imagebind_model()
         self.query_embedder = QueryEmbedder(self.ibind_model, self.device)
@@ -106,6 +107,7 @@ class ShopTalkRecommender:
             model_name=args.model,
             vector_db_output_dir=args.vector_db_output_dir,
             vector_backend=args.vector_backend,
+            top_k=args.top_k,
             blurbs_path=args.product_blurbs,
             images_csv_path=args.images_csv,
         )

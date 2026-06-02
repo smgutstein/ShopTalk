@@ -48,6 +48,12 @@ def parse_args():
         help="Vector backend to load for serving.",
     )
     parser.add_argument(
+        "--top_k",
+        type=int,
+        default=10,
+        help="Number of top options to keep when querying db.",
+     )
+    parser.add_argument(
         "--product_blurbs",
         type=str,
         default="EDA/product_blurbs/combined_blurb_dict.json",
