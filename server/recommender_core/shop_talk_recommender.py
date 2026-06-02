@@ -429,36 +429,6 @@ class ShopTalkRecommender:
         return llm_response
 
 
-    def _build_final_response(
-        self,
-        initial_llm_response,
-        chosen_pid,
-        chosen_product,
-        dive_deeper,
-        source_knowledge,
-    ):
-        ai_ans = AIMessage(content=initial_llm_response)
-
-        if chosen_pid:
-            reprompt_str = (
-                "Let's continue the conversation while recommending the following product "
-                "(you don't need to describe every detail of the product, just whatever seems relevant "
-                "for the buyer based on this conversation): "
-            )
-            reprompt_str += chosen_product["llm_str"]
-            log_message = "No-PID LLM Response"
-        else:
-            reprompt_str, log_message = build_no_product_reprompt(
-                dive_deeper=dive_deeper,
-                source_knowledge=source_knowledge,
-            )
-
-        reprompt = SystemMessage(content=reprompt_str)
-        temp_history = self.conversation_history + [ai_ans, reprompt]
-        final_llm_response = self.chat_openai.invoke(temp_history).content
-        logging.info(f"{log_message}: {final_llm_response}")
-        return final_llm_response
-
     def _write_debug_info(
         self,
         user_input,

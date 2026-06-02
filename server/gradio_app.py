@@ -162,11 +162,12 @@ def gradio_image_path(image_path):
         if candidate.is_file():
             return str(candidate)
 
-    print(f"DEBUG image not found: {image_path}")
-    print("DEBUG checked:")
-    for candidate in candidates:
-        print("   ", candidate.resolve())
-
+    logging.warning(f"DEBUG image not found: {image_path}")
+    logging.warning("DEBUG checked:")
+    logging.warning("Image not found: %s; checked paths: %s",
+                    image_path,
+                    [str(candidate.resolve()) for candidate in candidates],
+                    )
     return None
 
 def chosen_product_image_paths(chosen_product):
@@ -302,13 +303,6 @@ def handle_message(user_text, image_path, chat_history, recommender):
         format_diagnostics_summary(result),
         format_diagnostics(result),
     )
-
-
-#def build_recommender_from_args(args):
-#    """Build the backend recommender using the Flask server's shared factory."""
-#    from .server import build_recommender
-#
-#    return build_recommender(args)
 
 
 def configure_runtime_logging():
