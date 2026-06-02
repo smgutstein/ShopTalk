@@ -1,9 +1,4 @@
-"""Gradio UI for the ShopTalk recommender.
-
-This module intentionally lives beside the Flask app instead of replacing it.
-Both UIs use the same ``ShopTalkRecommender`` backend, so the Gradio app can add
-image-query support without changing the existing Flask route behavior.
-"""
+"""Gradio UI for the ShopTalk recommender."""
 
 import argparse
 import json
@@ -11,21 +6,12 @@ import logging
 from pathlib import Path
 
 from .recommender_core.shop_talk_recommender import ShopTalkRecommender
-from .shoptalk_paths import(
-    SERVER_DIR,
-    PROJECT_ROOT,
-
-    DATA_DIR,
-    VECTOR_DB_DIR,
-    PRODUCT_DATA_DIR,
-
+from .shoptalk_paths import (
+    COMBINED_BLURBS_PATH,
+    DEFAULT_VECTOR_BACKEND,
     IMAGES_CSV,
-    FAISS_INDEX_PATH,
-    BLURBS_PATH,
-    PRODUCT_IDS_PATH,
-
-    STATIC_DIR,
     STATIC_IMAGES_DIR,
+    VECTOR_DB_OUTPUT_DIR,
 )
 
 def parse_args():
@@ -37,13 +23,13 @@ def parse_args():
     parser.add_argument(
         "--vector_db_output_dir",
         type=str,
-        default="artifacts/vector_db",
+        default=str(VECTOR_DB_OUTPUT_DIR),
         help="Base directory containing generated vector DB artifacts.",
     )
     parser.add_argument(
         "--vector_backend",
         type=str,
-        default="faiss",
+        default=DEFAULT_VECTOR_BACKEND,
         choices=["faiss"],
         help="Vector backend to load for serving.",
     )
@@ -56,13 +42,13 @@ def parse_args():
     parser.add_argument(
         "--product_blurbs",
         type=str,
-        default="EDA/product_blurbs/combined_blurb_dict.json",
+        default=str(COMBINED_BLURBS_PATH),
         help="Path to the product blurbs JSON file.",
     )
     parser.add_argument(
         "--images_csv",
         type=str,
-        default="images.csv",
+        default=str(IMAGES_CSV),
         help="Path to the image ID mapping CSV file.",
     )
     parser.add_argument(
@@ -150,24 +136,22 @@ def format_chosen_product(chosen_product):
     return "\n\n".join(lines)
 
 def gradio_image_path(image_path):
-    image_path = str(image_path).replace("\\", "/").lstrip("/")
+    normalized_image_path = str(image_path).replace("\\", "/").lstrip("/")
 
     candidates = [
         Path(image_path),
-        Path("./server/static/images") / image_path,
-        Path("./static/images") / image_path,
+        STATIC_IMAGES_DIR / normalized_image_path,
     ]
 
     for candidate in candidates:
         if candidate.is_file():
             return str(candidate)
 
-    logging.warning(f"DEBUG image not found: {image_path}")
-    logging.warning("DEBUG checked:")
-    logging.warning("Image not found: %s; checked paths: %s",
-                    image_path,
-                    [str(candidate.resolve()) for candidate in candidates],
-                    )
+    logging.warning(
+        "Image not found: %s; checked paths: %s",
+        image_path,
+        [str(candidate.resolve()) for candidate in candidates],
+    )
     return None
 
 def chosen_product_image_paths(chosen_product):
@@ -193,7 +177,9 @@ def top_product_image_paths(result, max_images=12):
     normed_image_paths = []
     for product in top_products:
         for curr_image_path in product.get("image_paths") or []:
-            normed_image_path=gradio_image_path(curr_image_path)
+            normed_image_path = gradio_image_path(curr_image_path)
+            if normed_image_path is None:
+                continue
             if normed_image_path not in normed_image_paths:
                 normed_image_paths.append(normed_image_path)
             if len(normed_image_paths) >= max_images:
@@ -306,7 +292,7 @@ def handle_message(user_text, image_path, chat_history, recommender):
 
 
 def configure_runtime_logging():
-    """Configure logging using the shared Flask server helper."""
+    """Configure runtime logging for the Gradio app."""
     from .recommender_core.utils import configure_logging
 
     configure_logging()
@@ -322,7 +308,7 @@ def create_gradio_interface(recommender):
 
     with gr.Blocks(title="ShopTalk") as demo:
         gr.Markdown("# ShopTalk multimodal recommender")
-        gr.Markdown("Search by text, image, or both. The backend uses the same recommender as the Flask app.")
+        gr.Markdown("Search by text, image, or both.")
 
         chatbot = gr.Chatbot(label="Conversation")
         with gr.Row():

@@ -43,6 +43,14 @@ from .utils import (
 )
 from .vector_query import combine_query_embeddings
 
+from ..shoptalk_paths import (
+    COMBINED_BLURBS_PATH,
+    DEBUG_FILE,
+    DEFAULT_VECTOR_BACKEND,
+    IMAGES_CSV,
+    VECTOR_DB_OUTPUT_DIR,
+)
+
 
 class ShopTalkRecommender:
     def __init__(
@@ -51,13 +59,13 @@ class ShopTalkRecommender:
         debug=False,
         force_cpu=False,
         model_name="gpt-4o",
-        vector_db_output_dir="artifacts/vector_db",
-        vector_backend="faiss",
+        vector_db_output_dir=VECTOR_DB_OUTPUT_DIR,
+        vector_backend=DEFAULT_VECTOR_BACKEND,
         top_k=10,
         index_path=None,
-        blurbs_path="EDA/product_blurbs/combined_blurb_dict.json",
+        blurbs_path=COMBINED_BLURBS_PATH,
         product_ids_path=None,
-        images_csv_path="images.csv",
+        images_csv_path=IMAGES_CSV,
     ):
         self.debug = debug
 
@@ -95,7 +103,7 @@ class ShopTalkRecommender:
             images_csv_path
         )
 
-        if self.debug and Path("debug.txt").exists():
+        if self.debug and DEBUG_FILE.exists():
             self._initialize_debug_file()
 
     @classmethod
@@ -184,8 +192,8 @@ class ShopTalkRecommender:
         return image_id_to_path, load_time
 
     def _initialize_debug_file(self):
-        Path("debug.txt").unlink()
-        with open("debug.txt", "a") as f:
+        DEBUG_FILE.unlink()
+        with open(DEBUG_FILE, "a") as f:
             f.write(f"Embedding Load Time: {self.embed_load_time}\n")
             f.write(f"DB Load Time: {self.db_load_time}\n")
             f.write(f"Image Path Load Time: {self.image_path_load_time}\n")
@@ -439,7 +447,7 @@ class ShopTalkRecommender:
         llm_response,
         found_products,
     ):
-        with open("debug.txt", "a") as f:
+        with open(DEBUG_FILE, "a") as f:
             f.write(f"User input: {user_input}\n")
             if chosen_product:
                 f.write(f"  Chosen result: {chosen_product['item_name']}\n")
