@@ -12,6 +12,7 @@ from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from .diagnostics import build_recommendation_diagnostics
+
 from .llm_prompts import (
     build_augmented_prompt,
     build_no_product_reprompt,
@@ -20,12 +21,20 @@ from .llm_prompts import (
 )
 from .parsing import (
     determine_embedding_mode,
-    extract_bracketed_choice,
     parse_product_choice,
 )
 from .product_images import load_image_paths_csv
 from .product_vector_store import ProductVectorStore
+
 from .query_embedder import QueryEmbedder
+
+from .reply_types import (
+    ProductSearchResult,
+    RecommendationDecision,
+    ReplyRequest,
+    ReplyTiming
+)
+
 from .utils import (
     PERSONALITIES,
     elapsed_time_string,
@@ -65,6 +74,7 @@ class ShopTalkRecommender:
             blurbs_path=blurbs_path,
             product_ids_path=product_ids_path,
         )
+        self.top_k = 10
 
         self.ibind_model, self.embed_load_time = self._load_imagebind_model()
         self.query_embedder = QueryEmbedder(self.ibind_model, self.device)
@@ -181,82 +191,200 @@ class ShopTalkRecommender:
             f.write("\n\n")
 
     def generate_reply(self, user_input=None, image_path=None):
-        if not user_input and image_path is None:
-            raise ValueError("generate_reply requires user_input, image_path, or both.")
+        start_time = datetime.now()
 
         logging.info(f"\n\n\nUser input: {user_input}")
         if image_path is not None:
             logging.info(f"User image input: {image_path}")
-        start_time = datetime.now()
-        embedding_mode = determine_embedding_mode(user_input, image_path)
 
-        message_content = user_input or "The user uploaded an image and wants product recommendations based on it."
-        if user_input and image_path is not None:
-            message_content = f"{user_input}\n\n[The user also uploaded an image for the product search.]"
-        self.conversation_history.append(HumanMessage(content=message_content))
-
-        llm_search_query = self._build_search_query() if user_input else None
-        found_products = self._search_products(
-            llm_search_query,
-            top_k=10,
+        request = self._prepare_reply_request(
+            user_input=user_input,
             image_path=image_path,
         )
-        source_knowledge = self._format_source_knowledge(found_products)
 
-        initial_llm_response = self._choose_product_or_next_action(
+        search_result = self._search_for_products(request)
+
+        decision = self._decide_next_response(search_result)
+
+        final_llm_response = self._generate_final_response(
+            decision=decision,
+            source_knowledge=search_result.source_knowledge,
+        )
+
+        timing = self._measure_reply_time(start_time)
+
+        diagnostics = self._build_diagnostics(
+            request=request,
+            search_result=search_result,
+            decision=decision,
+            timing=timing,
+        )
+
+        if self.debug:
+            self._write_turn_debug_info(
+                request=request,
+                search_result=search_result,
+                decision=decision,
+                final_llm_response=final_llm_response,
+                timing=timing,
+            )
+
+        return self._build_reply_payload(
+            final_llm_response=final_llm_response,
+            decision=decision,
+            diagnostics=diagnostics,
+        )
+    
+    def _prepare_reply_request(self, user_input=None, image_path=None):
+        if not user_input and image_path is None:
+            raise ValueError("generate_reply requires user_input, image_path, or both.")
+
+        image_path = Path(image_path) if image_path is not None else None
+        embedding_mode = determine_embedding_mode(user_input, image_path)
+
+        message_content = (
+            user_input
+            or "The user uploaded an image and wants product recommendations based on it."
+        )
+
+        if user_input and image_path is not None:
+            message_content = (
+                f"{user_input}\n\n"
+                "[The user also uploaded an image for the product search.]"
+            )
+
+        self.conversation_history.append(HumanMessage(content=message_content))
+
+        return ReplyRequest(
+            user_input=user_input,
+            image_path=image_path,
+            embedding_mode=embedding_mode,
+            message_content=message_content,
+        )
+
+    def _search_for_products(self, request):
+        llm_search_query = self._build_search_query() if request.user_input else None
+
+        found_products = self._search_products(
+            search_query=llm_search_query,
+            top_k=self.top_k,
+            image_path=request.image_path,
+        )
+
+        source_knowledge = format_source_knowledge(found_products)
+
+        return ProductSearchResult(
+            llm_search_query=llm_search_query,
             found_products=found_products,
             source_knowledge=source_knowledge,
         )
-        chosen_pid, chosen_product, dive_deeper = self._parse_product_choice(
-            llm_response=initial_llm_response,
-            found_products=found_products,
+
+    def _decide_next_response(self, search_result):
+        initial_llm_response = self._choose_product_or_next_action(
+            found_products=search_result.found_products,
+            source_knowledge=search_result.source_knowledge,
         )
 
-        final_llm_response = self._build_final_response(
+        chosen_pid, chosen_product, dive_deeper = parse_product_choice(
+            llm_response=initial_llm_response,
+            found_products=search_result.found_products,
+        )
+
+        return RecommendationDecision(
             initial_llm_response=initial_llm_response,
             chosen_pid=chosen_pid,
             chosen_product=chosen_product,
             dive_deeper=dive_deeper,
-            source_knowledge=source_knowledge,
         )
-        ai_ans = AIMessage(content=final_llm_response)
-        self.conversation_history += [ai_ans]
 
-        logging.info(f"Chosen pid: {chosen_pid}")
-        logging.info(f"Chosen product: {chosen_product}")
+    def _generate_final_response(self, decision, source_knowledge):
+        ai_ans = AIMessage(content=decision.initial_llm_response)
 
+        if decision.chosen_pid:
+            reprompt_str = (
+                "Let's continue the conversation while recommending the following product "
+                "(you don't need to describe every detail of the product, just whatever seems relevant "
+                "for the buyer based on this conversation): "
+            )
+            reprompt_str += decision.chosen_product["llm_str"]
+            log_message = "Recommendation LLM Response"
+        else:
+            reprompt_str, log_message = build_no_product_reprompt(
+                dive_deeper=decision.dive_deeper,
+                source_knowledge=source_knowledge,
+            )
+
+        reprompt = SystemMessage(content=reprompt_str)
+        temp_history = self.conversation_history + [ai_ans, reprompt]
+
+        final_llm_response = self.chat_openai.invoke(temp_history).content
+        logging.info(f"{log_message}: {final_llm_response}")
+
+        return final_llm_response
+
+    def _measure_reply_time(self, start_time):
         stop_time = datetime.now()
         minutes, seconds, _ = elapsed_time_string(start_time, stop_time)
         total_seconds = (stop_time - start_time).total_seconds()
+
         logging.info(
-            f"Took {minutes} minutes, {seconds} seconds to prepare a response to the user's message."
+            f"Took {minutes} minutes, {seconds} seconds to prepare a response "
+            "to the user's message."
         )
 
-        max_score_dict = max(found_products.values(), key=lambda x: x["score"])
-        diagnostics = build_recommendation_diagnostics(
-            embedding_mode=embedding_mode,
-            llm_search_query=llm_search_query,
-            found_products=found_products,
-            initial_llm_response=initial_llm_response,
-            chosen_pid=chosen_pid,
-            dive_deeper=dive_deeper,
+        return ReplyTiming(
+            minutes=minutes,
+            seconds=seconds,
             total_seconds=total_seconds,
         )
 
-        if self.debug:
-            self._write_debug_info(
-                user_input=user_input,
-                chosen_product=chosen_product,
-                max_score_dict=max_score_dict,
-                minutes=minutes,
-                seconds=seconds,
-                llm_response=final_llm_response,
-                found_products=found_products,
-            )
+    def _build_diagnostics(self, request, search_result, decision, timing):
+        return build_recommendation_diagnostics(
+            embedding_mode=request.embedding_mode,
+            llm_search_query=search_result.llm_search_query,
+            found_products=search_result.found_products,
+            initial_llm_response=decision.initial_llm_response,
+            chosen_pid=decision.chosen_pid,
+            dive_deeper=decision.dive_deeper,
+            total_seconds=timing.total_seconds,
+        )
+
+    def _write_turn_debug_info(
+        self,
+        request,
+        search_result,
+        decision,
+        final_llm_response,
+        timing,
+    ):
+        max_score_dict = self._best_scored_product(search_result.found_products)
+
+        self._write_debug_info(
+            user_input=request.user_input,
+            chosen_product=decision.chosen_product,
+            max_score_dict=max_score_dict,
+            minutes=timing.minutes,
+            seconds=timing.seconds,
+            llm_response=final_llm_response,
+            found_products=search_result.found_products,
+        )
+
+    def _best_scored_product(self, found_products):
+        if not found_products:
+            return None
+
+        return max(found_products.values(), key=lambda product: product["score"])
+
+    def _build_reply_payload(self, final_llm_response, decision, diagnostics):
+        ai_ans = AIMessage(content=final_llm_response)
+        self.conversation_history.append(ai_ans)
+
+        logging.info(f"Chosen pid: {decision.chosen_pid}")
+        logging.info(f"Chosen product: {decision.chosen_product}")
 
         return {
             "conversation": serialize_convo(self.conversation_history),
-            "chosen_product": chosen_product,
+            "chosen_product": decision.chosen_product,
             "personality": self.personality,
             "diagnostics": diagnostics,
         }
@@ -287,7 +415,7 @@ class ShopTalkRecommender:
         return found_products
 
     def _choose_product_or_next_action(self, found_products, source_knowledge):
-        augmented_prompt = self._build_augmented_prompt(source_knowledge)
+        augmented_prompt = build_augmented_prompt(source_knowledge)
         self.conversation_history.append(SystemMessage(augmented_prompt))
 
         logging.info(f"conversation_history: {self.conversation_history}\n\n")
@@ -298,12 +426,6 @@ class ShopTalkRecommender:
         self.conversation_history = self.conversation_history[:-1]
         return llm_response
 
-    def _parse_product_choice(self, llm_response, found_products):
-        return parse_product_choice(llm_response, found_products)
-
-    @staticmethod
-    def _extract_bracketed_choice(llm_response):
-        return extract_bracketed_choice(llm_response)
 
     def _build_final_response(
         self,
@@ -324,7 +446,7 @@ class ShopTalkRecommender:
             reprompt_str += chosen_product["llm_str"]
             log_message = "No-PID LLM Response"
         else:
-            reprompt_str, log_message = self._build_no_product_reprompt(
+            reprompt_str, log_message = build_no_product_reprompt(
                 dive_deeper=dive_deeper,
                 source_knowledge=source_knowledge,
             )
@@ -334,15 +456,6 @@ class ShopTalkRecommender:
         final_llm_response = self.chat_openai.invoke(temp_history).content
         logging.info(f"{log_message}: {final_llm_response}")
         return final_llm_response
-
-    def _build_no_product_reprompt(self, dive_deeper, source_knowledge):
-        return build_no_product_reprompt(dive_deeper, source_knowledge)
-
-    def _format_source_knowledge(self, found_products):
-        return format_source_knowledge(found_products)
-
-    def _build_augmented_prompt(self, source_knowledge):
-        return build_augmented_prompt(source_knowledge)
 
     def _write_debug_info(
         self,
@@ -363,8 +476,14 @@ class ShopTalkRecommender:
                 f.write("  Chosen result: None\n")
                 f.write("  Score: N/A\n")
             f.write("\n")
-            f.write(f"  Best Item: {max_score_dict['item_name']}\n")
-            f.write(f"  Best Score: {max_score_dict['score']}\n\n")
+
+            if max_score_dict:
+                f.write(f"  Best Item: {max_score_dict['item_name']}\n")
+                f.write(f"  Best Score: {max_score_dict['score']}\n\n")
+            else:
+                f.write("  Best Item: None\n")
+                f.write("  Best Score: N/A\n\n")
+
             f.write(f"  Response Time: {minutes} minutes, {seconds} seconds\n")
             f.write(f"  Response: {llm_response}\n")
             f.write("\n\n")
