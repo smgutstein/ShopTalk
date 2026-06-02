@@ -11,6 +11,7 @@ from imagebind.models.imagebind_model import imagebind_huge
 from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
+from .config import RecommenderConfig
 from .diagnostics import build_recommendation_diagnostics
 
 from .llm_prompts import (
@@ -43,33 +44,15 @@ from .utils import (
 )
 from .vector_query import combine_query_embeddings
 
-from ..shoptalk_paths import (
-    COMBINED_BLURBS_PATH,
-    DEBUG_FILE,
-    DEFAULT_VECTOR_BACKEND,
-    IMAGES_CSV,
-    VECTOR_DB_OUTPUT_DIR,
-)
+from ..shoptalk_paths import DEBUG_FILE
 
 
 class ShopTalkRecommender:
-    def __init__(
-        self,
-        personality_index=-1,
-        debug=False,
-        force_cpu=False,
-        model_name="gpt-4o",
-        vector_db_output_dir=VECTOR_DB_OUTPUT_DIR,
-        vector_backend=DEFAULT_VECTOR_BACKEND,
-        top_k=10,
-        index_path=None,
-        blurbs_path=COMBINED_BLURBS_PATH,
-        product_ids_path=None,
-        images_csv_path=IMAGES_CSV,
-    ):
-        self.debug = debug
+    def __init__(self, config: RecommenderConfig | None = None):
+        self.config = config or RecommenderConfig()
+        self.debug = self.config.debug
 
-        self.device = "cpu" if force_cpu else "cuda:0" if torch.cuda.is_available() else "cpu"
+        self.device = "cpu" if self.config.force_cpu else "cuda:0" if torch.cuda.is_available() else "cpu"
         logging.info(f"Using device: {self.device}")
 
         self.api_key = load_openai_api_key()
@@ -77,48 +60,38 @@ class ShopTalkRecommender:
         os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
         self.product_store, self.db_load_time = self._load_database(
-            vector_db_output_dir=vector_db_output_dir,
-            vector_backend=vector_backend,
-            index_path=index_path,
-            blurbs_path=blurbs_path,
-            product_ids_path=product_ids_path,
+            vector_db_output_dir=self.config.vector_db_output_dir,
+            vector_backend=self.config.vector_backend,
+            index_path=self.config.index_path,
+            blurbs_path=self.config.blurbs_path,
+            product_ids_path=self.config.product_ids_path,
         )
-        self.top_k = top_k
+        self.top_k = self.config.top_k
 
         self.ibind_model, self.embed_load_time = self._load_imagebind_model()
         self.query_embedder = QueryEmbedder(self.ibind_model, self.device)
 
-        self.personality = self._choose_personality(personality_index)
+        self.personality = self._choose_personality(self.config.personality_index)
         self.chosen_personality = self.personality
         logging.info(f" {self.personality}")
 
         self.chat_openai = ChatOpenAI(
             api_key=self.api_key,
-            model=model_name,
+            model=self.config.model_name,
             temperature=0.1,
         )
 
         self.conversation_history = self._initial_conversation_history(self.personality)
         self.image_id_to_path, self.image_path_load_time = self._load_image_paths(
-            images_csv_path
+            self.config.images_csv_path
         )
 
-        if self.debug and DEBUG_FILE.exists():
+        if self.debug:
             self._initialize_debug_file()
 
     @classmethod
     def from_args(cls, args):
-        return cls(
-            personality_index=args.personality,
-            debug=args.debug,
-            force_cpu=args.cpu,
-            model_name=args.model,
-            vector_db_output_dir=args.vector_db_output_dir,
-            vector_backend=args.vector_backend,
-            top_k=args.top_k,
-            blurbs_path=args.product_blurbs,
-            images_csv_path=args.images_csv,
-        )
+        return cls(RecommenderConfig.from_args(args))
 
     def _load_imagebind_model(self):
         logging.info("Loading ImageBind model...")
@@ -192,7 +165,7 @@ class ShopTalkRecommender:
         return image_id_to_path, load_time
 
     def _initialize_debug_file(self):
-        DEBUG_FILE.unlink()
+        DEBUG_FILE.unlink(missing_ok=True)
         with open(DEBUG_FILE, "a") as f:
             f.write(f"Embedding Load Time: {self.embed_load_time}\n")
             f.write(f"DB Load Time: {self.db_load_time}\n")

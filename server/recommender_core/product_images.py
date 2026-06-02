@@ -29,27 +29,6 @@ def all_img_paths(blurb, image_id_to_path):
     return image_paths
 
 
-def image_path_to_static_url(image_path):
-    """Convert an images.csv path into a Flask static URL.
-
-    ``images.csv`` stores paths used by the local image files. For browser
-    display, the frontend needs a URL under Flask's ``/static`` route. The
-    common case is a path relative to ``server/static/images``.
-    """
-    normalized = str(image_path).replace("\\", "/").lstrip("/")
-
-    if normalized.startswith("server/static/"):
-        return "/" + normalized.removeprefix("server/")
-    if normalized.startswith("static/"):
-        return "/" + normalized
-    if normalized.startswith("images/"):
-        return "/static/" + normalized
-    return "/static/images/" + normalized
-
-
-def image_paths_to_static_urls(image_paths):
-    return [image_path_to_static_url(image_path) for image_path in image_paths]
-
 def load_image_paths_csv(images_csv_path):
     """Load image-id to image-path mappings from ``images.csv``.
 
