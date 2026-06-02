@@ -1,6 +1,6 @@
 import numpy as np
 
-from .product_images import all_img_paths, image_paths_to_static_urls
+from .product_images import all_img_paths
 from .vector_db import load_vector_db
 
 class ProductVectorStore:
@@ -47,7 +47,6 @@ class ProductVectorStore:
                     "item_name": blurb["item_name"],
                     "score": float(score),
                     "image_paths": image_paths,
-                    "image_urls": image_paths_to_static_urls(image_paths),
                     "product_type": blurb["feature_fields"]["product_type"],
                     "llm_str": blurb["llm_str"],
                 }

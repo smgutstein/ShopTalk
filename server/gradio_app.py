@@ -2,15 +2,17 @@
 
 import argparse
 import json
-import logging
 from pathlib import Path
 
+from .gradio_images import (
+    chosen_product_image_paths,
+    top_product_image_paths,
+)
 from .recommender_core.shop_talk_recommender import ShopTalkRecommender
 from .shoptalk_paths import (
     COMBINED_BLURBS_PATH,
     DEFAULT_VECTOR_BACKEND,
     IMAGES_CSV,
-    STATIC_IMAGES_DIR,
     VECTOR_DB_OUTPUT_DIR,
 )
 
@@ -134,57 +136,6 @@ def format_chosen_product(chosen_product):
     if chosen_product.get("image_paths"):
         lines.append(f"**Images:** {len(chosen_product['image_paths'])}")
     return "\n\n".join(lines)
-
-def gradio_image_path(image_path):
-    normalized_image_path = str(image_path).replace("\\", "/").lstrip("/")
-
-    candidates = [
-        Path(image_path),
-        STATIC_IMAGES_DIR / normalized_image_path,
-    ]
-
-    for candidate in candidates:
-        if candidate.is_file():
-            return str(candidate)
-
-    logging.warning(
-        "Image not found: %s; checked paths: %s",
-        image_path,
-        [str(candidate.resolve()) for candidate in candidates],
-    )
-    return None
-
-def chosen_product_image_paths(chosen_product):
-    """Return local image paths suitable for Gradio image/gallery components."""
-    if not chosen_product:
-        return []
-    
-    image_list = chosen_product.get("image_paths") or []
-    normed_image_list = []
-    for curr_image_path in image_list:
-        temp=gradio_image_path(curr_image_path)
-        if temp is not None:
-            normed_image_list.append(temp)
-
-
-    return list(normed_image_list)
-
-
-def top_product_image_paths(result, max_images=12):
-    """Return local image paths for retrieved products in diagnostics order."""
-    diagnostics = result.get("diagnostics") or {}
-    top_products = diagnostics.get("top_products") or []
-    normed_image_paths = []
-    for product in top_products:
-        for curr_image_path in product.get("image_paths") or []:
-            normed_image_path = gradio_image_path(curr_image_path)
-            if normed_image_path is None:
-                continue
-            if normed_image_path not in normed_image_paths:
-                normed_image_paths.append(normed_image_path)
-            if len(normed_image_paths) >= max_images:
-                return normed_image_paths
-    return normed_image_paths
 
 
 def format_top_products(top_products):
