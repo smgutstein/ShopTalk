@@ -11,11 +11,10 @@ def summarize_top_products(found_products):
         summaries.append(
             {
                 "product_id": product_id,
-                "item_name": product.get("item_name"),
-                "score": product.get("score"),
-                "product_type": product.get("product_type"),
-                "image_paths": list(product.get("image_paths") or []),
-                "image_urls": list(product.get("image_urls") or []),
+                "item_name": product.item_name,
+                "score": product.score,
+                "product_type": product.product_type,
+                "image_paths": list(product.image_paths),
             }
         )
     return summaries

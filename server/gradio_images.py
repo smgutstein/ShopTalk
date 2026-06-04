@@ -33,7 +33,7 @@ def chosen_product_image_paths(chosen_product):
         return []
 
     image_paths = []
-    for product_image_path in chosen_product.get("image_paths") or []:
+    for product_image_path in chosen_product.image_paths:
         resolved_path = gradio_image_path(product_image_path)
         if resolved_path is not None:
             image_paths.append(resolved_path)

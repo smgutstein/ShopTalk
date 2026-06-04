@@ -3,7 +3,9 @@
 from dataclasses import dataclass
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import Any,  Literal
+from typing import Literal
+
+from .product_candidate import ProductCandidate
 
 
 
@@ -22,7 +24,7 @@ class ProductSearchResult:
     """Products and supporting text retrieved for a recommender turn."""
 
     llm_search_query: str | None
-    found_products: dict[str, dict[str, Any]]
+    found_products: dict[str, ProductCandidate]
     source_knowledge: str
 
 
@@ -32,7 +34,7 @@ class RecommendationDecision:
 
     initial_llm_response: str
     chosen_pid: str | None
-    chosen_product: dict[str, Any] | None
+    chosen_product: ProductCandidate | None
     dive_deeper: bool
 
 @dataclass(frozen=True)

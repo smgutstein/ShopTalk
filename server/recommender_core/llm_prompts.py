@@ -13,7 +13,7 @@ def format_source_knowledge(found_products):
     """Format product search results as source text for the LLM."""
     return "\n\n;\n\n".join(
         [
-            f"product_id: {pid}, item_name: {info['item_name']}"
+            f"product_id: {pid}, item_name: {info.item_name}"
             for pid, info in found_products.items()
         ]
     )

@@ -96,7 +96,7 @@ class ConversationPolicy:
                 "(you don't need to describe every detail of the product, just whatever seems relevant "
                 "for the buyer based on this conversation): "
             )
-            reprompt_str += decision.chosen_product["llm_str"]
+            reprompt_str += decision.chosen_product.llm_str
             log_message = "Recommendation LLM Response"
         else:
             reprompt_str, log_message = build_no_product_reprompt(

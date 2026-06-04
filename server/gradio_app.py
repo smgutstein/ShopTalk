@@ -128,13 +128,12 @@ def format_chosen_product(chosen_product):
     if not chosen_product:
         return "No product selected yet."
 
-    lines = [f"**Chosen product:** {chosen_product.get('item_name', 'Unknown product')}"]
-    if "score" in chosen_product:
-        lines.append(f"**Vector score:** {chosen_product['score']:.4f}")
-    if chosen_product.get("product_type"):
-        lines.append(f"**Product type:** {chosen_product['product_type']}")
-    if chosen_product.get("image_paths"):
-        lines.append(f"**Images:** {len(chosen_product['image_paths'])}")
+    lines = [f"**Chosen product:** {chosen_product.item_name}"]
+    lines.append(f"**Vector score:** {chosen_product.score:.4f}")
+    if chosen_product.product_type:
+        lines.append(f"**Product type:** {chosen_product.product_type}")
+    if chosen_product.image_paths:
+        lines.append(f"**Images:** {len(chosen_product.image_paths)}")
     return "\n\n".join(lines)
 
 

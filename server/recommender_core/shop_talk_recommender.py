@@ -230,7 +230,7 @@ class ShopTalkRecommender:
         if not found_products:
             return None
 
-        return max(found_products.values(), key=lambda product: product["score"])
+        return max(found_products.values(), key=lambda product: product.score)
 
     def _build_reply_payload(self, final_llm_response, decision, diagnostics):
         ai_ans = AIMessage(content=final_llm_response)
@@ -259,7 +259,7 @@ class ShopTalkRecommender:
             top_k=top_k,
             image_id_to_path=self.image_id_to_path,
         )
-        product_names = [info["item_name"] for info in found_products.values()]
+        product_names = [info.item_name for info in found_products.values()]
         logging.info(f"VectorDB search results: {product_names}")
         return found_products
 
@@ -277,16 +277,16 @@ class ShopTalkRecommender:
         with open(DEBUG_FILE, "a") as f:
             f.write(f"User input: {user_input}\n")
             if chosen_product:
-                f.write(f"  Chosen result: {chosen_product['item_name']}\n")
-                f.write(f"  Score: {chosen_product['score']}\n")
+                f.write(f"  Chosen result: {chosen_product.item_name}\n")
+                f.write(f"  Score: {chosen_product.score}\n")
             else:
                 f.write("  Chosen result: None\n")
                 f.write("  Score: N/A\n")
             f.write("\n")
 
             if max_score_dict:
-                f.write(f"  Best Item: {max_score_dict['item_name']}\n")
-                f.write(f"  Best Score: {max_score_dict['score']}\n\n")
+                f.write(f"  Best Item: {max_score_dict.item_name}\n")
+                f.write(f"  Best Score: {max_score_dict.score}\n\n")
             else:
                 f.write("  Best Item: None\n")
                 f.write("  Best Score: N/A\n\n")
@@ -295,10 +295,10 @@ class ShopTalkRecommender:
             f.write(f"  Response: {llm_response}\n")
             f.write("\n\n")
             for pid, product in sorted(
-                found_products.items(), key=lambda x: x[1]["score"], reverse=True
+                found_products.items(), key=lambda x: x[1].score, reverse=True
             ):
-                f.write(f"  {product['item_name']}: {product['score']} \n")
-                f.write(f"       {product['image_paths']} \n")
-                f.write(f"       {product['llm_str']} \n")
+                f.write(f"  {product.item_name}: {product.score} \n")
+                f.write(f"       {list(product.image_paths)} \n")
+                f.write(f"       {product.llm_str} \n")
                 f.write("\n")
             f.write("======================================================\n\n")

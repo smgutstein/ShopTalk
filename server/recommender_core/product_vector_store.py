@@ -1,5 +1,6 @@
 import numpy as np
 
+from .product_candidate import ProductCandidate
 from .product_images import all_img_paths
 from .vector_db import load_vector_db
 
@@ -43,17 +44,14 @@ class ProductVectorStore:
             image_paths = all_img_paths(blurb, image_id_to_path)
 
             if pid not in found_products:
-                found_products[pid] = {
-                    "item_name": blurb["item_name"],
-                    "score": float(score),
-                    "image_paths": image_paths,
-                    "product_type": blurb["feature_fields"]["product_type"],
-                    "llm_str": blurb["llm_str"],
-                }
+                found_products[pid] = ProductCandidate.from_blurb(
+                    product_id=pid,
+                    blurb=blurb,
+                    score=score,
+                    image_paths=image_paths,
+                )
             else:
-                found_products[pid]["image_paths"] = found_products[pid]["image_paths"] + [
-                    new_img
-                    for new_img in image_paths
-                    if new_img not in found_products[pid]["image_paths"]
-                ]
+                found_products[pid] = found_products[pid].with_additional_image_paths(
+                    image_paths
+                )
         return found_products
