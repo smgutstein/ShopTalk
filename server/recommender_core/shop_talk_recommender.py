@@ -12,18 +12,13 @@ from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from .config import RecommenderConfig
+from .conversation_policy import ConversationPolicy
 from .diagnostics import build_recommendation_diagnostics
 
-from .llm_prompts import (
-    build_augmented_prompt,
-    build_no_product_reprompt,
-    build_search_query_prompt,
-    format_source_knowledge,
-)
-from .parsing import (
-    determine_embedding_mode,
-    parse_product_choice,
-)
+from .llm_prompts import format_source_knowledge
+
+from .parsing import determine_embedding_mode
+ 
 from .product_images import load_image_paths_csv
 from .product_vector_store import ProductVectorStore
 
@@ -80,6 +75,7 @@ class ShopTalkRecommender:
             model=self.config.model_name,
             temperature=0.1,
         )
+        self.conversation_policy = ConversationPolicy(self.chat_openai)
 
         self.conversation_history = self._initial_conversation_history(self.personality)
         self.image_id_to_path, self.image_path_load_time = self._load_image_paths(
@@ -187,9 +183,13 @@ class ShopTalkRecommender:
 
         search_result = self._search_for_products(request)
 
-        decision = self._decide_next_response(search_result)
+        decision = self.conversation_policy.decide_next_response(
+            conversation_history=self.conversation_history,
+            search_result=search_result,
+        )
 
-        final_llm_response = self._generate_final_response(
+        final_llm_response = self.conversation_policy.generate_final_response(
+            conversation_history=self.conversation_history,
             decision=decision,
             source_knowledge=search_result.source_knowledge,
         )
@@ -246,7 +246,11 @@ class ShopTalkRecommender:
         )
 
     def _search_for_products(self, request):
-        llm_search_query = self._build_search_query() if request.user_input else None
+        llm_search_query = (
+                            self.conversation_policy.build_search_query(self.conversation_history)
+                            if request.user_input
+                            else None
+                           )
 
         found_products = self._search_products(
             search_query=llm_search_query,
@@ -261,49 +265,6 @@ class ShopTalkRecommender:
             found_products=found_products,
             source_knowledge=source_knowledge,
         )
-
-    def _decide_next_response(self, search_result):
-        initial_llm_response = self._choose_product_or_next_action(
-            found_products=search_result.found_products,
-            source_knowledge=search_result.source_knowledge,
-        )
-
-        chosen_pid, chosen_product, dive_deeper = parse_product_choice(
-            llm_response=initial_llm_response,
-            found_products=search_result.found_products,
-        )
-
-        return RecommendationDecision(
-            initial_llm_response=initial_llm_response,
-            chosen_pid=chosen_pid,
-            chosen_product=chosen_product,
-            dive_deeper=dive_deeper,
-        )
-
-    def _generate_final_response(self, decision, source_knowledge):
-        ai_ans = AIMessage(content=decision.initial_llm_response)
-
-        if decision.chosen_pid:
-            reprompt_str = (
-                "Let's continue the conversation while recommending the following product "
-                "(you don't need to describe every detail of the product, just whatever seems relevant "
-                "for the buyer based on this conversation): "
-            )
-            reprompt_str += decision.chosen_product["llm_str"]
-            log_message = "Recommendation LLM Response"
-        else:
-            reprompt_str, log_message = build_no_product_reprompt(
-                dive_deeper=decision.dive_deeper,
-                source_knowledge=source_knowledge,
-            )
-
-        reprompt = SystemMessage(content=reprompt_str)
-        temp_history = self.conversation_history + [ai_ans, reprompt]
-
-        final_llm_response = self.chat_openai.invoke(temp_history).content
-        logging.info(f"{log_message}: {final_llm_response}")
-
-        return final_llm_response
 
     def _measure_reply_time(self, start_time):
         stop_time = datetime.now()
@@ -372,14 +333,6 @@ class ShopTalkRecommender:
             "diagnostics": diagnostics,
         }
 
-    def _build_search_query(self):
-        search_query_prompt = build_search_query_prompt()
-        llm_search_query = self.chat_openai.invoke(
-            self.conversation_history + [SystemMessage(content=search_query_prompt)]
-        ).content
-        logging.info(f"LLM's suggested search query: {llm_search_query}")
-        return llm_search_query
-
     def _search_products(self, search_query=None, top_k=10, image_path=None):
         query_embeddings = []
         if search_query:
@@ -396,18 +349,6 @@ class ShopTalkRecommender:
         product_names = [info["item_name"] for info in found_products.values()]
         logging.info(f"VectorDB search results: {product_names}")
         return found_products
-
-    def _choose_product_or_next_action(self, found_products, source_knowledge):
-        augmented_prompt = build_augmented_prompt(source_knowledge)
-        self.conversation_history.append(SystemMessage(augmented_prompt))
-
-        logging.info(f"conversation_history: {self.conversation_history}\n\n")
-        llm_response = self.chat_openai.invoke(self.conversation_history).content
-        logging.info(f"Initial LLM Response: {llm_response}")
-
-        # Delete search result info from conversation.
-        self.conversation_history = self.conversation_history[:-1]
-        return llm_response
 
 
     def _write_debug_info(
