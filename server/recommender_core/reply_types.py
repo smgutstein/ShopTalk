@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from pydantic import BaseModel, Field
+from typing import Any,  Literal
+
 
 
 @dataclass(frozen=True)
@@ -38,3 +40,23 @@ class ReplyTiming:
     minutes: int
     seconds: int
     total_seconds: float
+
+class RecommendationAction(BaseModel):
+    """Structured LLM decision about the next recommendation action."""
+
+    action: Literal["recommend", "dive_deeper", "wrong_track"] = Field(
+        description=(
+            "The next action. Use 'recommend' only when one retrieved product "
+            "is clearly suitable. Use 'dive_deeper' when more user preference "
+            "information is needed. Use 'wrong_track' when the retrieved products "
+            "do not match the user's needs."
+        )
+    )
+    product_id: str | None = Field(
+        default=None,
+        description=(
+            "The selected product id. Required when action is 'recommend'. "
+            "Must exactly match one of the retrieved product ids. Must be null "
+            "for 'dive_deeper' or 'wrong_track'."
+        ),
+    )
