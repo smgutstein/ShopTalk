@@ -8,7 +8,7 @@ from .gradio_images import (
     chosen_product_image_paths,
     top_product_image_paths,
 )
-from .recommender_core.shop_talk_recommender import ShopTalkRecommender
+from .recommender_core.config import RecommenderConfig
 from .shoptalk_paths import (
     COMBINED_BLURBS_PATH,
     DEFAULT_VECTOR_BACKEND,
@@ -294,7 +294,10 @@ def create_gradio_interface(recommender):
 def main():
     args = parse_args()
     configure_runtime_logging()
-    recommender = ShopTalkRecommender.from_args(args)
+    from .recommender_core.recommender_factory import build_recommender
+
+    config = RecommenderConfig.from_args(args)
+    recommender = build_recommender(config)
     demo = create_gradio_interface(recommender)
     demo.launch(
         share=args.share,

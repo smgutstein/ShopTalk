@@ -1,40 +1,21 @@
 import logging
-import os
-import random
-import torch
 
 from datetime import datetime
 from pathlib import Path
 
-from imagebind.models.imagebind_model import imagebind_huge
-
 from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
 
 from .config import RecommenderConfig
-from .conversation_policy import ConversationPolicy
 from .diagnostics import build_recommendation_diagnostics
-
 from .llm_prompts import format_source_knowledge
-
 from .parsing import determine_embedding_mode
- 
-from .product_images import load_image_paths_csv
-from .product_vector_store import ProductVectorStore
-
-from .query_embedder import QueryEmbedder
-
 from .reply_types import (
     ProductSearchResult,
-    RecommendationDecision,
     ReplyRequest,
-    ReplyTiming
+    ReplyTiming,
 )
-
 from .utils import (
-    PERSONALITIES,
     elapsed_time_string,
-    load_openai_api_key,
     serialize_convo,
 )
 from .vector_query import combine_query_embeddings
@@ -43,101 +24,42 @@ from ..shoptalk_paths import DEBUG_FILE
 
 
 class ShopTalkRecommender:
-    def __init__(self, config: RecommenderConfig | None = None):
+    def __init__(
+        self,
+        *,
+        config: RecommenderConfig | None = None,
+        product_store,
+        query_embedder,
+        conversation_policy,
+        image_id_to_path: dict,
+        personality: str,
+        db_load_time: str,
+        embed_load_time: str,
+        image_path_load_time: str,
+    ):
         self.config = config or RecommenderConfig()
         self.debug = self.config.debug
-
-        self.device = "cpu" if self.config.force_cpu else "cuda:0" if torch.cuda.is_available() else "cpu"
-        logging.info(f"Using device: {self.device}")
-
-        self.api_key = load_openai_api_key()
-        os.environ["OPENAI_API_KEY"] = self.api_key
-        os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
-        self.product_store, self.db_load_time = self._load_database(
-            vector_db_output_dir=self.config.vector_db_output_dir,
-            vector_backend=self.config.vector_backend,
-            index_path=self.config.index_path,
-            blurbs_path=self.config.blurbs_path,
-            product_ids_path=self.config.product_ids_path,
-        )
+        self.product_store = product_store
         self.top_k = self.config.top_k
-
-        self.ibind_model, self.embed_load_time = self._load_imagebind_model()
-        self.query_embedder = QueryEmbedder(self.ibind_model, self.device)
-
-        self.personality = self._choose_personality(self.config.personality_index)
-        self.chosen_personality = self.personality
-        logging.info(f" {self.personality}")
-
-        self.chat_openai = ChatOpenAI(
-            api_key=self.api_key,
-            model=self.config.model_name,
-            temperature=0.1,
-        )
-        self.conversation_policy = ConversationPolicy(self.chat_openai)
+        self.query_embedder = query_embedder
+        self.conversation_policy = conversation_policy
+        self.image_id_to_path = image_id_to_path
+        self.personality = personality
+        self.chosen_personality = personality
+        self.db_load_time = db_load_time
+        self.embed_load_time = embed_load_time
+        self.image_path_load_time = image_path_load_time
 
         self.conversation_history = self._initial_conversation_history(self.personality)
-        self.image_id_to_path, self.image_path_load_time = self._load_image_paths(
-            self.config.images_csv_path
-        )
 
         if self.debug:
             self._initialize_debug_file()
 
     @classmethod
     def from_args(cls, args):
-        return cls(RecommenderConfig.from_args(args))
+        from .recommender_factory import build_recommender
 
-    def _load_imagebind_model(self):
-        logging.info("Loading ImageBind model...")
-        start_time = datetime.now()
-        ibind_model = imagebind_huge(pretrained=True)
-        ibind_model.eval()
-        ibind_model.to(self.device)
-        stop_time = datetime.now()
-        minutes, seconds, load_time = elapsed_time_string(start_time, stop_time)
-        logging.info(f"{minutes} minutes, {seconds} seconds")
-        return ibind_model, load_time
-
-    def _load_database(
-        self,
-        vector_db_output_dir,
-        vector_backend,
-        index_path,
-        blurbs_path,
-        product_ids_path,
-    ):
-        logging.info("Loading Database...")
-        start_time = datetime.now()
-
-        if vector_backend != "faiss":
-            raise ValueError(
-                "ShopTalkRecommender currently supports only the FAISS vector backend. "
-                f"Got vector_backend={vector_backend!r}."
-            )
-
-        backend_dir = Path(vector_db_output_dir) / vector_backend
-        index_path = index_path or backend_dir / "embeddings.faiss"
-        product_ids_path = product_ids_path or backend_dir / "product_ids.json"
-
-        product_store = ProductVectorStore.from_paths(
-            index_path=index_path,
-            blurbs_path=blurbs_path,
-            product_ids_path=product_ids_path,
-        )
-        stop_time = datetime.now()
-        minutes, seconds, load_time = elapsed_time_string(start_time, stop_time)
-        logging.info(f"{minutes} minutes, {seconds} seconds")
-        return product_store, load_time
-
-    def _choose_personality(self, personality_index):
-        if personality_index == -1 or personality_index >= len(PERSONALITIES):
-            personality = random.choice(PERSONALITIES)
-            logging.info(f"Random Personality: {personality}")
-        else:
-            personality = PERSONALITIES[personality_index]
-        return personality
+        return build_recommender(RecommenderConfig.from_args(args))
 
     def _initial_conversation_history(self, personality):
         sys_msg_str = (
@@ -150,15 +72,6 @@ class ShopTalkRecommender:
             SystemMessage(content=sys_msg_str),
             AIMessage(content="What would you like to shop for today?"),
         ]
-
-    def _load_image_paths(self, images_csv_path):
-        logging.info("Loading Image paths...")
-        start_time = datetime.now()
-        image_id_to_path = load_image_paths_csv(images_csv_path)
-        stop_time = datetime.now()
-        minutes, seconds, load_time = elapsed_time_string(start_time, stop_time)
-        logging.info(f"{minutes} minutes, {seconds} seconds")
-        return image_id_to_path, load_time
 
     def _initialize_debug_file(self):
         DEBUG_FILE.unlink(missing_ok=True)
