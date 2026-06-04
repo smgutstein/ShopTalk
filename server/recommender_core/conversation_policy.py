@@ -30,7 +30,7 @@ class ConversationPolicy:
         return llm_search_query
 
     def decide_next_response(self, conversation_history, search_result: ProductSearchResult):
-        action = self.choose_product_or_next_action(
+        action = self.decide_next_action(
             conversation_history=conversation_history,
             source_knowledge=search_result.source_knowledge,
             found_products=search_result.found_products,
@@ -65,19 +65,28 @@ class ConversationPolicy:
             dive_deeper=dive_deeper,
         )
     
-    def choose_product_or_next_action(
+    def decide_next_action(
         self,
+        *,
         conversation_history,
-        source_knowledge,
         found_products,
+        source_knowledge=None,
     ):
-        augmented_prompt = build_augmented_prompt(source_knowledge)
-        structured_prompt = self._build_structured_action_prompt(found_products)
+        """Choose the next structured recommendation action.
 
-        temporary_history = conversation_history + [
-            SystemMessage(content=augmented_prompt),
-            SystemMessage(content=structured_prompt),
-        ]
+        This method is intentionally narrow so evaluation code can exercise the
+        LLM decision layer without running retrieval, Gradio, or final-response
+        generation.
+        """
+        prompt_messages = []
+        if source_knowledge is not None:
+            prompt_messages.append(SystemMessage(content=build_augmented_prompt(source_knowledge)))
+
+        prompt_messages.append(
+            SystemMessage(content=self._build_structured_action_prompt(found_products))
+        )
+
+        temporary_history = conversation_history + prompt_messages
 
         logging.info("conversation_history: %s\n\n", temporary_history)
 
@@ -86,6 +95,19 @@ class ConversationPolicy:
         logging.info("Structured LLM action: %s", action)
 
         return action
+
+    def choose_product_or_next_action(
+        self,
+        conversation_history,
+        source_knowledge,
+        found_products,
+    ):
+        """Compatibility wrapper for older call sites."""
+        return self.decide_next_action(
+            conversation_history=conversation_history,
+            source_knowledge=source_knowledge,
+            found_products=found_products,
+        )
 
     def generate_final_response(self, conversation_history, decision, source_knowledge):
         ai_ans = AIMessage(content=decision.initial_llm_response)
