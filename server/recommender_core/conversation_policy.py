@@ -7,7 +7,6 @@ from .llm_prompts import (
     build_no_product_reprompt,
     build_search_query_prompt,
 )
-from .parsing import parse_product_choice
 from .reply_types import (
     ProductSearchResult,
     RecommendationAction,
