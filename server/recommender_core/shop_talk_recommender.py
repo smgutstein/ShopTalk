@@ -123,6 +123,7 @@ class ShopTalkRecommender:
                 decision=decision,
                 final_llm_response=final_llm_response,
                 timing=timing,
+                diagnostics=diagnostics
             )
 
         return self._build_reply_payload(
@@ -213,6 +214,7 @@ class ShopTalkRecommender:
         decision,
         final_llm_response,
         timing,
+        diagnostics,
     ):
         max_score_dict = self._best_scored_product(search_result.found_products)
 
@@ -220,10 +222,12 @@ class ShopTalkRecommender:
             user_input=request.user_input,
             chosen_product=decision.chosen_product,
             max_score_dict=max_score_dict,
+            decision=decision,
             minutes=timing.minutes,
             seconds=timing.seconds,
             llm_response=final_llm_response,
             found_products=search_result.found_products,
+            diagnostics=diagnostics,
         )
 
     def _best_scored_product(self, found_products):
@@ -269,10 +273,12 @@ class ShopTalkRecommender:
         user_input,
         chosen_product,
         max_score_dict,
+        decision,
         minutes,
         seconds,
         llm_response,
         found_products,
+        diagnostics
     ):
         with open(DEBUG_FILE, "a") as f:
             f.write(f"User input: {user_input}\n")
@@ -291,6 +297,11 @@ class ShopTalkRecommender:
                 f.write("  Best Item: None\n")
                 f.write("  Best Score: N/A\n\n")
 
+            f.write(f"  Embedding Mode: {diagnostics['embedding_mode']}\n")
+            f.write(f"  LLM Search Query: {diagnostics['llm_search_query']}\n\n")
+            f.write(f"  Initial LLM Response: {decision.initial_llm_response}\n")
+            f.write(f"  Chosen PID: {decision.chosen_pid}\n")
+            f.write(f"  Dive Deeper: {decision.dive_deeper}\n\n")
             f.write(f"  Response Time: {minutes} minutes, {seconds} seconds\n")
             f.write(f"  Response: {llm_response}\n")
             f.write("\n\n")
