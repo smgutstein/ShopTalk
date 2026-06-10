@@ -9,6 +9,7 @@ from .gradio_images import (
     top_product_image_paths,
 )
 from .recommender_core.config import RecommenderConfig
+from .recommender_core.diagnostics import diagnostics_to_dict
 from .shoptalk_paths import (
     COMBINED_BLURBS_PATH,
     DEFAULT_VECTOR_BACKEND,
@@ -156,7 +157,7 @@ def format_top_products(top_products):
 
 def format_diagnostics_summary(result):
     """Create a readable Markdown diagnostics summary for the Gradio UI."""
-    diagnostics = result.get("diagnostics") or {}
+    diagnostics = diagnostics_to_dict(result.get("diagnostics"))
     if not diagnostics:
         return "No diagnostics reported yet."
 
@@ -184,7 +185,7 @@ def format_diagnostics_summary(result):
 
 def format_diagnostics(result):
     """Return diagnostics as pretty JSON for raw inspection."""
-    diagnostics = result.get("diagnostics") or {}
+    diagnostics = diagnostics_to_dict(result.get("diagnostics"))
     return json.dumps(diagnostics, indent=2, sort_keys=True)
 
 

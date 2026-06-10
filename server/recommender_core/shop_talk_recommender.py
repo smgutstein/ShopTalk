@@ -297,9 +297,10 @@ class ShopTalkRecommender:
                 f.write("  Best Item: None\n")
                 f.write("  Best Score: N/A\n\n")
 
-            f.write(f"  Embedding Mode: {diagnostics['embedding_mode']}\n")
-            f.write(f"  LLM Search Query: {diagnostics['llm_search_query']}\n\n")
+            f.write(f"  Embedding Mode: {diagnostics.embedding_mode}\n")
+            f.write(f"  LLM Search Query: {diagnostics.llm_search_query}\n\n")
             f.write(f"  Initial LLM Response: {decision.initial_llm_response}\n")
+            f.write(f"  Decision: {diagnostics.decision}\n")
             f.write(f"  Chosen PID: {decision.chosen_pid}\n")
             f.write(f"  Dive Deeper: {decision.dive_deeper}\n\n")
             f.write(f"  Response Time: {minutes} minutes, {seconds} seconds\n")

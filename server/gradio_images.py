@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+from .recommender_core.diagnostics import diagnostics_to_dict
 from .shoptalk_paths import STATIC_IMAGES_DIR
 
 
@@ -43,7 +44,7 @@ def chosen_product_image_paths(chosen_product):
 
 def top_product_image_paths(result, max_images=12):
     """Return local image paths for retrieved products in diagnostics order."""
-    diagnostics = result.get("diagnostics") or {}
+    diagnostics = diagnostics_to_dict(result.get("diagnostics"))
     top_products = diagnostics.get("top_products") or []
 
     image_paths = []
