@@ -2,8 +2,13 @@ import logging
 
 from langchain_classic.schema import AIMessage, SystemMessage
 
+# from .llm_prompts import (
+#     build_augmented_prompt,
+#     build_no_product_reprompt,
+#     build_search_query_prompt,
+# )
 from .llm_prompts import (
-    build_augmented_prompt,
+    build_product_decision_context,
     build_no_product_reprompt,
     build_search_query_prompt,
 )
@@ -78,9 +83,19 @@ class ConversationPolicy:
         LLM decision layer without running retrieval, Gradio, or final-response
         generation.
         """
+        # prompt_messages = []
+        # if source_knowledge is not None:
+        #     prompt_messages.append(SystemMessage(content=build_augmented_prompt(source_knowledge)))
+
+        # prompt_messages.append(
+        #     SystemMessage(content=self._build_structured_action_prompt(found_products))
+        # )
+
         prompt_messages = []
         if source_knowledge is not None:
-            prompt_messages.append(SystemMessage(content=build_augmented_prompt(source_knowledge)))
+            prompt_messages.append(
+                SystemMessage(content=build_product_decision_context(source_knowledge))
+            )
 
         prompt_messages.append(
             SystemMessage(content=self._build_structured_action_prompt(found_products))
@@ -140,10 +155,10 @@ class ConversationPolicy:
         return (
             "Choose the next recommendation action using the structured schema.\n\n"
             "Rules:\n"
-            "- Use action='recommend' only if one retrieved product is clearly a good fit.\n"
+            "- Use action='recommend' only if one retrieved product is clearly a good fit based upon the user's request and the product evidence.\n"
             "- If action='recommend', product_id must exactly match one of the product ids below.\n"
-            "- Use action='dive_deeper' if you need more information from the user.\n"
-            "- Use action='wrong_track' if the retrieved products are not relevant.\n"
+            "- Use action='dive_deeper' if the retrieved products are broadly relevant, but the user's needs are not clear enough for confident selection.\n"
+            "- Use action='wrong_track' if the retrieved products are not relevant to the user's request.\n"
             "- Do not invent product ids.\n\n"
             "Available product ids:\n"
             f"{product_ids}"

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Literal
 
 from .product_candidate import ProductCandidate
@@ -62,3 +62,15 @@ class RecommendationAction(BaseModel):
             "for 'dive_deeper' or 'wrong_track'."
         ),
     )
+
+
+    @model_validator(mode="after")
+    def validate_product_id(self):
+        """Enforce action/product_id consistency on structured LLM output."""
+        if self.action == "recommend" and not self.product_id:
+            raise ValueError("product_id is required when action='recommend'")
+
+        if self.action != "recommend" and self.product_id is not None:
+            raise ValueError("product_id must be null unless action='recommend'")
+
+        return self
