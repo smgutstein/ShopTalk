@@ -11,6 +11,7 @@ from .llm_prompts import format_source_knowledge
 from .parsing import determine_embedding_mode
 from .reply_types import (
     ProductSearchResult,
+    RecommendationDecision,
     ReplyRequest,
     ReplyTiming,
 )
@@ -96,16 +97,28 @@ class ShopTalkRecommender:
 
         search_result = self._search_for_products(request)
 
-        decision = self.conversation_policy.decide_next_response(
-            conversation_history=self.conversation_history,
-            search_result=search_result,
-        )
+        if search_result.search_performed:
+            decision = self.conversation_policy.decide_next_response(
+                conversation_history=self.conversation_history,
+                search_result=search_result,
+            )
 
-        final_llm_response = self.conversation_policy.generate_final_response(
-            conversation_history=self.conversation_history,
-            decision=decision,
-            source_knowledge=search_result.source_knowledge,
-        )
+            final_llm_response = self.conversation_policy.generate_final_response(
+                conversation_history=self.conversation_history,
+                decision=decision,
+                source_knowledge=search_result.source_knowledge,
+            )
+        else:
+            decision = RecommendationDecision(
+                initial_llm_response="<NO SEARCH>",
+                chosen_pid=None,
+                chosen_product=None,
+                dive_deeper=False,
+            )
+
+            final_llm_response = self.conversation_policy.generate_response_without_search(
+                conversation_history=self.conversation_history,
+            )
 
         timing = self._measure_reply_time(start_time)
 
@@ -160,22 +173,41 @@ class ShopTalkRecommender:
         )
 
     def _search_for_products(self, request):
-        llm_search_query = (
-                            self.conversation_policy.build_search_query(self.conversation_history)
-                            if request.user_input
-                            else None
-                           )
+        if request.image_path is not None and not request.user_input:
+            return self._run_product_search(
+                search_query=None,
+                image_path=request.image_path,
+            )
 
-        found_products = self._search_products(
-            search_query=llm_search_query,
-            top_k=self.top_k,
+        search_decision = self.conversation_policy.decide_search_action(
+            self.conversation_history
+        )
+
+        if search_decision.action == "answer_without_search":
+            return ProductSearchResult(
+                search_performed=False,
+                llm_search_query=None,
+                found_products={},
+                source_knowledge="",
+            )
+
+        return self._run_product_search(
+            search_query=search_decision.search_query,
             image_path=request.image_path,
+        )
+    
+    def _run_product_search(self, search_query=None, image_path=None):
+        found_products = self._search_products(
+            search_query=search_query,
+            top_k=self.top_k,
+            image_path=image_path,
         )
 
         source_knowledge = format_source_knowledge(found_products)
 
         return ProductSearchResult(
-            llm_search_query=llm_search_query,
+            search_performed=True,
+            llm_search_query=search_query,
             found_products=found_products,
             source_knowledge=source_knowledge,
         )
@@ -199,6 +231,7 @@ class ShopTalkRecommender:
     def _build_diagnostics(self, request, search_result, decision, timing):
         return build_recommendation_diagnostics(
             embedding_mode=request.embedding_mode,
+            search_performed=search_result.search_performed,
             llm_search_query=search_result.llm_search_query,
             found_products=search_result.found_products,
             initial_llm_response=decision.initial_llm_response,
@@ -298,6 +331,7 @@ class ShopTalkRecommender:
                 f.write("  Best Score: N/A\n\n")
 
             f.write(f"  Embedding Mode: {diagnostics.embedding_mode}\n")
+            f.write(f"  Search Performed: {diagnostics.search_performed}\n")
             f.write(f"  LLM Search Query: {diagnostics.llm_search_query}\n\n")
             f.write(f"  Initial LLM Response: {decision.initial_llm_response}\n")
             f.write(f"  Decision: {diagnostics.decision}\n")

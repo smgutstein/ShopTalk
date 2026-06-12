@@ -8,6 +8,22 @@ def build_search_query_prompt():
         "words an automated search system would find useful."
     )
 
+def build_search_decision_prompt():
+    """Build prompt for deciding whether this turn needs product retrieval."""
+    return (
+        "Decide whether the user's latest message requires a new product search.\n\n"
+        "Use action='search' when the user provides new product requirements, "
+        "preferences, constraints, corrections, or an uploaded image that should change "
+        "the retrieved products.\n\n"
+        "Use action='answer_without_search' when the user's message is conversational, "
+        "asks about a previous recommendation, asks a general clarification question, "
+        "says thanks, or can be answered from the existing conversation without retrieving "
+        "new products.\n\n"
+        "When action='search', provide a relevant, compact search_query of at most 10 words, "
+        "designed to find a product matching the user's request. "
+        "The search_query should contain product-relevant terms only. Do not include "
+        "personality, apologies, explanations, or conversational filler."
+    )
 
 def _truncate_text(text, max_chars=700):
     """Return compact text for LLM decision prompts."""
@@ -37,27 +53,6 @@ def format_source_knowledge(found_products, *, max_detail_chars=700):
 
     return "\n\n---\n\n".join(product_blocks)
 
-# def format_source_knowledge(found_products):
-#     """Format product search results as source text for the LLM."""
-#     return "\n\n;\n\n".join(
-#         [
-#             f"product_id: {pid}, item_name: {info.item_name}"
-#             for pid, info in found_products.items()
-#         ]
-#     )
-
-
-# def build_augmented_prompt(source_knowledge):
-#     """Build the control prompt used to choose recommend/dive-deeper/wrong-track."""
-#     return (
-#         "Your next output must be surrounded by <> symbols, filled according to 1 of the following 3 options, with no trailing period:\n"
-#         "A. If any of the listed >>Suggested Products<< below are relevant and suggestible, "
-#         "please output its product ID (NOT it's product NAME!), like: <B071K17SWD>.\n"
-#         "B. If you think that refining search results won't lead to better results, please output: <WRONG TRACK>.\n"
-#         "C. If you think that search results are promising and there's room to ask the user for more specificity, please output: <DIVE DEEPER>.\n"
-#         ">>Suggested Products<<:"
-#         f"{source_knowledge}"
-#     )
 
 def build_product_decision_context(source_knowledge):
     """Build product context for the structured recommendation decision."""

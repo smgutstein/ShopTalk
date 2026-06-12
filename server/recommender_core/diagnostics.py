@@ -1,10 +1,11 @@
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 
 
 @dataclass(frozen=True)
 class RecommendationDiagnostics:
     embedding_mode: str
+    search_performed: bool
     llm_search_query: str | None
     top_products: list[dict]
     initial_llm_response: str
@@ -12,15 +13,17 @@ class RecommendationDiagnostics:
     decision: str
     timings: dict
 
-    def to_dict(self):
-        return asdict(self)
-
 
 def diagnostics_to_dict(diagnostics):
     if diagnostics is None:
         return {}
+    
     if hasattr(diagnostics, "to_dict"):
         return diagnostics.to_dict()
+    
+    if is_dataclass(diagnostics) and not isinstance(diagnostics, type):
+        return asdict(diagnostics)
+
     return diagnostics
 
 
@@ -58,6 +61,7 @@ def infer_recommendation_decision(chosen_pid, dive_deeper, initial_llm_response)
 def build_recommendation_diagnostics(
     *,
     embedding_mode,
+    search_performed,
     llm_search_query,
     found_products,
     initial_llm_response,
@@ -68,6 +72,7 @@ def build_recommendation_diagnostics(
     """Build internal diagnostics for retrieval and LLM-control behavior."""
     return RecommendationDiagnostics(
         embedding_mode=embedding_mode,
+        search_performed=search_performed,
         llm_search_query=llm_search_query,
         top_products=summarize_top_products(found_products),
         initial_llm_response=initial_llm_response,

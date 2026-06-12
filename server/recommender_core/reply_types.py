@@ -23,10 +23,10 @@ class ReplyRequest:
 class ProductSearchResult:
     """Products and supporting text retrieved for a recommender turn."""
 
+    search_performed: bool
     llm_search_query: str | None
     found_products: dict[str, ProductCandidate]
     source_knowledge: str
-
 
 @dataclass(frozen=True)
 class RecommendationDecision:
@@ -72,5 +72,37 @@ class RecommendationAction(BaseModel):
 
         if self.action != "recommend" and self.product_id is not None:
             raise ValueError("product_id must be null unless action='recommend'")
+
+        return self
+    
+class SearchDecision(BaseModel):
+    """Structured LLM decision about whether retrieval is needed."""
+
+    action: Literal["search", "answer_without_search"] = Field(
+        description=(
+            "Whether to search the product database. Use 'search' when the user "
+            "has provided new product preferences, constraints, corrections, or an image "
+            "that should affect product retrieval. Use 'answer_without_search' for "
+            "thanks, clarification questions, conversational replies, or cases where "
+            "retrieval would not improve the next response."
+        )
+    )
+
+    search_query: str | None = Field(
+        default=None,
+        description=(
+            "Compact product search query. Required when action is 'search'. "
+            "Must be null when action is 'answer_without_search'."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def validate_search_query(self):
+        """Enforce action/search_query consistency on structured LLM output."""
+        if self.action == "search" and not self.search_query:
+            raise ValueError("search_query is required when action='search'")
+
+        if self.action != "search" and self.search_query is not None:
+            raise ValueError("search_query must be null unless action='search'")
 
         return self
