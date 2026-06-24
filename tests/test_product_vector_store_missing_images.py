@@ -1,17 +1,9 @@
 import logging
-from pathlib import Path
-import sys
 
 import numpy as np
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SERVER_DIR = PROJECT_ROOT / "server"
-STUBS_DIR = PROJECT_ROOT / "tests" / "stubs"
-for path in (str(STUBS_DIR), str(SERVER_DIR)):
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-from recommender import ProductVectorStore, all_img_paths
+from server.recommender_core.product_images import all_img_paths
+from server.recommender_core.product_vector_store import ProductVectorStore
 
 
 class FakeFaissIndex:
@@ -64,6 +56,5 @@ def test_product_vector_store_search_does_not_crash_on_missing_image_id(caplog):
             image_id_to_path={},
         )
 
-    assert found_products["P1"]["image_paths"] == []
-    assert found_products["P1"]["image_urls"] == []
+    assert found_products["P1"].image_paths == ()
     assert "Skipping image_id missing-main" in caplog.text

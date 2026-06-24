@@ -6,7 +6,6 @@ from .llm_prompts import (
     build_product_decision_context,
     build_no_product_reprompt,
     build_search_decision_prompt,
-    build_search_query_prompt,
 )
 from .reply_types import (
     ProductSearchResult,
@@ -107,18 +106,6 @@ class ConversationPolicy:
 
         return action
 
-    def choose_product_or_next_action(
-        self,
-        conversation_history,
-        source_knowledge,
-        found_products,
-    ):
-        """Compatibility wrapper for older call sites."""
-        return self.decide_next_action(
-            conversation_history=conversation_history,
-            source_knowledge=source_knowledge,
-            found_products=found_products,
-        )
 
     def generate_final_response(self, conversation_history, decision, source_knowledge):
         ai_ans = AIMessage(content=decision.initial_llm_response)

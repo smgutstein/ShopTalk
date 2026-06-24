@@ -1,41 +1,10 @@
-import importlib.util
-import sys
-import types
-from pathlib import Path
 from types import SimpleNamespace
 
-
-def load_server_module_with_fakes(monkeypatch):
-    fake_flask_module = types.ModuleType("flask")
-    fake_flask_module.Flask = object
-    fake_flask_module.jsonify = lambda value: value
-    fake_flask_module.render_template = lambda *args, **kwargs: ""
-    fake_flask_module.request = SimpleNamespace(json={})
-    monkeypatch.setitem(sys.modules, "flask", fake_flask_module)
-
-    fake_recommender_module = types.ModuleType("recommender")
-
-    class FakeShopTalkRecommender:
-        calls = []
-
-        def __init__(self, **kwargs):
-            self.kwargs = kwargs
-            FakeShopTalkRecommender.calls.append(kwargs)
-
-    fake_recommender_module.ShopTalkRecommender = FakeShopTalkRecommender
-    monkeypatch.setitem(sys.modules, "recommender", fake_recommender_module)
-
-    server_path = Path(__file__).resolve().parents[1] / "server" / "server.py"
-    spec = importlib.util.spec_from_file_location("server_under_test", server_path)
-    server_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(server_module)
-
-    return server_module, FakeShopTalkRecommender
+from server.recommender_core.config import RecommenderConfig
+from server.recommender_core.shop_talk_recommender import ShopTalkRecommender
 
 
-def test_build_recommender_passes_cli_args_to_recommender(monkeypatch):
-    server_module, fake_recommender_cls = load_server_module_with_fakes(monkeypatch)
-
+def test_recommender_config_from_args_maps_cli_fields():
     args = SimpleNamespace(
         personality=4,
         debug=True,
@@ -43,22 +12,53 @@ def test_build_recommender_passes_cli_args_to_recommender(monkeypatch):
         model="gpt-test",
         vector_db_output_dir="artifacts/test_vector_db",
         vector_backend="faiss",
+        top_k=7,
         product_blurbs="tests/fixtures/product_blurbs.json",
         images_csv="tests/fixtures/images.csv",
     )
 
-    recommender = server_module.build_recommender(args)
+    config = RecommenderConfig.from_args(args)
 
-    assert isinstance(recommender, fake_recommender_cls)
-    assert fake_recommender_cls.calls == [
-        {
-            "personality_index": 4,
-            "debug": True,
-            "force_cpu": True,
-            "model_name": "gpt-test",
-            "vector_db_output_dir": "artifacts/test_vector_db",
-            "vector_backend": "faiss",
-            "blurbs_path": "tests/fixtures/product_blurbs.json",
-            "images_csv_path": "tests/fixtures/images.csv",
-        }
-    ]
+    assert config.personality_index == 4
+    assert config.debug is True
+    assert config.force_cpu is True
+    assert config.model_name == "gpt-test"
+    assert str(config.vector_db_output_dir) == "artifacts/test_vector_db"
+    assert config.vector_backend == "faiss"
+    assert config.top_k == 7
+    assert str(config.blurbs_path) == "tests/fixtures/product_blurbs.json"
+    assert str(config.images_csv_path) == "tests/fixtures/images.csv"
+
+
+def test_shoptalk_recommender_from_args_delegates_to_factory(monkeypatch):
+    calls = []
+    fake_recommender = object()
+
+    def fake_build_recommender(config):
+        calls.append(config)
+        return fake_recommender
+
+    monkeypatch.setattr(
+        "server.recommender_core.recommender_factory.build_recommender",
+        fake_build_recommender,
+    )
+
+    args = SimpleNamespace(
+        personality=2,
+        debug=False,
+        cpu=False,
+        model="gpt-test",
+        vector_db_output_dir="artifacts/test_vector_db",
+        vector_backend="faiss",
+        top_k=5,
+        product_blurbs="tests/fixtures/product_blurbs.json",
+        images_csv="tests/fixtures/images.csv",
+    )
+
+    result = ShopTalkRecommender.from_args(args)
+
+    assert result is fake_recommender
+    assert len(calls) == 1
+    assert isinstance(calls[0], RecommenderConfig)
+    assert calls[0].personality_index == 2
+    assert calls[0].top_k == 5

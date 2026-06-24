@@ -1,59 +1,71 @@
-import sys
-from pathlib import Path
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SERVER_DIR = REPO_ROOT / "server"
-for path in (REPO_ROOT, SERVER_DIR):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
-
-import recommender
+from server.recommender_core.llm_prompts import (
+    build_no_product_reprompt,
+    build_product_decision_context,
+    format_source_knowledge,
+)
+from server.recommender_core.product_candidate import ProductCandidate
 
 
-def make_recommender_without_init():
-    return object.__new__(recommender.ShopTalkRecommender)
-
-
-def test_format_source_knowledge_lists_product_ids_and_names_in_order():
-    instance = make_recommender_without_init()
-    found_products = {
-        "B001": {"item_name": "First product"},
-        "B002": {"item_name": "Second product"},
-    }
-
-    source_knowledge = recommender.format_source_knowledge(found_products)
-
-    assert source_knowledge == (
-        "product_id: B001, item_name: First product"
-        "\n\n;\n\n"
-        "product_id: B002, item_name: Second product"
+def make_candidate(product_id, name, score=0.91, product_type="shoes", details=None):
+    return ProductCandidate(
+        product_id=product_id,
+        item_name=name,
+        score=score,
+        image_paths=(),
+        product_type=product_type,
+        llm_str=details or f"Details for {name}",
     )
 
 
+def test_format_source_knowledge_lists_rich_product_context_in_order():
+    found_products = {
+        "B001": make_candidate("B001", "First product", score=0.91),
+        "B002": make_candidate("B002", "Second product", score=0.82),
+    }
+
+    source_knowledge = format_source_knowledge(found_products)
+
+    assert "rank: 1" in source_knowledge
+    assert "product_id: B001" in source_knowledge
+    assert "item_name: First product" in source_knowledge
+    assert "product_type: shoes" in source_knowledge
+    assert "similarity_score: 0.9100" in source_knowledge
+    assert "details: Details for First product" in source_knowledge
+    assert source_knowledge.index("product_id: B001") < source_knowledge.index("product_id: B002")
+
+
+def test_format_source_knowledge_truncates_long_details():
+    found_products = {
+        "B001": make_candidate("B001", "First product", details="x" * 20),
+    }
+
+    source_knowledge = format_source_knowledge(found_products, max_detail_chars=5)
+
+    assert "details: xxxxx..." in source_knowledge
+
+
 def test_format_source_knowledge_returns_empty_string_for_no_products():
-    instance = make_recommender_without_init()
-
-    assert recommender.format_source_knowledge({}) == ""
+    assert format_source_knowledge({}) == ""
 
 
-def test_build_augmented_prompt_contains_control_options_and_source_knowledge():
-    instance = make_recommender_without_init()
-    source_knowledge = "product_id: B001, item_name: First product"
+def test_build_product_decision_context_uses_structured_decision_language():
+    source_knowledge = "product_id: B001\nitem_name: First product"
 
-    prompt = recommender.build_augmented_prompt(source_knowledge)
+    prompt = build_product_decision_context(source_knowledge)
 
-    assert "<B071K17SWD>" in prompt
-    assert "<WRONG TRACK>" in prompt
-    assert "<DIVE DEEPER>" in prompt
-    assert ">>Suggested Products<<" in prompt
+    assert "available product set" in prompt
+    assert "Do not recommend products outside this list" in prompt
+    assert "similarity_score is retrieval evidence" in prompt
     assert source_knowledge in prompt
+    assert "<DIVE DEEPER>" not in prompt
+    assert "<WRONG TRACK>" not in prompt
+    assert ">>Suggested Products<<" not in prompt
 
 
 def test_build_no_product_reprompt_for_dive_deeper_includes_source_knowledge():
-    instance = make_recommender_without_init()
     source_knowledge = "product_id: B001, item_name: First product"
 
-    reprompt, log_message = recommender.build_no_product_reprompt(
+    reprompt, log_message = build_no_product_reprompt(
         dive_deeper=True,
         source_knowledge=source_knowledge,
     )
@@ -65,10 +77,9 @@ def test_build_no_product_reprompt_for_dive_deeper_includes_source_knowledge():
 
 
 def test_build_no_product_reprompt_for_wrong_track_includes_source_knowledge():
-    instance = make_recommender_without_init()
     source_knowledge = "product_id: B001, item_name: First product"
 
-    reprompt, log_message = recommender.build_no_product_reprompt(
+    reprompt, log_message = build_no_product_reprompt(
         dive_deeper=False,
         source_knowledge=source_knowledge,
     )
@@ -78,14 +89,3 @@ def test_build_no_product_reprompt_for_wrong_track_includes_source_knowledge():
     assert "apologize" in reprompt
     assert "Don't recommend any specific products" in reprompt
     assert source_knowledge in reprompt
-
-
-def test_shoptalk_prompt_methods_delegate_to_module_helpers():
-    instance = make_recommender_without_init()
-    found_products = {"B001": {"item_name": "First product"}}
-    source_knowledge = recommender.format_source_knowledge(found_products)
-
-    assert instance._format_source_knowledge(found_products) == source_knowledge
-    assert instance._build_augmented_prompt(source_knowledge) == recommender.build_augmented_prompt(source_knowledge)
-    assert instance._build_no_product_reprompt(True, source_knowledge) == recommender.build_no_product_reprompt(True, source_knowledge)
-    assert instance._build_no_product_reprompt(False, source_knowledge) == recommender.build_no_product_reprompt(False, source_knowledge)

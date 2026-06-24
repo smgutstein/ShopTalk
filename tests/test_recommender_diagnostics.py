@@ -1,23 +1,16 @@
-import sys
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SERVER_DIR = REPO_ROOT / "server"
-for path in (REPO_ROOT, SERVER_DIR):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
-
 from server.recommender_core.diagnostics import (
     RecommendationDiagnostics,
     build_recommendation_diagnostics,
+    diagnostics_to_dict,
     infer_recommendation_decision,
     summarize_top_products,
 )
 from server.recommender_core.parsing import determine_embedding_mode
-from server.recommender_core.reply_types import RecommendationDecision
+from server.recommender_core.reply_types import RecommendationDecision, SearchDecision
 from server.recommender_core.shop_talk_recommender import ShopTalkRecommender
 
 
@@ -80,6 +73,7 @@ def test_infer_recommendation_decision():
 def test_build_recommendation_diagnostics():
     diagnostics = build_recommendation_diagnostics(
         embedding_mode="text_image",
+        search_performed=True,
         llm_search_query="red running shoes",
         found_products=make_found_products(),
         initial_llm_response="<pid-1>",
@@ -90,6 +84,7 @@ def test_build_recommendation_diagnostics():
 
     assert isinstance(diagnostics, RecommendationDiagnostics)
     assert diagnostics.embedding_mode == "text_image"
+    assert diagnostics.search_performed is True
     assert diagnostics.llm_search_query == "red running shoes"
     assert diagnostics.initial_llm_response == "<pid-1>"
     assert diagnostics.chosen_pid == "pid-1"
@@ -100,10 +95,34 @@ def test_build_recommendation_diagnostics():
     assert diagnostics.top_products[0]["image_paths"] == ["red.jpg"]
 
 
+def test_diagnostics_to_dict_converts_dataclass_diagnostics():
+    diagnostics = RecommendationDiagnostics(
+        embedding_mode="text",
+        search_performed=False,
+        llm_search_query=None,
+        top_products=[],
+        initial_llm_response="<NO SEARCH>",
+        chosen_pid=None,
+        decision="unknown",
+        timings={"total_seconds": 0.1},
+    )
+
+    assert diagnostics_to_dict(diagnostics) == {
+        "embedding_mode": "text",
+        "search_performed": False,
+        "llm_search_query": None,
+        "top_products": [],
+        "initial_llm_response": "<NO SEARCH>",
+        "chosen_pid": None,
+        "decision": "unknown",
+        "timings": {"total_seconds": 0.1},
+    }
+
+
 def make_minimal_recommender(found_products, initial_llm_response="<pid-1>"):
     class FakeConversationPolicy:
-        def build_search_query(self, conversation_history):
-            return "red running shoes"
+        def decide_search_action(self, conversation_history):
+            return SearchDecision(action="search", search_query="red running shoes")
 
         def decide_next_response(self, conversation_history, search_result):
             chosen_pid = None
@@ -123,6 +142,9 @@ def make_minimal_recommender(found_products, initial_llm_response="<pid-1>"):
         def generate_final_response(self, conversation_history, decision, source_knowledge):
             return "Final assistant response"
 
+        def generate_response_without_search(self, conversation_history):
+            return "No-search response"
+
     rec = object.__new__(ShopTalkRecommender)
     rec.debug = False
     rec.personality = "test-personality"
@@ -140,6 +162,7 @@ def test_generate_reply_returns_diagnostics_for_text_query():
     result = rec.generate_reply(user_input="I need red shoes")
 
     assert result["diagnostics"].embedding_mode == "text"
+    assert result["diagnostics"].search_performed is True
     assert result["diagnostics"].llm_search_query == "red running shoes"
     assert result["diagnostics"].initial_llm_response == "<pid-1>"
     assert result["diagnostics"].chosen_pid == "pid-1"
@@ -155,6 +178,7 @@ def test_generate_reply_returns_image_diagnostics_without_search_query():
     result = rec.generate_reply(image_path="query.jpg")
 
     assert result["diagnostics"].embedding_mode == "image"
+    assert result["diagnostics"].search_performed is True
     assert result["diagnostics"].llm_search_query is None
     assert result["diagnostics"].initial_llm_response == "<DIVE DEEPER>"
     assert result["diagnostics"].chosen_pid is None

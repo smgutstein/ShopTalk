@@ -1,16 +1,9 @@
 import json
-import sys
-from pathlib import Path
 
 import pytest
 
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SERVER_DIR = PROJECT_ROOT / "server"
-if str(SERVER_DIR) not in sys.path:
-    sys.path.insert(0, str(SERVER_DIR))
-
-import recommender
+from server.recommender_core import vector_db
+from server.recommender_core.product_vector_store import ProductVectorStore
 
 
 class FakeFaissIndex:
@@ -28,7 +21,6 @@ def test_load_vector_db_reads_faiss_index_and_product_ids_json(monkeypatch, tmp_
     product_ids_path = tmp_path / "product_ids.json"
     blurbs_path = tmp_path / "combined_blurb_dict.json"
 
-    # The file only needs to exist; faiss.read_index is mocked below.
     index_path.write_bytes(b"fake faiss bytes")
     write_json(product_ids_path, ["product-1", "product-2"])
     write_json(
@@ -45,9 +37,9 @@ def test_load_vector_db_reads_faiss_index_and_product_ids_json(monkeypatch, tmp_
         seen_paths.append(path)
         return FakeFaissIndex(ntotal=2, d=1024)
 
-    monkeypatch.setattr(recommender.faiss, "read_index", fake_read_index)
+    monkeypatch.setattr(vector_db.faiss, "read_index", fake_read_index)
 
-    index, product_ids, blurbs = recommender.load_vector_db(
+    index, product_ids, blurbs = vector_db.load_vector_db(
         index_path=index_path,
         blurbs_path=blurbs_path,
         product_ids_path=product_ids_path,
@@ -71,10 +63,10 @@ def test_load_vector_db_rejects_mismatched_index_and_product_id_counts(monkeypat
     def fake_read_index(path):
         return FakeFaissIndex(ntotal=3, d=1024)
 
-    monkeypatch.setattr(recommender.faiss, "read_index", fake_read_index)
+    monkeypatch.setattr(vector_db.faiss, "read_index", fake_read_index)
 
     with pytest.raises(ValueError, match="FAISS index contains 3 vectors"):
-        recommender.load_vector_db(
+        vector_db.load_vector_db(
             index_path=index_path,
             blurbs_path=blurbs_path,
             product_ids_path=product_ids_path,
@@ -112,7 +104,7 @@ def test_product_vector_store_search_maps_rows_to_product_records():
         distances=[[0.9, 0.8]],
         indices=[[1, 0]],
     )
-    store = recommender.ProductVectorStore(
+    store = ProductVectorStore(
         faiss_index=fake_index,
         product_ids=["product-0", "product-1"],
         blurbs={
@@ -134,16 +126,12 @@ def test_product_vector_store_search_maps_rows_to_product_records():
 
     assert fake_index.seen_k == [2]
     assert list(found_products) == ["product-1", "product-0"]
-    assert found_products["product-1"] == {
-        "item_name": "One",
-        "score": 0.9,
-        "image_paths": ["one.jpg", "one-extra.jpg"],
-        "image_urls": ["/static/images/one.jpg", "/static/images/one-extra.jpg"],
-        "product_type": "widget",
-        "llm_str": "Description for One",
-    }
-    assert found_products["product-0"]["image_paths"] == ["zero.jpg"]
-    assert found_products["product-0"]["image_urls"] == ["/static/images/zero.jpg"]
+    assert found_products["product-1"].item_name == "One"
+    assert found_products["product-1"].score == 0.9
+    assert found_products["product-1"].image_paths == ("one.jpg", "one-extra.jpg")
+    assert found_products["product-1"].product_type == "widget"
+    assert found_products["product-1"].llm_str == "Description for One"
+    assert found_products["product-0"].image_paths == ("zero.jpg",)
 
 
 def test_product_vector_store_search_deduplicates_repeated_product_ids():
@@ -151,7 +139,7 @@ def test_product_vector_store_search_deduplicates_repeated_product_ids():
         distances=[[0.95, 0.90]],
         indices=[[0, 1]],
     )
-    store = recommender.ProductVectorStore(
+    store = ProductVectorStore(
         faiss_index=fake_index,
         product_ids=["product-1", "product-1"],
         blurbs={
@@ -170,15 +158,11 @@ def test_product_vector_store_search_deduplicates_repeated_product_ids():
     )
 
     assert list(found_products) == ["product-1"]
-    assert found_products["product-1"]["score"] == 0.95
-    assert found_products["product-1"]["image_paths"] == [
+    assert found_products["product-1"].score == 0.95
+    assert found_products["product-1"].image_paths == (
         "one.jpg",
         "one-extra.jpg",
-    ]
-    assert found_products["product-1"]["image_urls"] == [
-        "/static/images/one.jpg",
-        "/static/images/one-extra.jpg",
-    ]
+    )
 
 
 def test_product_vector_store_search_rejects_out_of_range_faiss_row():
@@ -186,7 +170,7 @@ def test_product_vector_store_search_rejects_out_of_range_faiss_row():
         distances=[[0.7]],
         indices=[[3]],
     )
-    store = recommender.ProductVectorStore(
+    store = ProductVectorStore(
         faiss_index=fake_index,
         product_ids=["product-0"],
         blurbs={"product-0": make_blurb("Zero", "img-zero")},

@@ -1,17 +1,7 @@
-from pathlib import Path
-import sys
-
 import numpy as np
 import pytest
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SERVER_DIR = PROJECT_ROOT / "server"
-STUBS_DIR = PROJECT_ROOT / "tests" / "stubs"
-for path in (str(STUBS_DIR), str(SERVER_DIR)):
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-from recommender import ProductVectorStore
+from server.recommender_core.product_vector_store import ProductVectorStore
 
 
 class FakeFaissIndex:
@@ -58,15 +48,14 @@ def test_search_maps_faiss_rows_to_product_records():
     )
 
     assert list(found.keys()) == ["pid_b", "pid_a"]
-    assert found["pid_b"] == {
-        "item_name": "Beta",
-        "score": pytest.approx(0.91),
-        "image_paths": ["beta.jpg", "beta_detail.jpg"],
-        "image_urls": ["/static/images/beta.jpg", "/static/images/beta_detail.jpg"],
-        "product_type": "test product",
-        "llm_str": "Description for Beta",
-    }
-    assert found["pid_a"]["score"] == pytest.approx(0.73)
+    beta = found["pid_b"]
+    assert beta.product_id == "pid_b"
+    assert beta.item_name == "Beta"
+    assert beta.score == pytest.approx(0.91)
+    assert beta.image_paths == ("beta.jpg", "beta_detail.jpg")
+    assert beta.product_type == "test product"
+    assert beta.llm_str == "Description for Beta"
+    assert found["pid_a"].score == pytest.approx(0.73)
     assert index.k == 2
     assert index.query_matrix.dtype == np.float32
     assert index.query_matrix.shape == (1, 3)
@@ -104,8 +93,8 @@ def test_search_merges_duplicate_product_rows_without_duplicate_image_paths():
     )
 
     assert list(found.keys()) == ["pid_a"]
-    assert found["pid_a"]["score"] == pytest.approx(0.91)
-    assert found["pid_a"]["image_paths"] == ["alpha.jpg", "alpha_detail.jpg"]
+    assert found["pid_a"].score == pytest.approx(0.91)
+    assert found["pid_a"].image_paths == ("alpha.jpg", "alpha_detail.jpg")
 
 
 def test_search_raises_if_faiss_returns_unknown_row():

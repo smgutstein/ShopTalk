@@ -1,13 +1,5 @@
 import logging
 
-def build_search_query_prompt():
-    """Build the prompt that asks the LLM for compact vector-search terms."""
-    return (
-        "Based on the current conversation, what sort of product should we search for? "
-        "Please ignore your personality and limit your answer to a maximum of 10 words - "
-        "words an automated search system would find useful."
-    )
-
 def build_search_decision_prompt():
     """Build prompt for deciding whether this turn needs product retrieval."""
     return (

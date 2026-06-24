@@ -1,18 +1,13 @@
-import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SERVER_DIR = REPO_ROOT / "server"
-for path in (REPO_ROOT, SERVER_DIR):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
-
-import gradio_app
+from server import gradio_app
+from server.recommender_core.product_candidate import ProductCandidate
 
 
 class FakeRecommender:
-    def __init__(self):
+    def __init__(self, image_paths=None):
         self.calls = []
+        self.image_paths = tuple(image_paths or [])
 
     def generate_reply(self, user_input=None, image_path=None):
         self.calls.append({"user_input": user_input, "image_path": image_path})
@@ -21,15 +16,18 @@ class FakeRecommender:
                 {"type": "HumanMessage", "content": user_input or "image query"},
                 {"type": "AIMessage", "content": "Here is a recommendation."},
             ],
-            "chosen_product": {
-                "item_name": "Test Product",
-                "score": 0.875,
-                "product_type": "widget",
-                "image_paths": ["test.jpg", "detail.jpg"],
-            },
+            "chosen_product": ProductCandidate(
+                product_id="product-1",
+                item_name="Test Product",
+                score=0.875,
+                product_type="widget",
+                image_paths=self.image_paths,
+                llm_str="Test product details",
+            ),
             "personality": "test",
             "diagnostics": {
                 "embedding_mode": "text_image",
+                "search_performed": True,
                 "decision": "recommend",
                 "llm_search_query": "red shoes",
                 "chosen_pid": "product-1",
@@ -39,13 +37,13 @@ class FakeRecommender:
                         "product_id": "product-1",
                         "item_name": "Test Product",
                         "score": 0.875,
-                        "image_paths": ["test.jpg", "detail.jpg"],
+                        "image_paths": list(self.image_paths),
                     },
                     {
                         "product_id": "product-2",
                         "item_name": "Backup Product",
                         "score": 0.5,
-                        "image_paths": ["backup.jpg", "test.jpg"],
+                        "image_paths": list(reversed(self.image_paths)),
                     },
                 ],
                 "timings": {"total_seconds": 1.23456},
@@ -53,8 +51,20 @@ class FakeRecommender:
         }
 
 
-def test_handle_message_passes_text_query_to_recommender():
-    fake = FakeRecommender()
+def user_msg(content):
+    return {"role": "user", "content": content}
+
+
+def assistant_msg(content):
+    return {"role": "assistant", "content": content}
+
+
+def test_handle_message_passes_text_query_to_recommender(tmp_path):
+    image1 = tmp_path / "test.jpg"
+    image2 = tmp_path / "detail.jpg"
+    image1.write_text("fake image", encoding="utf-8")
+    image2.write_text("fake image", encoding="utf-8")
+    fake = FakeRecommender([str(image1), str(image2)])
 
     history, cleared_text, cleared_image, product_md, product_images, top_product_images, diagnostics_summary, diagnostics = gradio_app.handle_message(
         " red shoes ",
@@ -64,13 +74,13 @@ def test_handle_message_passes_text_query_to_recommender():
     )
 
     assert fake.calls == [{"user_input": "red shoes", "image_path": None}]
-    assert history == [("red shoes", "Here is a recommendation.")]
+    assert history == [user_msg("red shoes"), assistant_msg("Here is a recommendation.")]
     assert cleared_text == ""
     assert cleared_image is None
     assert "Test Product" in product_md
     assert "0.8750" in product_md
-    assert product_images == ["test.jpg", "detail.jpg"]
-    assert top_product_images == ["test.jpg", "detail.jpg", "backup.jpg"]
+    assert product_images == [str(image1), str(image2)]
+    assert top_product_images == [str(image1), str(image2)]
     assert "text_image" in diagnostics_summary
     assert "recommend" in diagnostics_summary
     assert "red shoes" in diagnostics_summary
@@ -78,8 +88,12 @@ def test_handle_message_passes_text_query_to_recommender():
     assert '"embedding_mode": "text_image"' in diagnostics
 
 
-def test_handle_message_passes_image_only_query_to_recommender():
-    fake = FakeRecommender()
+def test_handle_message_passes_image_only_query_to_recommender(tmp_path):
+    image1 = tmp_path / "test.jpg"
+    image2 = tmp_path / "detail.jpg"
+    image1.write_text("fake image", encoding="utf-8")
+    image2.write_text("fake image", encoding="utf-8")
+    fake = FakeRecommender([str(image1), str(image2)])
 
     history, _, _, product_md, product_images, top_product_images, _, _ = gradio_app.handle_message(
         "",
@@ -89,14 +103,18 @@ def test_handle_message_passes_image_only_query_to_recommender():
     )
 
     assert fake.calls == [{"user_input": None, "image_path": "/tmp/query.jpg"}]
-    assert history == [("[image uploaded]", "Here is a recommendation.")]
+    assert history == [user_msg("[image uploaded]"), assistant_msg("Here is a recommendation.")]
     assert "Test Product" in product_md
-    assert product_images == ["test.jpg", "detail.jpg"]
-    assert top_product_images == ["test.jpg", "detail.jpg", "backup.jpg"]
+    assert product_images == [str(image1), str(image2)]
+    assert top_product_images == [str(image1), str(image2)]
 
 
-def test_handle_message_passes_text_and_image_query_to_recommender():
-    fake = FakeRecommender()
+def test_handle_message_passes_text_and_image_query_to_recommender(tmp_path):
+    image1 = tmp_path / "test.jpg"
+    image2 = tmp_path / "detail.jpg"
+    image1.write_text("fake image", encoding="utf-8")
+    image2.write_text("fake image", encoding="utf-8")
+    fake = FakeRecommender([str(image1), str(image2)])
 
     history, _, _, _, _, _, _, _ = gradio_app.handle_message(
         "match this style",
@@ -106,21 +124,25 @@ def test_handle_message_passes_text_and_image_query_to_recommender():
     )
 
     assert fake.calls == [{"user_input": "match this style", "image_path": "/tmp/query.jpg"}]
-    assert history == [("match this style\n\n[image uploaded]", "Here is a recommendation.")]
+    assert history == [
+        user_msg("match this style\n\n[image uploaded]"),
+        assistant_msg("Here is a recommendation."),
+    ]
 
 
 def test_handle_message_rejects_empty_submission_without_calling_recommender():
     fake = FakeRecommender()
+    existing_history = [user_msg("previous"), assistant_msg("reply")]
 
     history, cleared_text, cleared_image, product_md, product_images, top_product_images, diagnostics_summary, diagnostics = gradio_app.handle_message(
         "   ",
         None,
-        [("previous", "reply")],
+        existing_history,
         fake,
     )
 
     assert fake.calls == []
-    assert history == [("previous", "reply")]
+    assert history == existing_history
     assert cleared_text == ""
     assert cleared_image is None
     assert "Enter text" in product_md
@@ -134,28 +156,42 @@ def test_format_chosen_product_handles_empty_product():
     assert gradio_app.format_chosen_product({}) == "No product selected yet."
 
 
-def test_chosen_product_image_paths_returns_local_image_paths():
-    assert gradio_app.chosen_product_image_paths({"image_paths": ["one.jpg", "two.jpg"]}) == [
-        "one.jpg",
-        "two.jpg",
-    ]
+def test_chosen_product_image_paths_returns_local_image_paths(tmp_path):
+    one = tmp_path / "one.jpg"
+    two = tmp_path / "two.jpg"
+    one.write_text("fake", encoding="utf-8")
+    two.write_text("fake", encoding="utf-8")
+    product = ProductCandidate(
+        product_id="p1",
+        item_name="One",
+        score=1.0,
+        image_paths=(str(one), str(two)),
+        product_type="widget",
+        llm_str="details",
+    )
+
+    assert gradio_app.chosen_product_image_paths(product) == [str(one), str(two)]
     assert gradio_app.chosen_product_image_paths({}) == []
 
 
+def test_top_product_image_paths_returns_unique_retrieval_images_in_order(tmp_path):
+    one = tmp_path / "one.jpg"
+    shared = tmp_path / "shared.jpg"
+    two = tmp_path / "two.jpg"
+    for path in (one, shared, two):
+        path.write_text("fake", encoding="utf-8")
 
-
-def test_top_product_image_paths_returns_unique_retrieval_images_in_order():
     result = {
         "diagnostics": {
             "top_products": [
-                {"image_paths": ["one.jpg", "shared.jpg"]},
-                {"image_paths": ["two.jpg", "shared.jpg"]},
+                {"image_paths": [str(one), str(shared)]},
+                {"image_paths": [str(two), str(shared)]},
             ]
         }
     }
 
-    assert gradio_app.top_product_image_paths(result) == ["one.jpg", "shared.jpg", "two.jpg"]
-    assert gradio_app.top_product_image_paths(result, max_images=2) == ["one.jpg", "shared.jpg"]
+    assert gradio_app.top_product_image_paths(result) == [str(one), str(shared), str(two)]
+    assert gradio_app.top_product_image_paths(result, max_images=2) == [str(one), str(shared)]
     assert gradio_app.top_product_image_paths({}) == []
 
 
@@ -203,8 +239,12 @@ def test_normalize_image_input_rejects_unsupported_shape():
         raise AssertionError("Expected TypeError for unsupported image input shape")
 
 
-def test_handle_message_normalizes_image_metadata_dict_before_calling_recommender():
-    fake = FakeRecommender()
+def test_handle_message_normalizes_image_metadata_dict_before_calling_recommender(tmp_path):
+    image1 = tmp_path / "test.jpg"
+    image2 = tmp_path / "detail.jpg"
+    image1.write_text("fake image", encoding="utf-8")
+    image2.write_text("fake image", encoding="utf-8")
+    fake = FakeRecommender([str(image1), str(image2)])
 
     history, _, _, _, _, _, _, _ = gradio_app.handle_message(
         "match this",
@@ -214,4 +254,7 @@ def test_handle_message_normalizes_image_metadata_dict_before_calling_recommende
     )
 
     assert fake.calls == [{"user_input": "match this", "image_path": "/tmp/query.jpg"}]
-    assert history == [("match this\n\n[image uploaded]", "Here is a recommendation.")]
+    assert history == [
+        user_msg("match this\n\n[image uploaded]"),
+        assistant_msg("Here is a recommendation."),
+    ]
