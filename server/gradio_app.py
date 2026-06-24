@@ -261,7 +261,7 @@ def create_gradio_interface(recommender):
         gr.Markdown("# ShopTalk multimodal recommender")
         gr.Markdown("Search by text, image, or both.")
 
-        chatbot = gr.Chatbot(label="Conversation", type="messages")
+        chatbot = gr.Chatbot(label="Conversation")
         with gr.Row():
             user_text = gr.Textbox(label="Text query", placeholder="What are you shopping for?")
             image_input = gr.Image(label="Optional image query", type="filepath")
