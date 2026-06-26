@@ -15,6 +15,7 @@ import argparse
 import csv
 import json
 import os
+from contextlib import redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -32,6 +33,7 @@ from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
 
 
 DEFAULT_CASES_PATH = Path(__file__).with_name("eval_cases_llm_decision.jsonl")
+DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 
 
 @dataclass(frozen=True)
@@ -86,6 +88,17 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=None,
         help="Optional path to write detailed CSV results.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=DEFAULT_RESULTS_DIR,
+        help=f"Directory for numbered result files. Default: {DEFAULT_RESULTS_DIR}",
+    )
+    parser.add_argument(
+        "--output-prefix",
+        default="llm_decision_eval",
+        help="Filename prefix for numbered result files.",
     )
     return parser.parse_args()
 
@@ -215,6 +228,33 @@ def run_eval(policy: ConversationPolicy, cases: list[EvalCase]) -> list[EvalResu
     return results
 
 
+def next_numbered_output_path(
+    output_dir: Path,
+    *,
+    prefix: str,
+    suffix: str = ".txt",
+) -> Path:
+    """Return the next available numbered output path.
+
+    Example: llm_decision_eval_001.txt, llm_decision_eval_002.txt, ...
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    index = 1
+    while True:
+        candidate = output_dir / f"{prefix}_{index:03d}{suffix}"
+        if not candidate.exists():
+            return candidate
+        index += 1
+
+
+def write_report(results: list[EvalResult], output_path: Path) -> None:
+    """Write the human-readable eval report to a file."""
+    with output_path.open("w", encoding="utf-8") as outfile:
+        with redirect_stdout(outfile):
+            print_results(results)
+
+
 def print_results(results: list[EvalResult]) -> None:
     passed_count = sum(result.passed for result in results)
     total_count = len(results)
@@ -272,11 +312,17 @@ def main() -> int:
     cases = load_cases(args.cases, limit=args.limit)
     policy = build_conversation_policy(args.model, args.temperature)
     results = run_eval(policy, cases)
-    print_results(results)
+
+    output_path = next_numbered_output_path(
+        args.output_dir,
+        prefix=args.output_prefix,
+    )
+    write_report(results, output_path)
+    print(f"Wrote eval results to {output_path}")
 
     if args.output_csv is not None:
         write_csv(results, args.output_csv)
-        print(f"\nWrote CSV results to {args.output_csv}")
+        print(f"Wrote CSV results to {args.output_csv}")
 
     return 0 if all(result.passed for result in results) else 1
 
