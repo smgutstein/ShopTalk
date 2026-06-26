@@ -1,7 +1,10 @@
 from types import SimpleNamespace
 
+import pytest
+
 from server.recommender_core.config import RecommenderConfig
 from server.recommender_core.shop_talk_recommender import ShopTalkRecommender
+from server.recommender_core import recommender_factory
 
 
 def test_recommender_config_from_args_maps_cli_fields():
@@ -62,3 +65,23 @@ def test_shoptalk_recommender_from_args_delegates_to_factory(monkeypatch):
     assert isinstance(calls[0], RecommenderConfig)
     assert calls[0].personality_index == 2
     assert calls[0].top_k == 5
+
+
+def test_choose_personality_rejects_empty_personality_list(monkeypatch):
+    monkeypatch.setattr(recommender_factory, "PERSONALITIES", [])
+
+    with pytest.raises(ValueError, match="at least one personality"):
+        recommender_factory.choose_personality(-1)
+
+
+def test_choose_personality_rejects_blank_resolved_personality(monkeypatch):
+    monkeypatch.setattr(recommender_factory, "PERSONALITIES", ["   "])
+
+    with pytest.raises(ValueError, match="non-empty string"):
+        recommender_factory.choose_personality(0)
+
+
+def test_choose_personality_strips_resolved_personality(monkeypatch):
+    monkeypatch.setattr(recommender_factory, "PERSONALITIES", ["  pirate  "])
+
+    assert recommender_factory.choose_personality(0) == "pirate"

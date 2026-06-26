@@ -258,3 +258,53 @@ def test_handle_message_normalizes_image_metadata_dict_before_calling_recommende
         user_msg("match this\n\n[image uploaded]"),
         assistant_msg("Here is a recommendation."),
     ]
+
+
+def test_initial_assistant_greeting_uses_recommender_personality():
+    fake = FakeRecommender()
+    fake.personality = "1920s gangster"
+
+    greeting = gradio_app.initial_assistant_greeting(fake)
+
+    assert greeting == (
+        "I'm your 1920s gangster shopping assistant. "
+        "What would you like to shop for today?"
+    )
+
+
+def test_initial_assistant_greeting_rejects_missing_personality():
+    fake = FakeRecommender()
+
+    try:
+        gradio_app.initial_assistant_greeting(fake)
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError("Expected missing personality to fail loudly.")
+
+
+def test_initial_assistant_greeting_rejects_blank_personality():
+    fake = FakeRecommender()
+    fake.personality = "   "
+
+    try:
+        gradio_app.initial_assistant_greeting(fake)
+    except ValueError as exc:
+        assert "non-empty personality" in str(exc)
+    else:
+        raise AssertionError("Expected blank personality to fail loudly.")
+
+
+def test_initial_chat_history_seeds_assistant_greeting():
+    fake = FakeRecommender()
+    fake.personality = "test personality"
+
+    assert gradio_app.initial_chat_history(fake) == [
+        {
+            "role": "assistant",
+            "content": (
+                "I'm your test personality shopping assistant. "
+                "What would you like to shop for today?"
+            ),
+        }
+    ]

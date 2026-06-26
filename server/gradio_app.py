@@ -208,6 +208,27 @@ def format_diagnostics(result):
     return json.dumps(diagnostics, indent=2, sort_keys=True)
 
 
+def initial_assistant_greeting(recommender):
+    """Create the first assistant message shown when the UI opens.
+
+    Personality selection belongs to recommender initialization. The UI should
+    fail loudly if it receives a recommender without a resolved personality.
+    """
+    personality = recommender.personality
+    if not isinstance(personality, str) or not personality.strip():
+        raise ValueError("Recommender must have a non-empty personality string.")
+
+    return (
+        f"I'm your {personality.strip()} shopping assistant. "
+        "What would you like to shop for today?"
+    )
+
+
+def initial_chat_history(recommender):
+    """Create the initial Gradio chatbot history."""
+    return [{"role": "assistant", "content": initial_assistant_greeting(recommender)}]
+
+
 def handle_message(user_text, image_path, chat_history, recommender):
     """Handle one Gradio submit event.
 
@@ -348,6 +369,7 @@ def create_gradio_interface(recommender):
             with gr.Row(equal_height=True):
                 with gr.Column(scale=7, elem_id="chat-card"):
                     chatbot = gr.Chatbot(
+                        value=initial_chat_history(recommender),
                         label="Conversation",
                         height=520,
                     )

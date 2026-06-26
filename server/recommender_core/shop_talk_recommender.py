@@ -45,8 +45,10 @@ class ShopTalkRecommender:
         self.query_embedder = query_embedder
         self.conversation_policy = conversation_policy
         self.image_id_to_path = image_id_to_path
-        self.personality = personality
-        self.chosen_personality = personality
+        if not isinstance(personality, str) or not personality.strip():
+            raise ValueError("ShopTalkRecommender requires a non-empty personality string.")
+        self.personality = personality.strip()
+        self.chosen_personality = self.personality
         self.db_load_time = db_load_time
         self.embed_load_time = embed_load_time
         self.image_path_load_time = image_path_load_time

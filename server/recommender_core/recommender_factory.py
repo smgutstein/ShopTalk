@@ -129,10 +129,18 @@ def load_image_paths(images_csv_path):
 
 def choose_personality(personality_index: int) -> str:
     """Choose the configured personality, randomizing when requested."""
+    if not PERSONALITIES:
+        raise ValueError("PERSONALITIES must contain at least one personality.")
+
     if personality_index == -1 or personality_index >= len(PERSONALITIES):
         personality = random.choice(PERSONALITIES)
         logging.info(f"Random Personality: {personality}")
     else:
         personality = PERSONALITIES[personality_index]
+
+    if not isinstance(personality, str) or not personality.strip():
+        raise ValueError("Resolved personality must be a non-empty string.")
+
+    personality = personality.strip()
     logging.info(f" {personality}")
     return personality
