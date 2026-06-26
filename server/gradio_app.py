@@ -8,7 +8,7 @@ from .gradio_images import (
     chosen_product_image_paths,
     top_product_image_paths,
 )
-from .recommender_core.config import RecommenderConfig
+from .recommender_core.config import RecommenderConfig,  DEFAULT_LLM_MODEL
 from .recommender_core.diagnostics import diagnostics_to_dict
 from .shoptalk_paths import (
     COMBINED_BLURBS_PATH,
@@ -22,7 +22,10 @@ def parse_args():
     parser.add_argument("-p", "--personality", type=int, default=-1, help="Choose a personality")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("-c", "--cpu", action="store_true")
-    parser.add_argument("-m", "--model", type=str, default="gpt-4o")
+    parser.add_argument("-m", "--model", type=str, default=DEFAULT_LLM_MODEL,
+                        help=("LLM model name to use. "
+                              "Defaults to SHOPTALK_LLM_MODEL or the app default."),
+                        )
     parser.add_argument(
         "--vector_db_output_dir",
         type=str,

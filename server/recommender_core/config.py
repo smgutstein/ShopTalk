@@ -8,13 +8,14 @@ from ..shoptalk_paths import (
     VECTOR_DB_OUTPUT_DIR,
 )
 
+DEFAULT_LLM_MODEL = os.environ.get("SHOPTALK_LLM_MODEL", "gpt-4o")
 
 @dataclass(frozen=True)
 class RecommenderConfig:
     personality_index: int = -1
     debug: bool = False
     force_cpu: bool = False
-    model_name: str = "gpt-4o"
+    model_name: str = DEFAULT_LLM_MODEL
 
     vector_db_output_dir: Path = VECTOR_DB_OUTPUT_DIR
     vector_backend: str = DEFAULT_VECTOR_BACKEND
