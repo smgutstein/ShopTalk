@@ -25,6 +25,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from tqdm import tqdm
+
 from contextlib import redirect_stdout
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -45,7 +47,7 @@ except ImportError:  # Supports running from inside server/: python -m evals.eva
     from shoptalk_paths import DEFAULT_CONFIG_PATH
 
 
-DEFAULT_CASES_PATH = Path(__file__).with_name("search_decision_cases.jsonl")
+DEFAULT_CASES_PATH = Path(__file__).with_name("eval_cases_search_decision.jsonl")
 DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 
 
@@ -178,15 +180,38 @@ def write_report(
     *,
     output_path: Path,
     show_passes: bool,
+    cases_path: Path,
+    model_name: str,
+    temperature: float,
 ) -> None:
     """Write the human-readable eval report to a file."""
     with output_path.open("w", encoding="utf-8") as outfile:
         with redirect_stdout(outfile):
+            print_run_info(
+                cases_path=cases_path,
+                model_name=model_name,
+                temperature=temperature,
+            )
             print_summary(results)
             print_failures(results)
+            print_detailed_cases(results)
 
             if show_passes:
                 print_passes(results)
+
+
+def print_run_info(
+    *,
+    cases_path: Path,
+    model_name: str,
+    temperature: float,
+) -> None:
+    """Print eval run configuration."""
+    print("Run configuration")
+    print("-----------------")
+    print(f"cases:       {cases_path}")
+    print(f"model:       {model_name}")
+    print(f"temperature: {temperature}")
 
 
 def print_summary(results: list[EvalResult]) -> None:
@@ -251,6 +276,41 @@ def print_failures(results: list[EvalResult]) -> None:
         print(f"  reason:       {result.reason}")
         print()
 
+
+
+
+def print_detailed_cases(results: list[EvalResult]) -> None:
+    """Print every evaluated case grouped by category."""
+    by_category: dict[str, list[EvalResult]] = defaultdict(list)
+    for result in results:
+        by_category[result.category].append(result)
+
+    print()
+    print("Detailed cases by category")
+    print("--------------------------")
+    if not results:
+        print("None.")
+        return
+
+    for category in sorted(by_category):
+        category_results = by_category[category]
+        category_passed = sum(result.passed for result in category_results)
+        category_total = len(category_results)
+
+        print()
+        print(f"{category} ({category_passed}/{category_total} passed)")
+        print("~" * (len(category) + len(f" ({category_passed}/{category_total} passed)")))
+
+        for index, result in enumerate(category_results, start=1):
+            status = "PASS" if result.passed else "FAIL"
+            print(f"{index}. {result.case_id}: {status}")
+            print(f"   Tested:       {result.latest_user}")
+            print(f"   Expected:     {result.expected_action}")
+            print(f"   Actual:       {result.actual_action}")
+            print(f"   Search query: {result.search_query or '<none>'}")
+            if result.reason:
+                print(f"   Reason:       {result.reason}")
+            print()
 
 def print_passes(results: list[EvalResult]) -> None:
     """Print passing cases for inspection."""
@@ -369,16 +429,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.temperature is not None
         else file_config.eval_temperature
     )
-    print(f"Eval model: {model_name}")
-    print(f"Eval temperature: {temperature}")
-
     policy = build_conversation_policy(
         model_name=model_name,
         temperature=temperature,
     )
 
     results: list[EvalResult] = []
-    for case in cases:
+    for case in tqdm(cases):
         try:
             result = evaluate_case(policy, case)
         except Exception as exc:  # Eval harness should report case-level failures.
@@ -402,6 +459,9 @@ def main(argv: list[str] | None = None) -> int:
         results,
         output_path=output_path,
         show_passes=args.show_passes,
+        cases_path=args.cases,
+        model_name=model_name,
+        temperature=temperature,
     )
 
     print(f"Wrote eval results to {output_path}")

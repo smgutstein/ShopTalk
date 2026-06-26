@@ -43,21 +43,27 @@ DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 @dataclass(frozen=True)
 class EvalCase:
     case_id: str
+    category: str
     conversation_history: list[Any]
     found_products: dict[str, ProductCandidate]
     source_knowledge: str
     expected_action: str
     expected_product_id: str | None
+    reason: str
 
 
 @dataclass(frozen=True)
 class EvalResult:
     case_id: str
+    category: str
+    latest_user: str
+    product_summaries: list[str]
     expected_action: str
     actual_action: str
     expected_product_id: str | None
     actual_product_id: str | None
     passed: bool
+    reason: str
 
 
 def parse_args() -> argparse.Namespace:
@@ -159,11 +165,13 @@ def parse_case(case_data: dict[str, Any], *, line_number: int) -> EvalCase:
 
     return EvalCase(
         case_id=case_id,
+        category=case_data.get("category", "uncategorized"),
         conversation_history=conversation_history,
         found_products=found_products,
         source_knowledge=source_knowledge,
         expected_action=expected_action,
         expected_product_id=expected.get("product_id"),
+        reason=case_data.get("reason", ""),
     )
 
 
@@ -210,6 +218,25 @@ def build_source_knowledge(found_products: dict[str, ProductCandidate]) -> str:
     )
 
 
+def latest_user_message(conversation_history: list[Any]) -> str:
+    """Return the latest user/human message content for readable reporting."""
+    for message in reversed(conversation_history):
+        if isinstance(message, HumanMessage):
+            return str(message.content)
+    return ""
+
+
+def summarize_products(found_products: dict[str, ProductCandidate]) -> list[str]:
+    """Return compact product summaries for readable reporting."""
+    summaries: list[str] = []
+    for product in found_products.values():
+        summaries.append(
+            f"{product.product_id}: {product.item_name} "
+            f"[{product.product_type}, score={product.score:.3f}]"
+        )
+    return summaries
+
+
 def run_eval(policy: ConversationPolicy, cases: list[EvalCase]) -> list[EvalResult]:
     results: list[EvalResult] = []
     for case in cases:
@@ -228,11 +255,15 @@ def run_eval(policy: ConversationPolicy, cases: list[EvalCase]) -> list[EvalResu
         results.append(
             EvalResult(
                 case_id=case.case_id,
+                category=case.category,
+                latest_user=latest_user_message(case.conversation_history),
+                product_summaries=summarize_products(case.found_products),
                 expected_action=case.expected_action,
                 actual_action=action.action,
                 expected_product_id=case.expected_product_id,
                 actual_product_id=actual_product_id,
                 passed=passed,
+                reason=case.reason,
             )
         )
     return results
@@ -258,11 +289,38 @@ def next_numbered_output_path(
         index += 1
 
 
-def write_report(results: list[EvalResult], output_path: Path) -> None:
+def write_report(
+    results: list[EvalResult],
+    *,
+    output_path: Path,
+    cases_path: Path,
+    model_name: str,
+    temperature: float,
+) -> None:
     """Write the human-readable eval report to a file."""
     with output_path.open("w", encoding="utf-8") as outfile:
         with redirect_stdout(outfile):
+            print_run_info(
+                cases_path=cases_path,
+                model_name=model_name,
+                temperature=temperature,
+            )
             print_results(results)
+            print_detailed_cases(results)
+
+
+def print_run_info(
+    *,
+    cases_path: Path,
+    model_name: str,
+    temperature: float,
+) -> None:
+    """Print eval run configuration."""
+    print("Run configuration")
+    print("-----------------")
+    print(f"cases:       {cases_path}")
+    print(f"model:       {model_name}")
+    print(f"temperature: {temperature}")
 
 
 def print_results(results: list[EvalResult]) -> None:
@@ -288,6 +346,48 @@ def print_results(results: list[EvalResult]) -> None:
             f"{status}"
         )
 
+
+
+
+def print_detailed_cases(results: list[EvalResult]) -> None:
+    """Print every evaluated case grouped by category."""
+    by_category: dict[str, list[EvalResult]] = {}
+    for result in results:
+        by_category.setdefault(result.category, []).append(result)
+
+    print()
+    print("Detailed cases by category")
+    print("--------------------------")
+    if not results:
+        print("None.")
+        return
+
+    for category in sorted(by_category):
+        category_results = by_category[category]
+        category_passed = sum(result.passed for result in category_results)
+        category_total = len(category_results)
+
+        print()
+        print(f"{category} ({category_passed}/{category_total} passed)")
+        print("~" * (len(category) + len(f" ({category_passed}/{category_total} passed)")))
+
+        for index, result in enumerate(category_results, start=1):
+            status = "PASS" if result.passed else "FAIL"
+            print(f"{index}. {result.case_id}: {status}")
+            print(f"   Tested:       {result.latest_user}")
+            print(f"   Expected:     action={result.expected_action}, "
+                  f"product_id={result.expected_product_id or '<none>'}")
+            print(f"   Actual:       action={result.actual_action}, "
+                  f"product_id={result.actual_product_id or '<none>'}")
+            print("   Products:")
+            if result.product_summaries:
+                for product_summary in result.product_summaries:
+                    print(f"     - {product_summary}")
+            else:
+                print("     - <none>")
+            if result.reason:
+                print(f"   Reason:       {result.reason}")
+            print()
 
 def write_csv(results: list[EvalResult], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -326,9 +426,6 @@ def main() -> int:
         if args.temperature is not None
         else file_config.eval_temperature
     )
-    print(f"Eval model: {model_name}")
-    print(f"Eval temperature: {temperature}")
-
     cases = load_cases(args.cases, limit=args.limit)
     policy = build_conversation_policy(model_name, temperature)
     results = run_eval(policy, cases)
@@ -337,7 +434,13 @@ def main() -> int:
         args.output_dir,
         prefix=args.output_prefix,
     )
-    write_report(results, output_path)
+    write_report(
+        results,
+        output_path=output_path,
+        cases_path=args.cases,
+        model_name=model_name,
+        temperature=temperature,
+    )
     print(f"Wrote eval results to {output_path}")
 
     if args.output_csv is not None:
