@@ -276,26 +276,139 @@ def create_gradio_interface(recommender):
     """
     import gradio as gr
 
+    css = """
+    #app-shell {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    #hero {
+        padding: 1.25rem 1.5rem;
+        border-radius: 18px;
+        background: var(--block-background-fill);
+        border: 1px solid var(--border-color-primary);
+        color: var(--body-text-color);
+        margin-bottom: 1rem;
+    }
+
+    #hero h1 {
+        margin-bottom: 0.25rem;
+        color: var(--body-text-color);
+    }
+
+    #hero p {
+        margin-top: 0;
+        color: var(--body-text-color-subdued);
+        font-size: 1rem;
+    }
+
+    #input-card,
+    #result-card,
+    #chat-card,
+    #retrieval-card {
+        border: 1px solid var(--border-color-primary);
+        border-radius: 16px;
+        padding: 1rem;
+        background: var(--block-background-fill);
+        color: var(--body-text-color);
+        box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+    }
+
+    #input-card textarea,
+    #input-card input {
+        color: var(--body-text-color);
+    }
+
+    #input-card textarea::placeholder,
+    #input-card input::placeholder {
+        color: var(--body-text-color-subdued);
+        opacity: 1;
+    }
+
+    #search-button {
+        height: 48px;
+        font-weight: 700;
+    }
+    """
+
+    def submit_message(text, image, history):
+        return handle_message(text, image, history, recommender)
+
     with gr.Blocks(title="ShopTalk") as demo:
-        gr.Markdown("# ShopTalk multimodal recommender")
-        gr.Markdown("Search by text, image, or both.")
+        with gr.Column(elem_id="app-shell"):
+            gr.HTML(
+                """
+                <div id="hero">
+                    <h1>ShopTalk</h1>
+                    <p>Search for products using text, an image, or both.</p>
+                </div>
+                """
+            )
 
-        chatbot = gr.Chatbot(label="Conversation")
-        with gr.Row():
-            user_text = gr.Textbox(label="Text query", placeholder="What are you shopping for?")
-            image_input = gr.Image(label="Optional image query", type="filepath")
+            with gr.Row(equal_height=True):
+                with gr.Column(scale=7, elem_id="chat-card"):
+                    chatbot = gr.Chatbot(
+                        label="Conversation",
+                        height=520,
+                    )
 
-        submit = gr.Button("Search")
-        chosen_product = gr.Markdown(label="Chosen product")
-        chosen_product_images = gr.Gallery(label="Chosen product images", columns=3, height="auto")
-        top_product_images = gr.Gallery(label="Top retrieved product images", columns=4, height="auto")
-        diagnostics_summary = gr.Markdown(label="Diagnostics summary")
-        diagnostics = gr.Code(label="Raw diagnostics", language="json")
+                with gr.Column(scale=5, elem_id="result-card"):
+                    gr.Markdown("## Recommended product")
+                    chosen_product = gr.Markdown(
+                        value="No product selected yet.",
+                        label="Chosen product",
+                    )
+                    chosen_product_images = gr.Gallery(
+                        label="Chosen product images",
+                        columns=3,
+                        height=300,
+                        object_fit="contain",
+                    )
 
-        submit.click(
-            fn=lambda text, image, history: handle_message(text, image, history, recommender),
-            inputs=[user_text, image_input, chatbot],
-            outputs=[
+            with gr.Group(elem_id="input-card"):
+                gr.Markdown("## Search")
+                with gr.Row(equal_height=True):
+                    user_text = gr.Textbox(
+                        label="Text query",
+                        placeholder="",
+                        lines=3,
+                        scale=7,
+                    )
+                    image_input = gr.Image(
+                        label="Optional image query",
+                        type="filepath",
+                        height=180,
+                        scale=4,
+                    )
+
+                with gr.Row():
+                    submit = gr.Button(
+                        "Search",
+                        variant="primary",
+                        elem_id="search-button",
+                    )
+                    gr.ClearButton(
+                        components=[user_text, image_input],
+                        value="Clear input",
+                    )
+
+            with gr.Group(elem_id="retrieval-card"):
+                gr.Markdown("## Top retrieved products")
+                top_product_images = gr.Gallery(
+                    label="Top retrieved product images",
+                    columns=5,
+                    height=360,
+                    object_fit="contain",
+                )
+
+            with gr.Accordion("Diagnostics", open=False):
+                diagnostics_summary = gr.Markdown(
+                    value="No diagnostics reported yet.",
+                    label="Diagnostics summary",
+                )
+                diagnostics = gr.Code(label="Raw diagnostics", language="json")
+
+            outputs = [
                 chatbot,
                 user_text,
                 image_input,
@@ -304,9 +417,13 @@ def create_gradio_interface(recommender):
                 top_product_images,
                 diagnostics_summary,
                 diagnostics,
-            ],
-        )
+            ]
+            inputs = [user_text, image_input, chatbot]
 
+            submit.click(fn=submit_message, inputs=inputs, outputs=outputs)
+            user_text.submit(fn=submit_message, inputs=inputs, outputs=outputs)
+
+    demo.shoptalk_css = css
     return demo
 
 
@@ -322,6 +439,7 @@ def main():
         share=args.share,
         server_name=args.server_name,
         server_port=args.server_port,
+        css=getattr(demo, "shoptalk_css", None),
     )
 
 
