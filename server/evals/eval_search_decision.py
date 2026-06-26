@@ -34,11 +34,15 @@ from typing import Any
 from langchain_classic.schema import AIMessage, HumanMessage
 
 try:  # Supports: python -m server.evals.eval_search_decision
+    from ..recommender_core.config import load_shoptalk_config
     from ..recommender_core.conversation_policy import ConversationPolicy
     from ..recommender_core.utils import load_openai_api_key
+    from ..shoptalk_paths import DEFAULT_CONFIG_PATH
 except ImportError:  # Supports running from inside server/: python -m evals.eval_search_decision
+    from recommender_core.config import load_shoptalk_config
     from recommender_core.conversation_policy import ConversationPolicy
     from recommender_core.utils import load_openai_api_key
+    from shoptalk_paths import DEFAULT_CONFIG_PATH
 
 
 DEFAULT_CASES_PATH = Path(__file__).with_name("search_decision_cases.jsonl")
@@ -278,15 +282,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help=f"Path to JSON/JSONL case file. Default: {DEFAULT_CASES_PATH}",
     )
     parser.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="Path to the ShopTalk config file.",
+    )
+    parser.add_argument(
         "--model-name",
-        default=os.environ.get("SHOPTALK_EVAL_MODEL", "gpt-4o-mini"),
-        help="Chat model name to use for evaluation.",
+        default=None,
+        help="Override the eval model name from the config file.",
     )
     parser.add_argument(
         "--temperature",
         type=float,
-        default=0.0,
-        help="LLM temperature. Use 0.0 for the most stable eval behavior.",
+        default=None,
+        help="Override the eval temperature from the config file.",
     )
     parser.add_argument(
         "--limit",
@@ -352,9 +362,19 @@ def main(argv: list[str] | None = None) -> int:
         print("No cases selected.")
         return 2
 
+    file_config = load_shoptalk_config(args.config)
+    model_name = args.model_name or file_config.eval_model_name
+    temperature = (
+        args.temperature
+        if args.temperature is not None
+        else file_config.eval_temperature
+    )
+    print(f"Eval model: {model_name}")
+    print(f"Eval temperature: {temperature}")
+
     policy = build_conversation_policy(
-        model_name=args.model_name,
-        temperature=args.temperature,
+        model_name=model_name,
+        temperature=temperature,
     )
 
     results: list[EvalResult] = []

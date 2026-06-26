@@ -21,13 +21,17 @@ from pathlib import Path
 from typing import Any, Iterable
 
 try:  # Supports: python -m server.evals.eval_llm_decision
+    from ..recommender_core.config import load_shoptalk_config
     from ..recommender_core.conversation_policy import ConversationPolicy
     from ..recommender_core.product_candidate import ProductCandidate
     from ..recommender_core.utils import load_openai_api_key
+    from ..shoptalk_paths import DEFAULT_CONFIG_PATH
 except ImportError:  # Supports running from inside server/: python -m evals.eval_llm_decision
+    from recommender_core.config import load_shoptalk_config
     from recommender_core.conversation_policy import ConversationPolicy
     from recommender_core.product_candidate import ProductCandidate
     from recommender_core.utils import load_openai_api_key
+    from shoptalk_paths import DEFAULT_CONFIG_PATH
 
 from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
 
@@ -67,15 +71,21 @@ def parse_args() -> argparse.Namespace:
         help="Path to JSONL eval cases.",
     )
     parser.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="Path to the ShopTalk config file.",
+    )
+    parser.add_argument(
         "--model",
-        default="gpt-4o",
-        help="OpenAI model name used for the LLM decision layer.",
+        default=None,
+        help="Override the eval model name from the config file.",
     )
     parser.add_argument(
         "--temperature",
         type=float,
-        default=0.0,
-        help="Temperature for the decision model. Use 0.0 for repeatability.",
+        default=None,
+        help="Override the eval temperature from the config file.",
     )
     parser.add_argument(
         "--limit",
@@ -309,8 +319,18 @@ def write_csv(results: list[EvalResult], output_path: Path) -> None:
 
 def main() -> int:
     args = parse_args()
+    file_config = load_shoptalk_config(args.config)
+    model_name = args.model or file_config.eval_model_name
+    temperature = (
+        args.temperature
+        if args.temperature is not None
+        else file_config.eval_temperature
+    )
+    print(f"Eval model: {model_name}")
+    print(f"Eval temperature: {temperature}")
+
     cases = load_cases(args.cases, limit=args.limit)
-    policy = build_conversation_policy(args.model, args.temperature)
+    policy = build_conversation_policy(model_name, temperature)
     results = run_eval(policy, cases)
 
     output_path = next_numbered_output_path(

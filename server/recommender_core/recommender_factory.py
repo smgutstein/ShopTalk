@@ -25,6 +25,7 @@ def build_recommender(config: RecommenderConfig | None = None) -> ShopTalkRecomm
     conversation_policy = build_conversation_policy(
         api_key=api_key,
         model_name=config.model_name,
+        temperature=config.temperature,
     )
     image_id_to_path, image_path_load_time = load_image_paths(config.images_csv_path)
 
@@ -103,14 +104,14 @@ def build_query_embedder(device: str):
     return QueryEmbedder(ibind_model, device), load_time
 
 
-def build_conversation_policy(api_key: str, model_name: str) -> ConversationPolicy:
+def build_conversation_policy(api_key: str, model_name: str, temperature: float) -> ConversationPolicy:
     """Build the LLM-backed conversation policy."""
     from langchain_openai import ChatOpenAI
 
     chat_openai = ChatOpenAI(
         api_key=api_key,
         model=model_name,
-        temperature=0.1,
+        temperature=temperature,
     )
     return ConversationPolicy(chat_openai)
 

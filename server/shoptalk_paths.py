@@ -4,6 +4,7 @@ from pathlib import Path
 
 SERVER_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SERVER_DIR.parent
+DEFAULT_CONFIG_PATH = PROJECT_ROOT / "shoptalk_config.ini"
 
 ARTIFACTS_DIR = PROJECT_ROOT / "artifacts"
 VECTOR_DB_OUTPUT_DIR = ARTIFACTS_DIR / "vector_db"
