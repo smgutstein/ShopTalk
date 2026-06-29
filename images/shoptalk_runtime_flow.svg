@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="960" viewBox="0 0 1300 960" role="img" aria-labelledby="title desc">
+  <title id="title">ShopTalk runtime conversational search flow</title>
+  <desc id="desc">Architecture diagram for the ShopTalk portfolio project.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#374151"/></marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#111827" flood-opacity="0.14"/></filter>
+  </defs>
+  <rect width="100%" height="100%" fill="#f8fafc"/>
+  <text x="650" y="54" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800" fill="#111827" text-anchor="middle">Runtime conversational search flow</text>
+  <text x="650" y="86" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="400" fill="#475569" text-anchor="middle">The running app decides whether to search, retrieves grounded candidates, and formats the response.</text>
+  <rect x="70" y="150" width="250" height="105" rx="16" fill="#eef2ff" stroke="#818cf8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="195.0" y="184" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">User input</text>
+  <text x="195.0" y="212" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">text query</text>
+  <text x="195.0" y="232" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">optional uploaded image</text>
+  <rect x="70" y="315" width="250" height="105" rx="16" fill="#ecfeff" stroke="#22d3ee" stroke-width="2" filter="url(#shadow)"/>
+  <text x="195.0" y="349" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">Gradio app</text>
+  <text x="195.0" y="377" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">chat box</text>
+  <text x="195.0" y="397" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">product gallery</text>
+  <text x="195.0" y="417" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">diagnostics panel</text>
+  <rect x="455" y="220" width="330" height="115" rx="16" fill="#ffffff" stroke="#94a3b8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="620.0" y="254" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">ShopTalkRecommender</text>
+  <text x="620.0" y="282" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">orchestrates policy, embedding,</text>
+  <text x="620.0" y="302" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">retrieval, and response</text>
+  <rect x="455" y="405" width="330" height="105" rx="16" fill="#f0fdf4" stroke="#4ade80" stroke-width="2" filter="url(#shadow)"/>
+  <text x="620.0" y="439" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">LLM search decision</text>
+  <text x="620.0" y="467" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">search now, ask clarification,</text>
+  <text x="620.0" y="487" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">or answer without retrieval</text>
+  <rect x="900" y="360" width="300" height="90" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1050.0" y="394" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">No-search path</text>
+  <text x="1050.0" y="422" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">clarifying question or</text>
+  <text x="1050.0" y="442" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">plain conversational reply</text>
+  <rect x="170" y="600" width="260" height="90" rx="16" fill="#fff7ed" stroke="#fb923c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="300.0" y="634" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">ImageBind query embedding</text>
+  <text x="300.0" y="662" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">text/image query vector</text>
+  <rect x="520" y="600" width="260" height="90" rx="16" fill="#fef2f2" stroke="#f87171" stroke-width="2" filter="url(#shadow)"/>
+  <text x="650.0" y="634" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">FAISS vector retrieval</text>
+  <text x="650.0" y="662" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">nearest product vectors</text>
+  <rect x="870" y="600" width="270" height="90" rx="16" fill="#fefce8" stroke="#facc15" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1005.0" y="634" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">Retrieved candidates</text>
+  <text x="1005.0" y="662" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">product metadata + images</text>
+  <rect x="455" y="745" width="390" height="75" rx="16" fill="#f0fdf4" stroke="#4ade80" stroke-width="2" filter="url(#shadow)"/>
+  <text x="650.0" y="779" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">Product response generation</text>
+  <text x="650.0" y="807" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">recommend product or ask for more info</text>
+  <rect x="900" y="725" width="300" height="95" rx="16" fill="#ecfeff" stroke="#22d3ee" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1050.0" y="759" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">Displayed response endpoint</text>
+  <text x="1050.0" y="787" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">terminal UI output</text>
+  <text x="1050.0" y="807" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">chat answer + product cards</text>
+  <rect x="520" y="540" width="260" height="38" rx="16" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6" filter="url(#shadow)"/>
+  <text x="650.0" y="564.0" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="600" fill="#111827" text-anchor="middle">uses artifacts/vector_db/faiss</text>
+  <polyline points="195,255 195,315" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="320,368 455,278" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="620,335 620,405" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="785,458 845,458 845,405 900,405" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <rect x="788" y="470" width="124" height="24" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="850" y="492" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle">no search</text>
+  <polyline points="620,510 620,530 300,530 300,600" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <rect x="168" y="540" width="124" height="24" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="230" y="562" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle">search</text>
+  <polyline points="430,645 520,645" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="780,645 870,645" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="1005,690 1005,720 650,720 650,745" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="845,782 900,782" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="1200,405 1260,405 1260,772 1200,772" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <rect x="1088" y="698" width="124" height="24" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="1150" y="720" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle">shown in UI</text>
+  <rect x="70" y="850" width="1160" height="76" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="98" y="878" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#111827">Legend</text>
+  <rect x="160" y="864" width="18" height="18" rx="4" fill="#eef2ff" stroke="#818cf8"/>
+  <text x="185" y="879" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">User input</text>
+  <rect x="310" y="864" width="18" height="18" rx="4" fill="#ecfeff" stroke="#22d3ee"/>
+  <text x="335" y="879" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">UI / endpoint</text>
+  <rect x="485" y="864" width="18" height="18" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="510" y="879" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Orchestrator</text>
+  <rect x="665" y="864" width="18" height="18" rx="4" fill="#f0fdf4" stroke="#4ade80"/>
+  <text x="690" y="879" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">LLM/control</text>
+  <rect x="835" y="864" width="18" height="18" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="860" y="879" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">No-search path</text>
+  <rect x="160" y="895" width="18" height="18" rx="4" fill="#fff7ed" stroke="#fb923c"/>
+  <text x="185" y="910" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Query embedding</text>
+  <rect x="310" y="895" width="18" height="18" rx="4" fill="#fef2f2" stroke="#f87171"/>
+  <text x="335" y="910" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Vector retrieval</text>
+  <rect x="485" y="895" width="18" height="18" rx="4" fill="#fefce8" stroke="#facc15"/>
+  <text x="510" y="910" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Retrieved results</text>
+  <rect x="665" y="895" width="26" height="18" rx="4" fill="none" stroke="#94a3b8" stroke-dasharray="5 4"/>
+  <text x="700" y="910" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Precomputed artifact dependency</text>
+  <text x="650" y="945" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#64748b" text-anchor="middle">The LLM is constrained by retrieved products; it should not invent catalog items.</text>
+</svg>

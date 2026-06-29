@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="840" viewBox="0 0 1200 840" role="img" aria-labelledby="title desc">
+  <title id="title">ShopTalk offline artifact generation</title>
+  <desc id="desc">Architecture diagram for the ShopTalk portfolio project.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#374151"/></marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#111827" flood-opacity="0.14"/></filter>
+  </defs>
+  <rect width="100%" height="100%" fill="#f8fafc"/>
+  <text x="600" y="54" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800" fill="#111827" text-anchor="middle">Offline artifact generation</text>
+  <text x="600" y="86" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="400" fill="#475569" text-anchor="middle">Expensive preprocessing and embedding work is done before the Gradio app starts.</text>
+  <rect x="70" y="145" width="250" height="92" rx="16" fill="#eef2ff" stroke="#818cf8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="195.0" y="179" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">ABO product metadata</text>
+  <text x="195.0" y="207" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">categories, titles, attributes</text>
+  <rect x="70" y="275" width="250" height="92" rx="16" fill="#eef2ff" stroke="#818cf8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="195.0" y="309" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">ABO product images</text>
+  <text x="195.0" y="337" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">local image archive</text>
+  <rect x="410" y="155" width="300" height="120" rx="16" fill="#ecfeff" stroke="#22d3ee" stroke-width="2" filter="url(#shadow)"/>
+  <text x="560.0" y="189" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">EDA preprocessing</text>
+  <text x="560.0" y="217" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">clean / normalize metadata</text>
+  <text x="560.0" y="237" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">generate product blurbs</text>
+  <rect x="790" y="155" width="320" height="120" rx="16" fill="#f0fdf4" stroke="#4ade80" stroke-width="2" filter="url(#shadow)"/>
+  <text x="950.0" y="189" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">generate_vector_db.py</text>
+  <text x="950.0" y="217" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">load blurbs + image paths</text>
+  <text x="950.0" y="237" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">batch products</text>
+  <rect x="410" y="400" width="300" height="120" rx="16" fill="#fff7ed" stroke="#fb923c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="560.0" y="434" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">ImageBind embedding</text>
+  <text x="560.0" y="462" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">text embedding</text>
+  <text x="560.0" y="482" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">image embedding</text>
+  <rect x="790" y="400" width="320" height="120" rx="16" fill="#fff7ed" stroke="#fb923c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="950.0" y="434" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">Combine + normalize</text>
+  <text x="950.0" y="462" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">shared multimodal product vector</text>
+  <text x="950.0" y="482" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">one row per product</text>
+  <rect x="260" y="605" width="260" height="90" rx="16" fill="#fef2f2" stroke="#f87171" stroke-width="2" filter="url(#shadow)"/>
+  <text x="390.0" y="639" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">FAISS serving artifacts</text>
+  <text x="390.0" y="667" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">embeddings.faiss</text>
+  <text x="390.0" y="687" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">product_ids.json</text>
+  <rect x="680" y="605" width="260" height="90" rx="16" fill="#fefce8" stroke="#facc15" stroke-width="2" filter="url(#shadow)"/>
+  <text x="810.0" y="639" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827" text-anchor="middle">Optional NumPy artifacts</text>
+  <text x="810.0" y="667" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">embeddings.npy</text>
+  <text x="810.0" y="687" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="middle">product_ids.json</text>
+  <polyline points="320,191 410,205" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="320,321 410,245" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="710,215 790,215" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="950,275 950,340 560,340 560,400" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <rect x="498" y="323" width="124" height="24" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="560" y="345" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle">embed batches</text>
+  <polyline points="710,460 790,460" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="950,520 950,565 390,565 390,605" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <polyline points="1020,520 1020,585 810,585 810,605" fill="none" stroke="#374151" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <rect x="50" y="720" width="1100" height="56" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="98" y="754" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#111827">Legend</text>
+  <rect x="160" y="739" width="18" height="18" rx="4" fill="#eef2ff" stroke="#818cf8"/>
+  <text x="185" y="754" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Raw inputs</text>
+  <rect x="290" y="739" width="18" height="18" rx="4" fill="#ecfeff" stroke="#22d3ee"/>
+  <text x="315" y="754" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Preprocessing</text>
+  <rect x="455" y="739" width="18" height="18" rx="4" fill="#f0fdf4" stroke="#4ade80"/>
+  <text x="480" y="754" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Vector DB script</text>
+  <rect x="640" y="739" width="18" height="18" rx="4" fill="#fff7ed" stroke="#fb923c"/>
+  <text x="665" y="754" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Embedding work</text>
+  <rect x="810" y="739" width="18" height="18" rx="4" fill="#fef2f2" stroke="#f87171"/>
+  <text x="835" y="754" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Main serving artifacts</text>
+  <rect x="1010" y="739" width="18" height="18" rx="4" fill="#fefce8" stroke="#facc15"/>
+  <text x="1035" y="754" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">Optional artifacts</text>
+  <text x="600" y="815" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#64748b" text-anchor="middle">Generated files are local artifacts, not source code. They are expected under artifacts/vector_db/.</text>
+</svg>
