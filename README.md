@@ -1,10 +1,16 @@
-# ShopTalk
+# ShopTalk - A Multimodal RAG-Style Product Recommendation Chatbot
 
-ShopTalk is a portfolio project for conversational, multimodal product search. It combines product metadata, product images, ImageBind embeddings, FAISS vector search, and an LLM-guided conversation layer to recommend products from a local product catalog.
+## Overview
 
-The core idea is simple: a shopping assistant should be able to handle requests that are more natural than keyword search. A user can ask for something like "a red men's shirt", upload an example image, or combine text and image input. ShopTalk embeds product text and product imagery, retrieves similar catalog items, and then uses an LLM policy layer to decide whether to ask for more detail or recommend one of the retrieved products.
+This repository implements a RAG-style product recommendation chatbot. It retrieves candidate products from a FAISS vector database built from multimodal product artifacts, then uses an LLM to generate grounded, personality-aware recommendations.
 
-This is not presented as a production shopping system. It is intended to show an end-to-end ML application architecture: preprocessing, multimodal representation, vector retrieval, conversational decision logic, a user interface, diagnostics, and targeted evaluation scripts.
+The project's main purpose is to compare retrieval strategies: a shared multimodal text/image embedding space, separate unimodal text and image embedding spaces, and hybrid approaches that combine multimodal and unimodal representations.
+
+## Core Questions
+
+1. Does a shared multimodal text/image representation space produce better product retrieval than separate unimodal representation spaces?
+2. Can a weighted hybrid approach produce retrieval results that better match a user's preferences and constraints?
+3. Can retrieval improve by dynamically selecting the representation space based on whether the user's input is text-only, image-only, or text-plus-image?
 
 ## Current Project Status
 
