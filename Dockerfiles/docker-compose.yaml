@@ -1,0 +1,103 @@
+# Docker Compose configuration for the ShopTalk development/demo container.
+#
+# Expected layout:
+#
+#   rootDir/
+#     Dockerfiles/
+#       docker-compose.yaml
+#       Dockerfile
+#       .env-public
+#       .env-secret
+#     requirements-docker.txt
+#     server/
+#     EDA/
+#     tests/
+#     ...
+#
+# This Compose file is intended to be run from the Dockerfiles/ directory:
+#
+# The image provides the CUDA/PyTorch/ImageBind/Python dependency stack.
+# The project source code is bind-mounted from the parent repo directory into
+# /workspace, so source edits on the host are immediately visible in the
+# container without rebuilding the image.
+
+services:
+  shoptalk-dev:
+    # Build the image from the repo root, even though this Compose file
+    # lives in Dockerfiles/. The build context controls what files Docker is
+    # allowed to COPY during the image build.
+    build:
+      context: ..
+      dockerfile: Dockerfiles/Dockerfile
+
+    # Local development image name. 
+    image: shoptalk:dev
+
+    # Fixed container name 
+    container_name: shoptalk-dev
+
+    # Run a tiny init process as PID 1. This improves signal handling and reaps
+    # zombie child processes.
+    init: true
+
+    # GPU access for Docker Compose v2 with the NVIDIA Container Toolkit.
+    # This is the Compose equivalent of roughly: docker run --gpus all ...
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: ["gpu"]
+
+    # Make the mounted repository the default directory for shell sessions and
+    # commands such as pytest, generate_vector_db.py, and python -m server.gradio_app.
+    working_dir: /workspace
+
+    # Keep stdin open and allocate a pseudo-TTY so exec'd shell sessions behave
+    # like normal interactive terminals.
+    stdin_open: true
+    tty: true
+
+    # ML workloads can use shared memory heavily. A larger /dev/shm helps avoid
+    # failures in PyTorch/data-loading style workloads. ipc: host is permissive,
+    # but common for local GPU development containers.
+    ipc: host
+    shm_size: 2g
+
+    # Bind-mount the repository root into the container. Because this file lives
+    # in Dockerfiles/, `..` resolves to the repo root. This avoids hard-coding a
+    # machine-specific HOST_CODE_DIR path.
+    volumes:
+      - ..:/workspace
+
+    # Expose the Gradio port on localhost only. Binding to 127.0.0.1 keeps the
+    # app reachable from this machine without exposing it to the local network.
+    # Inside the container, the app should listen on port 7860 and usually bind
+    # to 0.0.0.0 so Docker's port forwarding can reach it.
+    ports:
+      - "127.0.0.1:${GRADIO_PORT:-7860}:7860"
+
+    # Environment files are read relative to this Compose file's directory.
+    # Keep public/default settings in .env-public and private secrets such as
+    # OPENAI_API_KEY in .env-secret. Do not commit .env-secret.
+    # Later files override earlier files if the same variable is defined twice.
+    env_file:
+      - path: .env-public
+        required: true
+      - path: .env-secret
+        required: false
+
+    # These values drive docker-entrypoint.sh. The shell wrapper exports the
+    # real host UID/GID before starting the service, so files created in the
+    # bind-mounted repo are owned by the host user rather than root. The
+    # defaults keep direct `docker compose up` usable on common Linux setups.
+    environment:
+      HOST_UID: ${HOST_UID:-1000}
+      HOST_GID: ${HOST_GID:-1000}
+      USER_NAME: ${USER_NAME:-shoptalk}
+      GROUP_NAME: ${GROUP_NAME:-shoptalk}
+
+    # Keep the dev container alive for the persistent `up -d` + `exec` workflow.
+    # Interactive shells are opened by shoptalk_shell.sh using `docker compose exec`.
+    command: tail -f /dev/null
