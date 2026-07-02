@@ -22,11 +22,39 @@ class ProductVectorStore:
         return cls(faiss_index=faiss_index, product_ids=product_ids, blurbs=blurbs)
 
     def search(self, embedded_query, top_k, image_id_to_path):
-        distances, indices = self.faiss_index.search(
-            np.array([embedded_query]).astype(np.float32),
-            k=top_k,
-        )
-        return self._deduplicate_products(distances, indices, image_id_to_path)
+        query_array = np.array([embedded_query]).astype(np.float32)
+        index_size = len(self.product_ids)
+
+        if top_k <= 0 or index_size == 0:
+            return {}
+
+        # top_k is the number of unique products the caller wants, not
+        # necessarily the number of raw FAISS rows needed. Multiple indexed rows
+        # can map to the same product ID, so deduplication may collapse the raw
+        # FAISS result set below top_k.
+        raw_k = min(top_k, index_size)
+
+        while True:
+            distances, indices = self.faiss_index.search(
+                query_array,
+                k=raw_k,
+            )
+
+            found_products = self._deduplicate_products(
+                distances,
+                indices,
+                image_id_to_path,
+            )
+
+            # Stop once we have enough unique products, or once the whole index
+            # has already been searched. The latter can still return fewer than
+            # top_k products if many rows map to the same product.
+            if len(found_products) >= top_k or raw_k == index_size:
+                break
+
+            raw_k = min(raw_k * 2, index_size)
+
+        return dict(list(found_products.items())[:top_k])
 
     def _deduplicate_products(self, distances, indices, image_id_to_path):
         found_products = {}
