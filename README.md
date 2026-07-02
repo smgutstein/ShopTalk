@@ -121,6 +121,15 @@ server/evals/
 
 tests/                                     Unit tests and lightweight behavior tests
 
+Dockerfiles/                               Docker development environment
+  Dockerfile                               ShopTalk development image
+  docker-compose.yaml                      Compose service definition
+  docker-entrypoint.sh                     Container user/setup entrypoint
+  requirements-docker.txt                  Docker-specific Python dependencies
+  shoptalk_shell.sh                        Docker helper script
+  .env-public                              Non-secret Docker environment defaults
+  .env-secret-example                      Template for local Docker secrets
+
 run_ShopTalk_gradio.sh                     Root-level launcher for Gradio app
 run_eval_search_decision.sh                Root-level launcher for search-decision eval
 run_eval_llm_decision.sh                   Root-level launcher for product-decision eval
@@ -146,11 +155,67 @@ Expected local paths:
 
 These are local artifacts, not source files.
 
-## Installation
+## Environment Setup
 
-The project has a few heavy dependencies. ImageBind and FAISS are the two most likely sources of environment friction.
+There are two supported ways to create the ShopTalk development environment:
 
-### 1. Create and activate a conda environment
+1. **Docker**, which is the preferred path for most development and review because it packages the Torch/ImageBind/FAISS stack in a repeatable container.
+2. **Conda**, which is useful when you want direct local control of the Python environment or need to debug outside the container.
+
+The project has a few heavy dependencies. ImageBind and FAISS are the two most likely sources of environment friction, which is why the Docker path is listed first.
+
+### Recommended: Docker Development Environment
+
+A Docker-based development environment is provided under `Dockerfiles/`. This is the preferred path if you want to avoid repeatedly rebuilding the local Torch/ImageBind/FAISS environment by hand. It is still a development container, not a production deployment.
+
+From the repository root:
+
+```bash
+cd Dockerfiles
+./shoptalk_shell.sh
+```
+
+With no argument, `shoptalk_shell.sh` builds and starts the Compose service if needed, then opens an interactive shell inside the container.
+
+Common Docker helper commands:
+
+```bash
+./shoptalk_shell.sh shell      # start if needed, then open an interactive shell
+./shoptalk_shell.sh start      # build/start the container in the background
+./shoptalk_shell.sh status     # show Compose service status
+./shoptalk_shell.sh logs       # follow container logs
+./shoptalk_shell.sh stop       # stop the container but keep it available
+./shoptalk_shell.sh down       # stop and remove the Compose container/network
+./shoptalk_shell.sh restart    # recreate the container
+```
+
+OpenAI-backed app and eval features require a local secret file for the Docker workflow:
+
+```bash
+cp .env-secret-example .env-secret
+```
+
+Then edit `.env-secret` and set:
+
+```text
+OPENAI_API_KEY="your_openai_api_key"
+```
+
+After entering the container shell, launch the Gradio app from the mounted repository root:
+
+```bash
+./run_ShopTalk_gradio.sh
+```
+
+The launcher detects when it is running inside Docker and binds Gradio to `0.0.0.0` automatically so Docker port mapping works. On a normal local host, it defaults to `127.0.0.1`. You can still override the bind address manually with `--server_name`, but that should not be necessary for the standard Docker workflow.
+
+Docker does not remove the need for the generated/local artifacts described below. The image archive, `images.csv`, generated product blurbs, and FAISS vector DB still need to exist at the expected mounted paths before the full app can run.
+
+### Alternative: Conda Environment
+
+Use the conda path if you specifically want a local non-container environment.
+
+#### 1. Create and activate a conda environment
 
 From the parent directory that will contain both `ImageBind` and this repository:
 
@@ -159,7 +224,7 @@ conda create --name imagebind python=3.10 -y
 conda activate imagebind
 ```
 
-### 2. Install ImageBind
+#### 2. Install ImageBind
 
 ```bash
 git clone https://github.com/facebookresearch/ImageBind
@@ -167,7 +232,7 @@ cd ImageBind
 pip install .
 ```
 
-### 3. Install ShopTalk
+#### 3. Install ShopTalk
 
 Move to the ShopTalk repository root:
 
@@ -180,15 +245,9 @@ pip install -e .
 
 Current warning: `requirements.txt` is oriented toward the current development environment and includes `faiss-gpu-cu12`. If your machine does not support that FAISS package, install the appropriate FAISS package for your environment instead. For CPU-only testing, `faiss-cpu` is usually the simpler choice.
 
-The current code also relies on packages that are not clearly captured by the existing `requirements.txt` in this repo snapshot, especially for the Gradio UI and tests. If they are not already present in your environment, install them explicitly:
+Keep `requirements.txt` and `Dockerfiles/requirements-docker.txt` synchronized as the app, eval, and test dependencies change.
 
-```bash
-pip install gradio pytest langchain-classic
-```
-
-That dependency mismatch should eventually be fixed in `requirements.txt`, but the command above documents what is needed to run the current app and test suite.
-
-### 4. Configure the OpenAI API key
+#### 4. Configure the OpenAI API key
 
 Create a `.env` file in the project root:
 
@@ -196,7 +255,7 @@ Create a `.env` file in the project root:
 OPENAI_API_KEY="your_openai_api_key"
 ```
 
-### 5. Configure the LLM model
+#### 5. Configure the LLM model
 
 The default model settings live in `shoptalk_config.ini`:
 
@@ -428,7 +487,7 @@ The weakest or least finished parts are:
 - there is not yet a tiny reproducible demo dataset checked into the repo,
 - retrieval quality evaluation is still thin,
 - the current multimodal approach has not yet been compared against separate text/image representation spaces,
-- dependency declarations need cleanup because the current source uses Gradio and `langchain_classic` while `requirements.txt` does not clearly document every runtime/test dependency,
+- `requirements.txt` and `Dockerfiles/requirements-docker.txt` need to be kept synchronized as the app/eval stack changes,
 - the README and portfolio presentation have lagged behind the code until this revision.
 
 ## Suggested Next Development Steps
