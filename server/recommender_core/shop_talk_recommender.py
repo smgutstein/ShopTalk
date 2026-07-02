@@ -289,7 +289,7 @@ class ShopTalkRecommender:
         )
 
         # Some turns are conversational rather than product-search turns. Return an
-        # explicit ProductSearchResult so the rest of the pipeline can follow a
+        # dummy ProductSearchResult so the rest of the pipeline can follow a
         # no-search branch without checking for None.
         if search_decision.action == "answer_without_search":
             return ProductSearchResult(
