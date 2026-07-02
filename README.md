@@ -128,13 +128,13 @@ Dockerfiles/                               Docker development environment
   requirements-docker.txt                  Docker-specific Python dependencies
   shoptalk_shell.sh                        Docker helper script
   .env-public                              Non-secret Docker environment defaults
-  .env-secret-example                      Template for local Docker secrets
 
 run_ShopTalk_gradio.sh                     Root-level launcher for Gradio app
 run_eval_search_decision.sh                Root-level launcher for search-decision eval
 run_eval_llm_decision.sh                   Root-level launcher for product-decision eval
 
 shoptalk_config.ini                        App/eval LLM model settings
+.env.example                              Template for local OpenAI API key
 requirements.txt                           Python dependencies
 setup.py                                   Package install metadata
 ```
@@ -151,7 +151,7 @@ Expected local paths:
 | `images.csv` | Mapping from Amazon image IDs to relative image paths | Amazon Berkeley Objects metadata |
 | `server/static/images/` | Product image files used by ImageBind and the UI | Extracted from Amazon Berkeley Objects image archive |
 | `artifacts/vector_db/` | Generated FAISS/NumPy vector artifacts | Created by `generate_vector_db.py` |
-| `.env` | Local OpenAI API key | Created locally |
+| `.env` | Shared local OpenAI API key for both Docker and conda/local runs | Created locally from `.env.example` |
 
 These are local artifacts, not source files.
 
@@ -189,17 +189,19 @@ Common Docker helper commands:
 ./shoptalk_shell.sh restart    # recreate the container
 ```
 
-OpenAI-backed app and eval features require a local secret file for the Docker workflow:
+OpenAI-backed app and eval features require one shared local API-key file at the repository root. From the repository root, create it with:
 
 ```bash
-cp .env-secret-example .env-secret
+cp .env.example .env
 ```
 
-Then edit `.env-secret` and set:
+Then edit `.env` and set:
 
 ```text
 OPENAI_API_KEY="your_openai_api_key"
 ```
+
+Both the Docker workflow and the conda/local workflow use this same root-level `.env` file for API keys. Docker also uses `Dockerfiles/.env-public` for non-secret Compose/container defaults; you normally should not need to edit it.
 
 After entering the container shell, launch the Gradio app from the mounted repository root:
 
@@ -249,7 +251,13 @@ Keep `requirements.txt` and `Dockerfiles/requirements-docker.txt` synchronized a
 
 #### 4. Configure the OpenAI API key
 
-Create a `.env` file in the project root:
+The conda workflow uses the same root-level `.env` file as the Docker workflow. If you have not already created it, create it from the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and set:
 
 ```text
 OPENAI_API_KEY="your_openai_api_key"
@@ -487,7 +495,7 @@ The weakest or least finished parts are:
 - there is not yet a tiny reproducible demo dataset checked into the repo,
 - retrieval quality evaluation is still thin,
 - the current multimodal approach has not yet been compared against separate text/image representation spaces,
-- `requirements.txt` and `Dockerfiles/requirements-docker.txt` need to be kept synchronized as the app/eval stack changes,
+- `requirements.txt`, `Dockerfiles/requirements-docker.txt`, and environment-file documentation need to be kept synchronized as the app/eval stack changes,
 - the README and portfolio presentation have lagged behind the code until this revision.
 
 ## Suggested Next Development Steps

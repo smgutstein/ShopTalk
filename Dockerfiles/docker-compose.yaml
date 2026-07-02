@@ -7,7 +7,6 @@
 #       docker-compose.yaml
 #       Dockerfile
 #       .env-public
-#       .env-secret
 #     requirements-docker.txt
 #     server/
 #     EDA/
@@ -79,13 +78,13 @@ services:
       - "127.0.0.1:${GRADIO_PORT:-7860}:7860"
 
     # Environment files are read relative to this Compose file's directory.
-    # Keep public/default settings in .env-public and private secrets such as
-    # OPENAI_API_KEY in .env-secret. Do not commit .env-secret.
+    # Keep Docker/Compose defaults in .env-public and private app secrets such
+    # as OPENAI_API_KEY in the shared root-level ../.env file. Do not commit .env.
     # Later files override earlier files if the same variable is defined twice.
     env_file:
       - path: .env-public
         required: true
-      - path: .env-secret
+      - path: ../.env
         required: false
 
     # These values drive docker-entrypoint.sh. The shell wrapper exports the

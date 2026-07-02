@@ -41,7 +41,10 @@ start_container() {
 ##########################
 
 warn_if_missing_openai_key() {
-  local secret_file="${SCRIPT_DIR}/.env-secret"
+  local repo_root
+  repo_root="$(cd "${SCRIPT_DIR}/.." && pwd)"
+  local secret_file="${repo_root}/.env"
+  local example_file="${repo_root}/.env.example"
 
   if [[ ! -f "${secret_file}" ]]; then
     cat >&2 <<EOF_WARNING
@@ -50,7 +53,7 @@ Warning: ${secret_file} does not exist.
 OpenAI-backed app/eval features will not work until you create it.
 Create it with:
 
-  cp "${SCRIPT_DIR}/.env-secret-example" "${secret_file}"
+  cp "${example_file}" "${secret_file}"
 
 Then edit ${secret_file} and set OPENAI_API_KEY.
 EOF_WARNING
