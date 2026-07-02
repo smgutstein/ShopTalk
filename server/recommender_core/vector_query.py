@@ -5,7 +5,8 @@ def combine_query_embeddings(embeddings):
     if not embeddings:
         raise ValueError("At least one query embedding is required.")
 
-    embedding_matrix = np.vstack([np.asarray(embedding, dtype=np.float32) for embedding in embeddings])
+    embedding_matrix = np.vstack([np.asarray(embedding, dtype=np.float32) 
+                                  for embedding in embeddings])
     combined = embedding_matrix.mean(axis=0)
     norm = np.linalg.norm(combined)
     if norm == 0:
