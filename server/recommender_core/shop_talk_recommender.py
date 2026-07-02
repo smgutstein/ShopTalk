@@ -58,6 +58,10 @@ class ShopTalkRecommender:
         if self.debug:
             self._initialize_debug_file()
 
+    def reset_conversation(self):
+        """Reset the internal conversation state to the initial assistant context."""
+        self.conversation_history = self._initial_conversation_history(self.personality)
+
     @classmethod
     def from_args(cls, args):
         from .recommender_factory import build_recommender

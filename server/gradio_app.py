@@ -303,7 +303,7 @@ def create_gradio_interface(recommender):
         margin: 0 auto;
     }
 
-    #hero {
+    #app-header {
         padding: 1.25rem 1.5rem;
         border-radius: 18px;
         background: var(--block-background-fill);
@@ -312,12 +312,12 @@ def create_gradio_interface(recommender):
         margin-bottom: 1rem;
     }
 
-    #hero h1 {
+    #app-header h1 {
         margin-bottom: 0.25rem;
         color: var(--body-text-color);
     }
 
-    #hero p {
+    #app-header p {
         margin-top: 0;
         color: var(--body-text-color-subdued);
         font-size: 1rem;
@@ -355,13 +355,26 @@ def create_gradio_interface(recommender):
     def submit_message(text, image, history):
         return handle_message(text, image, history, recommender)
 
-    with gr.Blocks(title="ShopTalk") as demo:
+    def reset_conversation():
+        recommender.reset_conversation()
+        return (
+            initial_chat_history(recommender),
+            "",
+            None,
+            "No product selected yet.",
+            [],
+            [],
+            "No diagnostics reported yet.",
+            "{}",
+        )
+
+    with gr.Blocks(title="ShopTalk", css=css) as demo:
         with gr.Column(elem_id="app-shell"):
             gr.HTML(
                 """
-                <div id="hero">
+                <div id="app-header">
                     <h1>ShopTalk</h1>
-                    <p>Search for products using text, an image, or both.</p>
+                    <p>Ask for product recommendations using text, an image, or both.</p>
                 </div>
                 """
             )
@@ -388,7 +401,7 @@ def create_gradio_interface(recommender):
                     )
 
             with gr.Group(elem_id="input-card"):
-                gr.Markdown("## Search")
+                gr.Markdown("## Ask for a recommendation")
                 with gr.Row(equal_height=True):
                     user_text = gr.Textbox(
                         label="Text query",
@@ -405,7 +418,7 @@ def create_gradio_interface(recommender):
 
                 with gr.Row():
                     submit = gr.Button(
-                        "Search",
+                        "Send",
                         variant="primary",
                         elem_id="search-button",
                     )
@@ -413,6 +426,7 @@ def create_gradio_interface(recommender):
                         components=[user_text, image_input],
                         value="Clear input",
                     )
+                    reset = gr.Button("Reset conversation")
 
             with gr.Group(elem_id="retrieval-card"):
                 gr.Markdown("## Top retrieved products")
@@ -443,9 +457,8 @@ def create_gradio_interface(recommender):
             inputs = [user_text, image_input, chatbot]
 
             submit.click(fn=submit_message, inputs=inputs, outputs=outputs)
-            user_text.submit(fn=submit_message, inputs=inputs, outputs=outputs)
+            reset.click(fn=reset_conversation, inputs=[], outputs=outputs)
 
-    demo.shoptalk_css = css
     return demo
 
 
@@ -461,7 +474,6 @@ def main():
         share=args.share,
         server_name=args.server_name,
         server_port=args.server_port,
-        css=getattr(demo, "shoptalk_css", None),
     )
 
 
