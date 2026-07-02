@@ -288,7 +288,7 @@ class ShopTalkRecommender:
             self.conversation_history
         )
 
-        # Some turns are conversational rather than product-search turns. Return an
+        # Some turns are conversational rather than product-search turns. Return a
         # dummy ProductSearchResult so the rest of the pipeline can follow a
         # no-search branch without checking for None.
         if search_decision.action == "answer_without_search":
