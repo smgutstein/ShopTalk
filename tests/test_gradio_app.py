@@ -308,3 +308,25 @@ def test_initial_chat_history_seeds_assistant_greeting():
             ),
         }
     ]
+
+
+def test_parse_args_defaults_server_binding_to_launcher_or_gradio(monkeypatch):
+    monkeypatch.setattr("sys.argv", ["gradio_app.py"])
+
+    args = gradio_app.parse_args()
+
+    assert args.server_name is None
+    assert args.server_port is None
+    assert args.share is False
+
+
+def test_parse_args_accepts_explicit_server_binding(monkeypatch):
+    monkeypatch.setattr(
+        "sys.argv",
+        ["gradio_app.py", "--server_name", "0.0.0.0", "--server_port", "7861"],
+    )
+
+    args = gradio_app.parse_args()
+
+    assert args.server_name == "0.0.0.0"
+    assert args.server_port == 7861
