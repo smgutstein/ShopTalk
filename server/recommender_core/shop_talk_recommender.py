@@ -405,8 +405,14 @@ class ShopTalkRecommender:
 
         # The Gradio layer expects serialized conversation text, the selected
         # ProductCandidate if one exists, the personality label, and diagnostics.
+        #
+        # Keep the final response as its own payload field as well. The UI can keep
+        # using the serialized conversation, but eval tooling should not have to
+        # parse conversation history just to recover the assistant text generated
+        # for this turn.
         return {
             "conversation": serialize_convo(self.conversation_history),
+            "final_response": final_llm_response,
             "chosen_product": decision.chosen_product,
             "personality": self.personality,
             "diagnostics": diagnostics,
