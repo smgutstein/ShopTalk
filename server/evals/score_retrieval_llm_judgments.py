@@ -14,6 +14,7 @@ pretend this small hand-labeled eval set is a formal benchmark.
 from __future__ import annotations
 
 import argparse
+import configparser
 import json
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -23,46 +24,97 @@ from typing import Any
 
 DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_metrics"
+DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
 EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v1"
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse command-line options for scoring a reviewed judgment file."""
+    """Parse the single eval-config argument."""
     parser = argparse.ArgumentParser(
         description="Score a hand-edited ShopTalk retrieval/LLM judgment JSON file."
     )
     parser.add_argument(
-        "--judgments",
+        "--config",
         type=Path,
-        required=True,
-        help="Path to a reviewed retrieval_llm_judgments_XXX.json file.",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=None,
-        help="Explicit metrics report path. If omitted, a numbered path is used.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=DEFAULT_RESULTS_DIR,
-        help=f"Directory for numbered reports. Default: {DEFAULT_RESULTS_DIR}",
-    )
-    parser.add_argument(
-        "--output-prefix",
-        default=DEFAULT_OUTPUT_PREFIX,
-        help=f"Filename prefix for numbered reports. Default: {DEFAULT_OUTPUT_PREFIX}",
-    )
-    parser.add_argument(
-        "--allow-unjudged",
-        action="store_true",
-        help=(
-            "Compute metrics even when some human judgment fields are null. "
-            "Unjudged values are ignored where possible and reported as warnings."
-        ),
+        default=DEFAULT_EVAL_CONFIG_PATH,
+        help=f"Path to retrieval/LLM eval INI file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
     )
     return parser.parse_args()
+
+
+def _config_value(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+    *,
+    fallback: str,
+) -> str:
+    """Return a stripped INI value and reject undocumented blank values.
+
+    The eval INI is intended to document normal scorer behavior. Optional values
+    therefore use explicit sentinels such as ``auto`` and ``required`` instead of
+    blank strings.
+    """
+    value = parser.get(section, option, fallback=fallback).strip()
+    if value == "":
+        raise ValueError(
+            f"Blank value for [{section}] {option}. "
+            "Use an explicit documented value such as 'auto' or 'required'."
+        )
+    return value
+
+
+def _required_path(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+) -> Path:
+    """Return a required path, rejecting the documentation sentinel."""
+    value = _config_value(parser, section, option, fallback="required")
+    if value.lower() == "required":
+        raise ValueError(
+            f"[{section}] {option} is still set to 'required'. "
+            "Set it to the reviewed judgment JSON file before scoring."
+        )
+    return Path(value)
+
+
+def _auto_path(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+) -> Path | None:
+    """Return a configured path, where ``auto`` means choose a numbered file."""
+    value = _config_value(parser, section, option, fallback="auto")
+    if value.lower() == "auto":
+        return None
+    return Path(value)
+
+
+def load_score_args(config_path: Path) -> argparse.Namespace:
+    """Load scorer settings from the same INI file used by the generator.
+
+    The scorer still works with the same internal argument names it used before;
+    this function only moves those values out of the command line and into the
+    config file.
+    """
+    if not config_path.exists():
+        raise FileNotFoundError(f"Eval config file not found: {config_path}")
+
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+
+    return argparse.Namespace(
+        judgments=_required_path(parser, "score", "judgments"),
+        output=_auto_path(parser, "score", "output"),
+        output_dir=Path(parser.get("score", "output_dir", fallback=str(DEFAULT_RESULTS_DIR))),
+        output_prefix=parser.get(
+            "score",
+            "output_prefix",
+            fallback=DEFAULT_OUTPUT_PREFIX,
+        ),
+        allow_unjudged=parser.getboolean("score", "allow_unjudged", fallback=False),
+    )
 
 
 def load_judgments(path: Path) -> dict[str, Any]:
@@ -434,7 +486,8 @@ def write_metrics_report(
 
 def main() -> int:
     """CLI entry point."""
-    args = parse_args()
+    cli_args = parse_args()
+    args = load_score_args(cli_args.config)
     payload = load_judgments(args.judgments)
     cases = payload["cases"]
 

@@ -1,0 +1,1809 @@
+{
+  "metadata": {
+    "schema_version": "retrieval_llm_judgments_v1",
+    "created_at": "2026-07-05T19:15:55",
+    "cases_path": "server/evals/eval_cases_retrieval_llm.jsonl",
+    "top_k": 5,
+    "model_name": "gpt-4o",
+    "temperature": 0.0,
+    "sleep_seconds_between_cases": 2.0,
+    "max_retries": 3,
+    "retry_sleep_seconds": 5.0,
+    "human_judgment_scale": {
+      "2": "strong match / good response",
+      "1": "acceptable / partial match",
+      "0": "irrelevant / bad response",
+      "null": "not yet judged"
+    },
+    "human_eval_fields": {
+      "target_product_retrieved": "true/false/null; whether target_product_id appears in retrieved_products",
+      "retrieval_quality": "2/1/0/null; overall quality of retrieved set",
+      "llm_chose_good_product": "true/false/null; whether final product choice was reasonable",
+      "llm_response_quality": "2/1/0/null; overall final answer quality",
+      "llm_response_grounded": "true/false/null; whether response sticks to retrieved products/catalog evidence",
+      "should_have_refused_or_said_no_match": "true/false/null; especially useful for expected_available=false cases"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "text_have_001",
+      "query_type": "text_only",
+      "category": "office_furniture",
+      "query": "I need a comfortable office chair, preferably gray, with a headrest and arms I can move out of the way",
+      "image_path": null,
+      "target_product_id": "B07Q44L76B",
+      "target_title": "AmazonBasics Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest – Grey",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Natural conversational version of a high-back gray office chair query.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "gray office chair with headrest and movable arms",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B08DM39BS6",
+        "chosen_product_title": "AmazonCommercial Ergonomic High-Back Executive Mesh Chair, with Adjustable Lumbar Support, Headrest and 3D Armrests (Renewed)",
+        "initial_llm_response": "<B08DM39BS6>",
+        "final_response": "Well, honey, I've got just the thing to keep you sittin' pretty and comfy in your office. Check out the AmazonCommercial Ergonomic High-Back Executive Mesh Chair. It's got that sleek gray look you're after, and it comes with an adjustable headrest to keep your noggin supported. \n\nThe arms are 3D adjustable, so you can move them out of the way when you need a little more elbow room. Plus, it's got all the bells and whistles for comfort, like adjustable seat height, depth, and tilt. And with its sturdy base and smooth swivel, you'll be gliding around your workspace like a star. \n\nSounds like a match made in office heaven, don't you think?",
+        "timings": {
+          "total_seconds": 8.023243
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07L3MKRFC",
+          "title": "AmazonBasics Classic Office Desk Computer Chair - Adjustable, Swiveling, Ultra-Soft Microfiber - Light Gray, Lumbar Support",
+          "score": 0.42342838644981384,
+          "product_type": "chair",
+          "image_paths": [
+            "8c/8c2fb9fa.jpg",
+            "0b/0b47150f.jpg",
+            "ab/abfd850c.jpg",
+            "08/08053d12.jpg",
+            "ee/ee5b0e70.jpg",
+            "44/44ba17b1.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B08DM39BS6",
+          "title": "AmazonCommercial Ergonomic High-Back Executive Mesh Chair, with Adjustable Lumbar Support, Headrest and 3D Armrests (Renewed)",
+          "score": 0.4231767952442169,
+          "product_type": "chair",
+          "image_paths": [
+            "ec/ecc76109.jpg",
+            "1d/1da07365.jpg",
+            "c4/c477a9a9.jpg",
+            "06/069cf020.jpg",
+            "1f/1f6a995c.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07Q5SBTK5",
+          "title": "AmazonBasics Adjustable High-Back Mesh Chair with Flip-Up Arms and Head Rest - Black",
+          "score": 0.4137241840362549,
+          "product_type": "chair",
+          "image_paths": [
+            "69/699c160b.jpg",
+            "60/607f6be0.jpg",
+            "b4/b4a430a6.jpg",
+            "d7/d7e71dab.jpg",
+            "c2/c2c4d7cb.jpg",
+            "3a/3a7e649f.jpg",
+            "87/877cb404.jpg",
+            "92/92d40b2c.jpg",
+            "5e/5ecebb2d.jpg",
+            "92/92054f46.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B07QF9Y35N",
+          "title": "Stone & Beam Modern Upholstered High-Back Swivel Office Chair, 25.2\"W, Gray",
+          "score": 0.413192480802536,
+          "product_type": "chair",
+          "image_paths": [
+            "41/410dc336.jpg",
+            "7e/7e0c514e.jpg",
+            "f6/f66a90c3.jpg",
+            "b8/b896812d.jpg",
+            "e8/e851d5b4.jpg",
+            "ce/ce1e14ff.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B07KWZH5PV",
+          "title": "AmazonBasics High-Back Executive Swivel Office Desk Chair with Ribbed Puresoft Upholstery - Grey, Lumbar Support, Modern Style",
+          "score": 0.40896981954574585,
+          "product_type": "chair",
+          "image_paths": [
+            "75/75d23843.jpg",
+            "6d/6d3efc60.jpg",
+            "25/25dc9244.jpg",
+            "bb/bb93114b.jpg",
+            "6c/6c5fa309.jpg",
+            "56/564a1ace.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": 1,
+        "llm_chose_good_product": true,
+        "llm_response_quality": 1,
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": "Looked for office chair that was gray, had head rest  & movable arm. Usually only 1-2 of props in response"
+      }
+    },
+    {
+      "case_id": "text_have_002",
+      "query_type": "text_only",
+      "category": "office_furniture",
+      "query": "Can you find me a roomy ivory desk chair that feels more executive than basic?",
+      "image_path": null,
+      "target_product_id": "B07V6Z97QJ",
+      "target_title": "AmazonBasics Modern LeatherSoft Executive Chair, 300lbs Capacity with Oversized Seat Cushion, Ivory",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Tests whether the system connects roomy/executive/ivory to the oversized executive chair.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "roomy ivory executive desk chair",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B07S57CCXF",
+        "chosen_product_title": "AmazonCommercial Ergonomic High-Back Bonded Leather Executive Chair with Flip-Up Arms and Lumbar Support, Cream",
+        "initial_llm_response": "<B07S57CCXF>",
+        "final_response": "Well, honey, I've got just the thing for you! How about the Amazon Commercial Ergonomic High-Back Bonded Leather Executive Chair in a lovely cream color? It's got that executive flair you're looking for, with a high-back design and quality leather upholstery that screams sophistication.\n\nThis chair is not just about looks, though. It's got an ergonomic design with segmented padding for comfort, adjustable seat height, and tilt features to keep you sitting pretty all day long. Plus, those flip-up armrests give you the flexibility to move around as you please.\n\nWith a sturdy 5-point aluminum base and oversized rolling caster wheels, you'll glide across your office like a star. It's the perfect blend of style and function, darling. What do you think?",
+        "timings": {
+          "total_seconds": 3.226876
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07XSKL25C",
+          "title": "Stone & Beam Modern Upholstered High-Back Swivel Chair, 25.2\"W, Beige (Renewed)",
+          "score": 0.5320497751235962,
+          "product_type": "chair",
+          "image_paths": [
+            "c6/c6841dd3.jpg",
+            "45/45bcc03b.jpg",
+            "0c/0c6ac96f.jpg",
+            "11/116915bc.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B07QC85YBY",
+          "title": "Amazon Brand – Stone & Beam Modern Upholstered High-Back Swivel Chair, 25.2\"W, Beige",
+          "score": 0.5317077040672302,
+          "product_type": "chair",
+          "image_paths": [
+            "84/84a4b148.jpg",
+            "a2/a224d693.jpg",
+            "f4/f4e28d3d.jpg",
+            "82/82ee4e86.jpg",
+            "10/10e8bff2.jpg",
+            "b9/b9dea7a8.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07M66SYGT",
+          "title": "AmazonBasics Classic, Adjustable, Swivel Office Desk Chair with Casters and Twill Fabric, Beige",
+          "score": 0.5144667029380798,
+          "product_type": "chair",
+          "image_paths": [
+            "16/16ecbbcc.jpg",
+            "ee/eef1ed1d.jpg",
+            "30/30460bc1.jpg",
+            "31/319ca306.jpg",
+            "b2/b2c7a881.jpg",
+            "5b/5b458d3b.jpg",
+            "22/22a18aab.jpg",
+            "48/4891f243.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B07Y7M7WQS",
+          "title": "Stone & Beam Mid-Century Swivel Chair, 23.6\"W, Beige (Renewed)",
+          "score": 0.5078302621841431,
+          "product_type": "chair",
+          "image_paths": [
+            "99/99a427a5.jpg",
+            "6e/6e15d90c.jpg",
+            "0e/0efc122b.jpg",
+            "1d/1d5220b4.jpg",
+            "67/6706860b.jpg",
+            "72/723546f5.jpg",
+            "5a/5a628d7f.jpg",
+            "d4/d4abdcc9.jpg",
+            "99/99a05d46.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B07S57CCXF",
+          "title": "AmazonCommercial Ergonomic High-Back Bonded Leather Executive Chair with Flip-Up Arms and Lumbar Support, Cream",
+          "score": 0.505038321018219,
+          "product_type": "chair",
+          "image_paths": [
+            "15/1516f630.jpg",
+            "7f/7f50672c.jpg",
+            "5a/5a2f0707.jpg",
+            "75/753259a2.jpg",
+            "98/98b4f96b.jpg",
+            "d7/d70c229d.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": 1,
+        "llm_chose_good_product": true,
+        "llm_response_quality": 1,
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": "relevant choices, but missed trgt item & chose options without ALL specified features"
+      }
+    },
+    {
+      "case_id": "text_have_003",
+      "query_type": "text_only",
+      "category": "bags",
+      "query": "I'm looking for a small orange backpack I could take on a hike or use while traveling",
+      "image_path": null,
+      "target_product_id": "B01AIVT6NM",
+      "target_title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Natural request for the orange packable travel/hiking backpack.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "small orange backpack hiking travel",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B01AIVT6NM",
+        "chosen_product_title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange",
+        "initial_llm_response": "<B01AIVT6NM>",
+        "final_response": "Well, honey, I've got just the thing for you! How about a lightweight, packable hiking travel day pack in a vibrant orange? It's perfect for a hike or a little jaunt around the world. This AmazonBasics backpack is ultra-light and has a 25-liter capacity, so you can pack all your essentials without feeling weighed down.\n\nIt's got a roomy main compartment, a front zipper pocket, an internal zippered pocket, and two mesh side pockets. Plenty of space for all your goodies! The adjustable breathable straps will keep you comfy all day long, and when you're done, you can stuff it into its own zippered pocket for easy storage. Now that's what I call a smart little number! What do you think?",
+        "timings": {
+          "total_seconds": 3.14185
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07PGMSL4D",
+          "title": "AmazonBasics Small Backpack, Yellow",
+          "score": 0.49620041251182556,
+          "product_type": "backpack",
+          "image_paths": [
+            "d3/d3ebee78.jpg",
+            "3d/3dc68ad6.jpg",
+            "0f/0f45e8d6.jpg",
+            "4f/4f545afa.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B01AIVT6NM",
+          "title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange",
+          "score": 0.44622230529785156,
+          "product_type": "backpack",
+          "image_paths": [
+            "55/5579e12e.jpg",
+            "61/61f7d527.jpg",
+            "d9/d9cbec1f.jpg",
+            "8c/8cabb694.jpg",
+            "0a/0ab2045c.jpg",
+            "c9/c9fd22ac.jpg",
+            "52/52f3a36f.jpg",
+            "5a/5a28d5ab.jpg",
+            "64/64a088cb.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07G94NYBF",
+          "title": "Amazonbasics Classic Backpack with Gel Ink Pens, Classic Notebook (Ruled) and 3-Ring Binder",
+          "score": 0.430555522441864,
+          "product_type": "backpack",
+          "image_paths": [
+            "89/89ed5a6e.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B01AIVT5M4",
+          "title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Red",
+          "score": 0.4253460764884949,
+          "product_type": "backpack",
+          "image_paths": [
+            "e3/e39ef2aa.jpg",
+            "df/df0446e4.jpg",
+            "e2/e2845610.jpg",
+            "3e/3e18be08.jpg",
+            "6c/6c5e2d14.jpg",
+            "39/3913f496.jpg",
+            "e8/e874117f.jpg",
+            "f1/f1e75409.jpg",
+            "e7/e744e674.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B07G8ZSM5K",
+          "title": "Amazonbasics Classic Backpack with Gel Ink Pens, Classic Notebook, and 3-Ring Binder",
+          "score": 0.4222395420074463,
+          "product_type": "backpack",
+          "image_paths": [
+            "f7/f7ef538e.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": "1",
+        "llm_chose_good_product": true,
+        "llm_response_quality": "1",
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": "All backpacks, none orange"
+      }
+    },
+    {
+      "case_id": "text_have_004",
+      "query_type": "text_only",
+      "category": "shoes",
+      "query": "Do you have any light blue running shoes for women?",
+      "image_path": null,
+      "target_product_id": "B08BVKSRLD",
+      "target_title": "ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001)",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Simple natural footwear query; good later visual query target.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "light blue running shoes women",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B08BVK2X21",
+        "chosen_product_title": "ELISE Women's Light Blue Running Shoes-7 UK (40 EU) (8 US) (ES-S20-002)",
+        "initial_llm_response": "<B08BVK2X21>",
+        "final_response": "Well, honey, I've got just the thing for you! Check out the ELISE Women's Light Blue Running Shoes. They're as stylish as they are functional, perfect for hitting the pavement or just strutting your stuff. These beauties are slip-on, so you can slide into them with ease, and they come with a manufacturer's warranty of 45 days. The outer material is textile, making them lightweight and comfy for those long runs. And with that lovely light blue color, you'll be turning heads wherever you go. What do you say, ready to add a little pep to your step?",
+        "timings": {
+          "total_seconds": 2.646466
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B08BVK2X21",
+          "title": "ELISE Women's Light Blue Running Shoes-7 UK (40 EU) (8 US) (ES-S20-002)",
+          "score": 0.5737704038619995,
+          "product_type": "shoes",
+          "image_paths": [
+            "8c/8c8b9655.jpg",
+            "d4/d4542708.jpg",
+            "23/232a14d2.jpg",
+            "f7/f7148697.jpg",
+            "9e/9ec10e27.jpg",
+            "29/29565228.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B08BVKSRLD",
+          "title": "ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001)",
+          "score": 0.569299042224884,
+          "product_type": "shoes",
+          "image_paths": [
+            "cc/ccb74b6f.jpg",
+            "87/8766f911.jpg",
+            "cb/cb38f8ce.jpg",
+            "18/181f21e2.jpg",
+            "c4/c42e62b2.jpg",
+            "54/54b0b8a0.jpg",
+            "cd/cd96629d.jpg",
+            "48/48916d9c.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07PHRTW54",
+          "title": "Amazon Brand - 206 Collective Women's Flora, White Cavas, 12 M US",
+          "score": 0.5527002811431885,
+          "product_type": "technical sport shoe",
+          "image_paths": [
+            "69/69787ec4.jpg",
+            "25/25fd8c8e.jpg",
+            "0a/0af9a602.jpg",
+            "ff/ff1ba065.jpg",
+            "25/25cd4444.jpg",
+            "eb/eb99e664.jpg",
+            "45/454aa5cf.jpg",
+            "09/099b5200.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B07PKYWXLJ",
+          "title": "Amazon Brand - 206 Collective Women's Flora, White Cavas, 7 M US",
+          "score": 0.5527002811431885,
+          "product_type": "technical sport shoe",
+          "image_paths": [
+            "69/69787ec4.jpg",
+            "25/25fd8c8e.jpg",
+            "0a/0af9a602.jpg",
+            "ff/ff1ba065.jpg",
+            "25/25cd4444.jpg",
+            "eb/eb99e664.jpg",
+            "45/454aa5cf.jpg",
+            "9a/9ae5c12b.jpg",
+            "09/099b5200.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B07PDKPC9T",
+          "title": "Amazon Brand - 206 Collective Women's Flora, White Cavas, 7.5 M US",
+          "score": 0.5527002811431885,
+          "product_type": "technical sport shoe",
+          "image_paths": [
+            "69/69787ec4.jpg",
+            "25/25fd8c8e.jpg",
+            "0a/0af9a602.jpg",
+            "ff/ff1ba065.jpg",
+            "25/25cd4444.jpg",
+            "eb/eb99e664.jpg",
+            "45/454aa5cf.jpg",
+            "9a/9ae5c12b.jpg",
+            "09/099b5200.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": true,
+        "retrieval_quality": "2",
+        "llm_chose_good_product": true,
+        "llm_response_quality": "2",
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_have_005",
+      "query_type": "text_only",
+      "category": "shoes",
+      "query": "I want plain black flats, something easy to wear and not too dressy",
+      "image_path": null,
+      "target_product_id": "B082PMY1L2",
+      "target_title": "Amazon Essentials Women's Ballet Flat, Black Knit, 9.5 Wide US",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Tests whether the system retrieves black ballet flats without exact product wording.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "plain black flats casual",
+        "embedding_mode": "text",
+        "decision": "dive_deeper",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<DIVE DEEPER>",
+        "final_response": "Well, honey, it sounds like you're looking for something simple and chic. Do you have a particular size in mind, or are you just browsing for now? And how about comfort—are you planning to wear these beauties all day long?",
+        "timings": {
+          "total_seconds": 2.476881
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B082PNBG9G",
+          "title": "Amazon Essentials Women's Ballet Flat, Black Knit, 11.5 Wide US",
+          "score": 0.5222175717353821,
+          "product_type": "shoes",
+          "image_paths": [
+            "66/66ea3f11.jpg",
+            "8c/8cb25278.jpg",
+            "ec/ecfc672b.jpg",
+            "bf/bf7f154b.jpg",
+            "3c/3c8e517b.jpg",
+            "6a/6a019ce4.jpg",
+            "89/89051376.jpg",
+            "f8/f8154a36.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B082PN2TDG",
+          "title": "Amazon Essentials Women's Ballet Flat, Black Knit, 10 Wide US",
+          "score": 0.5222175717353821,
+          "product_type": "shoes",
+          "image_paths": [
+            "66/66ea3f11.jpg",
+            "8c/8cb25278.jpg",
+            "ec/ecfc672b.jpg",
+            "bf/bf7f154b.jpg",
+            "3c/3c8e517b.jpg",
+            "6a/6a019ce4.jpg",
+            "89/89051376.jpg",
+            "f8/f8154a36.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B082PNCJ9L",
+          "title": "Amazon Essentials Women's Ballet Flat, Black Knit, 6.5 Wide US",
+          "score": 0.5222175717353821,
+          "product_type": "shoes",
+          "image_paths": [
+            "66/66ea3f11.jpg",
+            "8c/8cb25278.jpg",
+            "ec/ecfc672b.jpg",
+            "bf/bf7f154b.jpg",
+            "3c/3c8e517b.jpg",
+            "6a/6a019ce4.jpg",
+            "89/89051376.jpg",
+            "f8/f8154a36.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B082PN2TD9",
+          "title": "Amazon Essentials Women's Ballet Flat, Black Knit, 7.5 B US",
+          "score": 0.5222175717353821,
+          "product_type": "shoes",
+          "image_paths": [
+            "66/66ea3f11.jpg",
+            "8c/8cb25278.jpg",
+            "ec/ecfc672b.jpg",
+            "bf/bf7f154b.jpg",
+            "3c/3c8e517b.jpg",
+            "6a/6a019ce4.jpg",
+            "89/89051376.jpg",
+            "f8/f8154a36.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B082PMY1L2",
+          "title": "Amazon Essentials Women's Ballet Flat, Black Knit, 9.5 Wide US",
+          "score": 0.5222175717353821,
+          "product_type": "shoes",
+          "image_paths": [
+            "66/66ea3f11.jpg",
+            "8c/8cb25278.jpg",
+            "ec/ecfc672b.jpg",
+            "bf/bf7f154b.jpg",
+            "3c/3c8e517b.jpg",
+            "6a/6a019ce4.jpg",
+            "89/89051376.jpg",
+            "f8/f8154a36.jpg"
+          ],
+          "retrieval_relevance": 2,
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": true,
+        "retrieval_quality": 2,
+        "llm_chose_good_product": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_have_006",
+      "query_type": "text_only",
+      "category": "home_decor",
+      "query": "I'm decorating a room and want a round black mirror, something modern looking",
+      "image_path": null,
+      "target_product_id": "B084HV6KDV",
+      "target_title": "Amazon Brand – Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Natural request for modern round black mirror.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "round black modern mirror",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B084HTZ8PW",
+        "chosen_product_title": "Amazon Brand - Rivet Modern Round Hanging Mirror with Shelf, 18\" Diameter, Black",
+        "initial_llm_response": "<B084HTZ8PW>",
+        "final_response": "Well, honey, I've got just the thing to add a touch of modern elegance to your room. How about the Rivet Modern Round Hanging Mirror with Shelf? It's got a sleek black metal frame and a handy little shelf for some extra flair. At 18 inches in diameter, it's just the right size to make a statement without overwhelming the space. Plus, it's handmade and hand-painted, so you know it's got that special touch. Just remember to keep it dry and give it a gentle wipe now and then. What do you think, darling?",
+        "timings": {
+          "total_seconds": 3.148024
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B084HTZ8PW",
+          "title": "Amazon Brand - Rivet Modern Round Hanging Mirror with Shelf, 18\" Diameter, Black",
+          "score": 0.608320951461792,
+          "product_type": "home mirror",
+          "image_paths": [
+            "68/6871ae1b.jpg",
+            "3e/3e934213.jpg",
+            "dd/ddd0089f.jpg",
+            "7a/7a631d51.jpg",
+            "99/99943894.jpg",
+            "a1/a188ca3f.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B084HV6KDL",
+          "title": "Amazon Brand – Rivet Modern Geometric Framed Hanging Mirror, 23.75\"H, Black",
+          "score": 0.6069011092185974,
+          "product_type": "home mirror",
+          "image_paths": [
+            "18/187a60f7.jpg",
+            "ef/ef8be930.jpg",
+            "31/314f6d2c.jpg",
+            "41/41b7f505.jpg",
+            "05/05f9d5e0.jpg",
+            "58/589e97af.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B084HV6KDV",
+          "title": "Amazon Brand – Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black",
+          "score": 0.6042583584785461,
+          "product_type": "home mirror",
+          "image_paths": [
+            "9a/9aac3613.jpg",
+            "ed/edb528c3.jpg",
+            "65/65401ce8.jpg",
+            "6e/6e06e770.jpg",
+            "e1/e17e6969.jpg",
+            "9d/9d350d8e.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B073WGSN2W",
+          "title": "Amazon Brand – Stone & Beam Industrial Square Floating Metal Wall Mirror, 12 Inch Height, Black",
+          "score": 0.6037681102752686,
+          "product_type": "home mirror",
+          "image_paths": [
+            "be/bece77a1.jpg",
+            "26/26c7955b.jpg",
+            "22/22e279ab.jpg",
+            "7e/7ebf22b8.jpg",
+            "1a/1a65b6ee.jpg",
+            "ed/edc41e3d.jpg",
+            "20/20a81bbd.jpg",
+            "b0/b0bd5dd3.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B073WHB43V",
+          "title": "Amazon Brand – Rivet Modern Metal Floral Pattern Round Hanging Wall Mirror, 30.5 Inch Height, Black",
+          "score": 0.5994660258293152,
+          "product_type": "home mirror",
+          "image_paths": [
+            "b4/b42944cb.jpg",
+            "39/397f2e7f.jpg",
+            "d5/d5148049.jpg",
+            "f3/f31a3c4f.jpg",
+            "96/96a0aa5d.jpg",
+            "2c/2c4e13cb.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": true,
+        "retrieval_quality": "2",
+        "llm_chose_good_product": true,
+        "llm_response_quality": "2",
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_have_007",
+      "query_type": "text_only",
+      "category": "living_room_furniture",
+      "query": "Can you show me a coffee table that has a marble look and some gold accents?",
+      "image_path": null,
+      "target_product_id": "B07DBFQV23",
+      "target_title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Marble & Gold",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Conversational query for marble/gold coffee table.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "marble look coffee table gold accents",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B07DBFQV23",
+        "chosen_product_title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold",
+        "initial_llm_response": "<B07DBFQV23>",
+        "final_response": "Well, darling, I've got just the thing to add a touch of glamour to your living room. Take a look at the Ravenna Home Parker Coffee Table. It's got that marble look you're after, with some fabulous gold accents to boot. This beauty is perfect for displaying your favorite books or holding a tray of snacks while you entertain. \n\nWith its marbled grain laminate on plywood and a gold-painted metal frame, it's a sleek modern piece that'll surely catch the eye. Plus, it's easy to assemble in just 15-30 minutes. And if you're not completely smitten, you've got 30 days to return it, no questions asked. Now, how's that for a deal?",
+        "timings": {
+          "total_seconds": 3.212898
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07DBF5J5P",
+          "title": "Amazon Brand – Ravenna Home Parker Round Shelf Storage Coffee Table, 31.5\"W, Faux Marble/Gold/Glass",
+          "score": 0.5015857219696045,
+          "product_type": "table",
+          "image_paths": [
+            "ab/ab7bd5bb.jpg",
+            "b4/b49765ba.jpg",
+            "5c/5c785d0f.jpg",
+            "5a/5a5585b5.jpg",
+            "68/68db7b2c.jpg",
+            "ad/ad046806.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B07DBFQV23",
+          "title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold",
+          "score": 0.49079638719558716,
+          "product_type": "table",
+          "image_paths": [
+            "bc/bc220405.jpg",
+            "50/501410f7.jpg",
+            "48/48b0cdd5.jpg",
+            "ec/ec053aaf.jpg",
+            "5c/5c3d7a1d.jpg",
+            "68/68db7b2c.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07DBDZ3T2",
+          "title": "Amazon Brand – Ravenna Home Parker Shelf Storage End Table, 23.6\"W, Marble/Glass/Gold",
+          "score": 0.46637609601020813,
+          "product_type": "table",
+          "image_paths": [
+            "4b/4b1819fe.jpg",
+            "9d/9dc1ca5f.jpg",
+            "94/94646da6.jpg",
+            "9d/9d54038d.jpg",
+            "68/68db7b2c.jpg",
+            "4e/4edc643a.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B07DBDR1DM",
+          "title": "Amazon Brand – Ravenna Home Parker Round Shelf Storage Coffee Table, 31.5\"W, Glass and Gold",
+          "score": 0.45734792947769165,
+          "product_type": "table",
+          "image_paths": [
+            "2e/2e5f7436.jpg",
+            "2b/2b94466b.jpg",
+            "f8/f85f937f.jpg",
+            "f5/f5801c08.jpg",
+            "5c/5c0ebc3e.jpg",
+            "ce/ce5921e2.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B07DBDMN5F",
+          "title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Glass &amp; Gold",
+          "score": 0.4520111680030823,
+          "product_type": "table",
+          "image_paths": [
+            "30/3056bb59.jpg",
+            "f5/f5801c08.jpg",
+            "cb/cba3ba1a.jpg",
+            "d4/d4eccf85.jpg",
+            "7e/7e32915d.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": true,
+        "retrieval_quality": 2,
+        "llm_chose_good_product": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_have_008",
+      "query_type": "text_only",
+      "category": "rugs",
+      "query": "I need a black and cream rug with some kind of geometric pattern",
+      "image_path": null,
+      "target_product_id": "B07QJLYXGY",
+      "target_title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Natural query for color/pattern rug retrieval.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "black cream geometric pattern rug",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B07QB8KHWL",
+        "chosen_product_title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 8' x 10', Black and Cream",
+        "initial_llm_response": "<B07QB8KHWL>",
+        "final_response": "Well, honey, I've got just the thing for you! Check out the Rivet Contemporary Handtufted Cotton-and-Wool Area Rug. It's got a fabulous geometric feathered pattern in black and cream, perfect for adding a touch of style to your space. This beauty is 8' x 10', so it's got plenty of room to make a statement. Made from a cozy blend of wool and cotton, it'll feel just right underfoot. And with that chic color combo, it'll fit right in with both contemporary and classic decors. Just remember to pair it with a rug pad for the best results. How does that sound?",
+        "timings": {
+          "total_seconds": 2.753809
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07QB8KHWL",
+          "title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 8' x 10', Black and Cream",
+          "score": 0.5479558110237122,
+          "product_type": "rug",
+          "image_paths": [
+            "62/629a0d8f.jpg",
+            "ff/ffe67ae7.jpg",
+            "6a/6a4ab9dc.jpg",
+            "13/13d0d48d.jpg",
+            "78/78afccfd.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B07HSHH9XZ",
+          "title": "Amazon Brand – Rivet Contemporary Wool Area Rug, 4 x 6 Foot, Black and White",
+          "score": 0.5414514541625977,
+          "product_type": "rug",
+          "image_paths": [
+            "63/631fcf9e.jpg",
+            "44/441b6dea.jpg",
+            "e6/e6a273bb.jpg",
+            "c8/c8ab14c5.jpg",
+            "5d/5d44be8c.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07QJLYXGY",
+          "title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream",
+          "score": 0.5404273271560669,
+          "product_type": "rug",
+          "image_paths": [
+            "42/4265f2a0.jpg",
+            "ff/ffe67ae7.jpg",
+            "6a/6a4ab9dc.jpg",
+            "13/13d0d48d.jpg",
+            "78/78afccfd.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B07QB8K1B3",
+          "title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Rug Runner with Geometric Feathered Pattern, 2'6\" x 8', Black and Cream",
+          "score": 0.538559079170227,
+          "product_type": "rug",
+          "image_paths": [
+            "ad/ada823ce.jpg",
+            "89/8956e076.jpg",
+            "1d/1d3e1e8c.jpg",
+            "cd/cd212007.jpg",
+            "b7/b7242137.jpg",
+            "86/86101a3c.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B075Z9Z1C5",
+          "title": "Amazon Brand – Rivet Shag Diamond Morrocan Area Rug, 3' 11\" x 6' 7\", Cream",
+          "score": 0.536004900932312,
+          "product_type": "rug",
+          "image_paths": [
+            "a6/a6c9735b.jpg",
+            "f3/f31c54ce.jpg",
+            "4b/4bffff1a.jpg",
+            "b8/b8ec2614.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": true,
+        "retrieval_quality": "2",
+        "llm_chose_good_product": true,
+        "llm_response_quality": "2",
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_have_009",
+      "query_type": "text_only",
+      "category": "lighting",
+      "query": "I'm looking for a table lamp with a light blue shade, maybe something mid-century-ish",
+      "image_path": null,
+      "target_product_id": "B07DWHQPCQ",
+      "target_title": "Amazon Brand – Ravenna Home Mid Century Modern White Ceramic Table Lamp With LED Light Bulb - 21 Inches, Light Blue Linen Shade",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Natural style-oriented lamp query.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "mid-century table lamp light blue shade",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B07ML7J59B",
+        "chosen_product_title": "Amazon Brand – Ravenna Home Table Lamp with a Drum Shade, Bulb Included, 19.75\"H, Pastel Blue",
+        "initial_llm_response": "<B07ML7J59B>",
+        "final_response": "Well, honey, I've got just the thing to light up your life! Check out the Ravenna Home Table Lamp with a Drum Shade. It's got that lovely pastel blue color you're after, and it's got a bit of that mid-century charm with its smooth ceramic and high-gloss finish. The brushed-nickel accents add a touch of elegance, and the off-white linen shade will cast a nice ambient glow in your room.\n\nStanding at 19.75 inches tall, it's just the right size to make a statement without overpowering your space. Plus, it comes with a 60-watt equivalent LED bulb, so you're all set to shine bright. And don't worry, sugar, it's easy to assemble in 15 minutes or less. Perfect for indoor use, this lamp is ready to bring a little vintage flair to your home. What do you say?",
+        "timings": {
+          "total_seconds": 2.945106
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07ML7J59B",
+          "title": "Amazon Brand – Ravenna Home Table Lamp with a Drum Shade, Bulb Included, 19.75\"H, Pastel Blue",
+          "score": 0.4704568386077881,
+          "product_type": "lamp",
+          "image_paths": [
+            "43/43c008e7.jpg",
+            "a0/a06c7ab2.jpg",
+            "27/27f667aa.jpg",
+            "81/81220deb.jpg",
+            "21/21596e09.jpg",
+            "eb/eb1ce40b.jpg",
+            "aa/aac3ca77.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B073751DML",
+          "title": "Amazon Brand – Stone & Beam Round Ceramic Table Lamp With Light Bulb and White Shade - 11 x 11 x 20 Inches, Cyan Blue",
+          "score": 0.46427416801452637,
+          "product_type": "lamp",
+          "image_paths": [
+            "0c/0ce590f1.jpg",
+            "9b/9bc1dfb5.jpg",
+            "1a/1a8a540a.jpg",
+            "a8/a85994bd.jpg",
+            "9f/9f449af6.jpg",
+            "19/19682d74.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07MF1RKM3",
+          "title": "Amazon Brand – Stone & Beam Textured Ceramic Table Lamp, Bulb Included, 16.75\"H, Blue",
+          "score": 0.461823433637619,
+          "product_type": "lamp",
+          "image_paths": [
+            "f6/f6ddf948.jpg",
+            "78/7831b137.jpg",
+            "ca/ca276f52.jpg",
+            "5f/5f7f0a88.jpg",
+            "05/05f04f51.jpg",
+            "ce/cea44259.jpg",
+            "a4/a47a6051.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B07MBFF1C9",
+          "title": "Amazon Brand – Ravenna Home Glass Table Lamp, Bulb Included, 16.5\"H, Pastel Turquoise",
+          "score": 0.4614911377429962,
+          "product_type": "lamp",
+          "image_paths": [
+            "28/28449bfc.jpg",
+            "6f/6f5039c6.jpg",
+            "a1/a170e8a8.jpg",
+            "7b/7b7ee963.jpg",
+            "3c/3cb6d415.jpg",
+            "b6/b63a3493.jpg",
+            "94/9445275a.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B07GNNPB38",
+          "title": "Amazon Brand – Stone & Beam Ceramic Bedside Table Lamp With Light Bulb And White Shade, 20\"H, Slate Blue",
+          "score": 0.46003225445747375,
+          "product_type": "lamp",
+          "image_paths": [
+            "11/1138a8c1.jpg",
+            "d8/d8043ee4.jpg",
+            "d4/d455ddf7.jpg",
+            "55/558c834e.jpg",
+            "a7/a7a49c6a.jpg",
+            "2d/2dedd082.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": "2",
+        "llm_chose_good_product": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_have_010",
+      "query_type": "text_only",
+      "category": "electronics",
+      "query": "Do you have a small red bluetooth speaker?",
+      "image_path": null,
+      "target_product_id": "B00LLJ58ME",
+      "target_title": "AmazonBasics Micro Bluetooth Speaker - Red",
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Simple conversational electronics query.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "small red bluetooth speaker",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B00JZVPJD8",
+        "chosen_product_title": "AmazonBasics Mini Bluetooth Speaker - Red",
+        "initial_llm_response": "<B00JZVPJD8>",
+        "final_response": "Well, honey, I've got just the thing for you! How about the Mini Bluetooth Speaker in a ravishing red? It's from AmazonBasics, and it's as portable as a little black dress—perfect for taking your tunes wherever you go. \n\nThis little number packs a punch with a 3W speaker and even lets you take hands-free calls. It connects to any Bluetooth-enabled device from up to 30 feet away, or you can use a 3.5mm stereo cable if you prefer. And don't worry about running out of juice; it gives you up to 10 hours of wireless play on a single charge.\n\nIt comes with a Micro USB to USB charging cable and a carrying pouch, so you're all set for a night on the town or a cozy evening in. What do you say, ready to add a splash of red to your music life?",
+        "timings": {
+          "total_seconds": 6.896405
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B00JZVPJD8",
+          "title": "AmazonBasics Mini Bluetooth Speaker - Red",
+          "score": 0.5288769006729126,
+          "product_type": "portable audio",
+          "image_paths": [
+            "c6/c66a0651.jpg",
+            "8d/8d81e05a.jpg",
+            "51/5127c4f1.jpg",
+            "e2/e23a4de1.jpg",
+            "1a/1a34a60a.jpg",
+            "71/71a4f89a.jpg",
+            "8e/8eb29bd1.jpg",
+            "59/5948e55e.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B00LLJ58ME",
+          "title": "AmazonBasics Micro Bluetooth Speaker - Red",
+          "score": 0.5142093300819397,
+          "product_type": "speakers",
+          "image_paths": [
+            "4d/4db2bcc4.jpg",
+            "a2/a2fb5f05.jpg",
+            "75/7531ca7e.jpg",
+            "80/80f79a68.jpg",
+            "40/408ff3cc.jpg",
+            "c7/c7571a0f.jpg",
+            "ac/ac6d1d04.jpg",
+            "9e/9eac132e.jpg"
+          ],
+          "retrieval_relevance": "2",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B078H6565T",
+          "title": "Bose SoundLink Micro Waterproof Bluetooth speaker (Bright Orange) with AmazonBasics Case (Black)",
+          "score": 0.480358749628067,
+          "product_type": "speakers",
+          "image_paths": [
+            "be/be91e9e7.jpg",
+            "77/77810c94.jpg",
+            "eb/eb431dd0.jpg",
+            "a2/a2659b6e.jpg",
+            "ca/ca07d386.jpg",
+            "b3/b32291da.jpg",
+            "d1/d1839452.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B078GYRXHM",
+          "title": "Bose SoundLink Micro Waterproof Bluetooth speaker (Bright Orange) with AmazonBasics Case (Orange)",
+          "score": 0.4773077666759491,
+          "product_type": "speakers",
+          "image_paths": [
+            "f0/f06dda53.jpg",
+            "3f/3ff02970.jpg",
+            "9e/9e7f8b98.jpg",
+            "77/77810c94.jpg",
+            "1b/1baadaa7.jpg",
+            "83/8370fd66.jpg",
+            "b3/b32291da.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B07BLDWLS2",
+          "title": "AmazonBasics Portable Wireless Bluetooth Speaker - Black (Renewed)",
+          "score": 0.47374284267425537,
+          "product_type": "speakers",
+          "image_paths": [
+            "ec/ec6c6f78.jpg",
+            "0d/0d9e73ff.jpg",
+            "8c/8c61da8b.jpg",
+            "7d/7d099abb.jpg",
+            "3b/3b513e75.jpg",
+            "56/56ef9fd2.jpg"
+          ],
+          "retrieval_relevance": "1",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": true,
+        "retrieval_quality": "2",
+        "llm_chose_good_product": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_missing_001",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "I'm looking for a gaming laptop, something with a real graphics card",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Catalog has electronics accessories, but no actual gaming laptop.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "gaming laptop with dedicated graphics card",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it seems we're having a bit of a dry spell finding the right gaming laptop for you. I apologize for the inconvenience. We don't have any gaming laptops with a real graphics card in our current selection. But don't you worry, I'm here to help with anything else you might need. Is there something else you're interested in, or perhaps another type of product you're looking for?",
+        "timings": {
+          "total_seconds": 2.350886
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B004HYFOZQ",
+          "title": "AmazonBasics Single-fan Laptop Cooling Stand (up to 17\"/43cm)",
+          "score": 0.46367043256759644,
+          "product_type": "computer cooling device",
+          "image_paths": [
+            "da/dae0b177.jpg",
+            "6d/6d3b205d.jpg",
+            "0d/0dd1de86.jpg",
+            "0e/0e493ffd.jpg",
+            "52/52cae6c8.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B003M0NT1M",
+          "title": "AmazonBasics USB 2.0 Portable External DVD Optical Drive",
+          "score": 0.45540252327919006,
+          "product_type": "computer drive or storage",
+          "image_paths": [
+            "a5/a54436d3.jpg",
+            "cb/cb77a00f.jpg",
+            "e9/e9fc3ab1.jpg",
+            "b7/b7741827.jpg",
+            "db/dbbef1f3.jpg",
+            "87/87c49812.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B00LU7B8X0",
+          "title": "AmazonBasics 17.3-Inch HP Laptop Case Bag, Black, 1-Pack",
+          "score": 0.4449414610862732,
+          "product_type": "handbag",
+          "image_paths": [
+            "f1/f18d61a9.jpg",
+            "f2/f297bc97.jpg",
+            "7b/7bae5ac0.jpg",
+            "99/993e5a7c.jpg",
+            "c0/c0d70e81.jpg",
+            "02/02a804e3.jpg",
+            "38/38fd23cf.jpg",
+            "42/42f6ae36.jpg",
+            "91/916d7f56.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B08HKSWD64",
+          "title": "AmazonBasics Gaming Keyboard (Renewed)",
+          "score": 0.44424375891685486,
+          "product_type": "keyboards",
+          "image_paths": [
+            "48/48a2b323.jpg",
+            "98/98b3b112.jpg",
+            "ca/caf9f0a7.jpg",
+            "2c/2c80960d.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B0044BBPGE",
+          "title": "AmazonBasics Dual-Fan Laptop Cooling Pad (Up to 17 / 43cm)",
+          "score": 0.4440135359764099,
+          "product_type": "computer add on",
+          "image_paths": [
+            "3f/3f5bf5da.jpg",
+            "7f/7fa6735f.jpg",
+            "a3/a3e82d59.jpg",
+            "95/9541610e.jpg",
+            "5c/5c905d66.jpg",
+            "35/35a984e3.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": 0,
+        "llm_chose_good_product": false,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_missing_002",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "Can you help me find a road bike for commuting and weekend rides?",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Should not be satisfied by unrelated outdoor, patio, or fitness products.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "road bike for commuting and weekend rides",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it seems like we're having a bit of a hard time finding the right road bike for you at the moment. I apologize for the inconvenience. Sometimes the stars just don't align, but don't you worry, we'll keep looking for something that suits your needs. In the meantime, is there anything else I can help you with? Maybe something to go with that future bike of yours?",
+        "timings": {
+          "total_seconds": 3.330349
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B08919ZX9C",
+          "title": "AmazonBasics 20\" Abs Luggage",
+          "score": 0.4352337121963501,
+          "product_type": "suitcase",
+          "image_paths": [
+            "35/3595924e.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B07FP4XZP2",
+          "title": "AmazonBasics Hudson",
+          "score": 0.4335564970970154,
+          "product_type": "suitcase",
+          "image_paths": [
+            "86/86d56c14.jpg"
+          ],
+          "retrieval_relevance": null,
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07ZWB3G2S",
+          "title": "find. Men's Gotham Moccasin, Blue Light Blue, US:5",
+          "score": 0.4258101284503937,
+          "product_type": "shoes",
+          "image_paths": [
+            "5f/5f06c47f.jpg",
+            "d7/d74b57cf.jpg",
+            "4f/4f6c747a.jpg",
+            "8e/8e7b6160.jpg",
+            "26/2692002e.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B07MQ8KLWJ",
+          "title": "365 Everyday Value, Raspberry Beret Trail Mix, 14 oz",
+          "score": 0.42278987169265747,
+          "product_type": "pantry",
+          "image_paths": [
+            "ad/ad9ee4e6.jpg",
+            "d4/d442aa0c.jpg",
+            "3a/3ae80c0c.jpg",
+            "3e/3e39ec19.jpg",
+            "65/650d7c45.jpg",
+            "cb/cb1930e3.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B088GK1GYC",
+          "title": "365 Everyday Value, Electrolyte Enhanced Water, 50.7 fl oz Casepack",
+          "score": 0.4179014563560486,
+          "product_type": "grocery",
+          "image_paths": [
+            "72/72f3b980.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": "0",
+        "llm_chose_good_product": "0",
+        "llm_response_quality": "2",
+        "llm_response_grounded": "2",
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_missing_003",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "I need a bike helmet for riding around the city",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Useful negative case because the catalog may contain outdoor/sport items but no clear bicycle helmet.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "bike helmet city riding",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it seems like we're having a bit of a hard time finding the right bike helmet for you at the moment. I apologize for the inconvenience. Is there anything else I can help you with, or perhaps some more details about what you're looking for? Maybe we can find something else that tickles your fancy.",
+        "timings": {
+          "total_seconds": 1.844908
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B079J7QX7H",
+          "title": "Starter Men's STAR-FIT Flat Brim Cap, Amazon Exclusive, Black/Vapor Grey, Small/Medium",
+          "score": 0.41993963718414307,
+          "product_type": "hat",
+          "image_paths": [
+            "10/10945ae7.jpg",
+            "a1/a19b6fd2.jpg",
+            "4c/4c6c16f6.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B079QB83WG",
+          "title": "Starter Men's Fitted Cap with Wicking and Built-in Headband, Amazon Exclusive, Vapor Grey, Small/Medium",
+          "score": 0.4085734188556671,
+          "product_type": "hat",
+          "image_paths": [
+            "0f/0fdeb607.jpg",
+            "3d/3d9790b8.jpg",
+            "f1/f12e2b82.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B079JC76N5",
+          "title": "Starter Men's Snap-Back Flat Brim Cap, Amazon Exclusive, White with Black, One Size",
+          "score": 0.40749865770339966,
+          "product_type": "hat",
+          "image_paths": [
+            "90/90f5da39.jpg",
+            "b4/b4750554.jpg",
+            "8d/8d432c06.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B079J8PB47",
+          "title": "Starter Men's Lightweight Performance Running Cap, Amazon Exclusive, White, One Size",
+          "score": 0.4059908390045166,
+          "product_type": "hat",
+          "image_paths": [
+            "15/15dee539.jpg",
+            "ce/ce778cdf.jpg",
+            "76/7606b4b3.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B079JKKBM9",
+          "title": "Starter Men's Lightweight Performance Running Cap, Amazon Exclusive, Bronze Green, One Size",
+          "score": 0.4017426669597626,
+          "product_type": "hat",
+          "image_paths": [
+            "2e/2e1fd7bf.jpg",
+            "29/2919d0ab.jpg",
+            "71/71bae565.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": "0",
+        "llm_chose_good_product": false,
+        "llm_response_quality": "2",
+        "llm_response_grounded": "2",
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_missing_004",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "Do you have a robot vacuum that works well on hardwood floors?",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Should not match generic cleaning supplies or storage products.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "robot vacuum for hardwood floors",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it looks like we're having a bit of a hard time finding a robot vacuum for those lovely hardwood floors of yours. I apologize for the inconvenience. Is there anything else I can help you with, or perhaps another type of product you're interested in? Let's see if we can find something that tickles your fancy.",
+        "timings": {
+          "total_seconds": 1.898998
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07FGJ369K",
+          "title": "AmazonBasics Replacement LG LT600P Refrigerator Water Filter Cartridge",
+          "score": 0.5179774761199951,
+          "product_type": "major home appliances",
+          "image_paths": [
+            "86/86d56c14.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B07YPV9F3L",
+          "title": "AmazonBasics Cylinder Bagless Vacuum Cleaner",
+          "score": 0.5179087519645691,
+          "product_type": "vacuum cleaner",
+          "image_paths": [
+            "35/3595924e.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B07DPY3NXD",
+          "title": "AmazonBasics Replacement LG LT500P Refrigerator Water Filter - Advanced Filtration",
+          "score": 0.5178555250167847,
+          "product_type": "major home appliances",
+          "image_paths": [
+            "44/44ce7122.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B07B43XFCK",
+          "title": "AmazonBasics A21 Vacuum Dust Bags with Odour control for AEG",
+          "score": 0.5150260329246521,
+          "product_type": "kitchen",
+          "image_paths": [
+            "86/86d56c14.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B072FBY7L4",
+          "title": "AmazonBasics Cylinder Bagless Vacuum Cleaner, 2.5 L, 700 W",
+          "score": 0.5081941485404968,
+          "product_type": "vacuum cleaner",
+          "image_paths": [
+            "32/32a2c677.jpg",
+            "79/79475ae2.jpg",
+            "4a/4a436f66.jpg",
+            "5d/5d874019.jpg",
+            "8e/8efb75d8.jpg",
+            "67/67d05e0d.jpg",
+            "8c/8c37b3a5.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": "0",
+        "llm_chose_good_product": false,
+        "llm_response_quality": "2",
+        "llm_response_grounded": "2",
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "text_missing_005",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "Do you have a snow blower for clearing a driveway?",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Should not match fans, heaters, patio tools, or general hardware.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "snow blower for driveway",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it seems we're having a bit of a snowstorm in our search results, and I can't find a snow blower for you right now. I apologize for the inconvenience. Is there anything else I can help you with, or perhaps another type of product you're interested in?",
+        "timings": {
+          "total_seconds": 2.23297
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07XBQV8R8",
+          "title": "AmazonBasics Electric Pressure Washer, 1600PSI",
+          "score": 0.5106307864189148,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "35/3595924e.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B019NTE5YU",
+          "title": "AmazonBasics Classic Accessories 52-158-141101-11 Atrium Two Stage Snow Thrower Cover",
+          "score": 0.4897927939891815,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "9d/9d579621.jpg",
+            "f0/f0df31da.jpg",
+            "58/5833603b.jpg",
+            "a1/a1af05f4.jpg",
+            "1e/1e76d210.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 3,
+          "product_id": "B000MCL45G",
+          "title": "Strathwood 3-Piece Nozzle Set",
+          "score": 0.478486031293869,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "df/dfe8f9e0.jpg",
+            "00/002ef517.jpg",
+            "af/afde375b.jpg",
+            "92/927d2e9e.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B089DNQD48",
+          "title": "AmazonBasics Garden Tool Collection - Plastic 3 Arm Rotatory Sprinkler (Renewed)",
+          "score": 0.4739014208316803,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "1f/1f182a60.jpg",
+            "e3/e35393c4.jpg",
+            "44/447c38f3.jpg",
+            "47/4771ce04.jpg",
+            "bd/bdb741d0.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 5,
+          "product_id": "B0812CGP9F",
+          "title": "AmazonBasics Garden Tool Collection - Heavy Duty Water Hose with Brass Coupling 50ft, 5/8'', 500psi",
+          "score": 0.47330451011657715,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "ca/caebdb6d.jpg",
+            "fb/fbd44a56.jpg",
+            "d3/d38d5311.jpg",
+            "c9/c91fb1cd.jpg",
+            "cf/cf499a11.jpg"
+          ],
+          "retrieval_relevance": "0",
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_product_retrieved": false,
+        "retrieval_quality": "0",
+        "llm_chose_good_product": "0",
+        "llm_response_quality": "2",
+        "llm_response_grounded": true,
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    }
+  ]
+}

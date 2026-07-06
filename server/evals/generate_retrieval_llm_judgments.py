@@ -20,7 +20,9 @@ repeatable, and easy to inspect.
 from __future__ import annotations
 
 import argparse
+import configparser
 import json
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -55,6 +57,7 @@ except ImportError:  # Supports running from inside server/: python -m evals...
 DEFAULT_CASES_PATH = Path(__file__).with_name("eval_cases_retrieval_llm.jsonl")
 DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_judgments"
+DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
 
 
 @dataclass(frozen=True)
@@ -99,12 +102,12 @@ class RetrievalLlmEvalCase:
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse command-line options for the judgment generator.
+    """Parse the single eval-config argument.
 
-    The artifact/model flags intentionally mirror the Gradio app and existing
-    eval scripts. That makes this module easier to run against the same vector DB,
-    product blurb JSON, image map, model name, and temperature already used by the
-    rest of the project.
+    Earlier versions of this eval runner exposed every path and runtime setting
+    as a command-line flag. That worked, but the command became noisy and easy to
+    mistype. The normal interface is now intentionally narrow: point the script
+    at one INI file, and keep the eval setup there.
     """
     parser = argparse.ArgumentParser(
         description=(
@@ -113,87 +116,181 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument(
-        "--cases",
-        type=Path,
-        default=DEFAULT_CASES_PATH,
-        help=f"Path to JSONL eval cases. Default: {DEFAULT_CASES_PATH}",
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=None,
-        help="Optional maximum number of cases to run while iterating.",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=None,
-        help="Explicit JSON output path. If omitted, a numbered path is used.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=DEFAULT_RESULTS_DIR,
-        help=f"Directory for numbered judgment files. Default: {DEFAULT_RESULTS_DIR}",
-    )
-    parser.add_argument(
-        "--output-prefix",
-        default=DEFAULT_OUTPUT_PREFIX,
-        help=f"Filename prefix for numbered judgment files. Default: {DEFAULT_OUTPUT_PREFIX}",
-    )
-
-    parser.add_argument("-p", "--personality", type=int, default=0)
-    parser.add_argument("-d", "--debug", action="store_true")
-    parser.add_argument("-c", "--cpu", action="store_true")
-    parser.add_argument(
         "--config",
         type=Path,
-        default=DEFAULT_CONFIG_PATH,
-        help="Path to the ShopTalk config file.",
-    )
-    parser.add_argument(
-        "-m",
-        "--model",
-        default=None,
-        help="Override eval model name from the config file.",
-    )
-    parser.add_argument(
-        "--temperature",
-        type=float,
-        default=None,
-        help="Override eval temperature from the config file.",
-    )
-    parser.add_argument(
-        "--vector_db_output_dir",
-        type=str,
-        default=str(VECTOR_DB_OUTPUT_DIR),
-        help="Base directory containing generated vector DB artifacts.",
-    )
-    parser.add_argument(
-        "--vector_backend",
-        default=DEFAULT_VECTOR_BACKEND,
-        choices=["faiss"],
-        help="Vector backend to load.",
-    )
-    parser.add_argument(
-        "--top_k",
-        type=int,
-        default=10,
-        help="Number of products to retrieve per case.",
-    )
-    parser.add_argument(
-        "--product_blurbs",
-        type=str,
-        default=str(COMBINED_BLURBS_PATH),
-        help="Path to the product blurbs JSON file.",
-    )
-    parser.add_argument(
-        "--images_csv",
-        type=str,
-        default=str(IMAGES_CSV),
-        help="Path to the image ID mapping CSV file.",
+        default=DEFAULT_EVAL_CONFIG_PATH,
+        help=f"Path to retrieval/LLM eval INI file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
     )
     return parser.parse_args()
+
+
+def _config_value(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+    *,
+    fallback: str,
+) -> str:
+    """Return a stripped INI value and reject undocumented blank values.
+
+    The eval INI is meant to double as documentation. For that reason optional
+    settings should use explicit sentinels such as ``none``, ``auto``, or
+    ``config`` instead of blank strings. A blank value usually means someone
+    copied an older config or accidentally deleted the documented default.
+    """
+    value = parser.get(section, option, fallback=fallback).strip()
+    if value == "":
+        raise ValueError(
+            f"Blank value for [{section}] {option}. "
+            "Use an explicit documented value such as 'none', 'auto', or 'config'."
+        )
+    return value
+
+
+def _optional_limit(parser: configparser.ConfigParser) -> int | None:
+    """Return [eval] limit, where ``none`` means run every case."""
+    value = _config_value(parser, "eval", "limit", fallback="none")
+    if value.lower() == "none":
+        return None
+    return int(value)
+
+
+def _auto_path(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+) -> Path | None:
+    """Return a configured path, where ``auto`` means choose a numbered file."""
+    value = _config_value(parser, section, option, fallback="auto")
+    if value.lower() == "auto":
+        return None
+    return Path(value)
+
+
+def _config_default_str(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+) -> str | None:
+    """Return a string override, where ``config`` means use shoptalk_config.ini."""
+    value = _config_value(parser, section, option, fallback="config")
+    if value.lower() == "config":
+        return None
+    return value
+
+
+def _config_default_float(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+) -> float | None:
+    """Return a float override, where ``config`` means use shoptalk_config.ini."""
+    value = _config_value(parser, section, option, fallback="config")
+    if value.lower() == "config":
+        return None
+    return float(value)
+
+
+def _non_negative_float(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+    *,
+    fallback: str,
+) -> float:
+    """Return a float setting that must be zero or greater.
+
+    The generator uses these values for pacing API-bound eval runs. Negative
+    sleep durations or retry delays are almost certainly config mistakes, so we
+    reject them early with a clear message instead of failing inside ``sleep``.
+    """
+    value = float(_config_value(parser, section, option, fallback=fallback))
+    if value < 0:
+        raise ValueError(f"[{section}] {option} must be >= 0, got {value}")
+    return value
+
+
+def _non_negative_int(
+    parser: configparser.ConfigParser,
+    section: str,
+    option: str,
+    *,
+    fallback: str,
+) -> int:
+    """Return an integer setting that must be zero or greater."""
+    value = int(_config_value(parser, section, option, fallback=fallback))
+    if value < 0:
+        raise ValueError(f"[{section}] {option} must be >= 0, got {value}")
+    return value
+
+
+def load_eval_args(config_path: Path) -> argparse.Namespace:
+    """Load the old runtime arguments from a small INI file.
+
+    The rest of this module still expects an argparse-like object with fields
+    such as ``cases``, ``top_k``, and ``vector_db_output_dir``. To keep this patch
+    small, the INI loader creates that same shape instead of rewriting the rest
+    of the evaluation code.
+    """
+    if not config_path.exists():
+        raise FileNotFoundError(f"Eval config file not found: {config_path}")
+
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+
+    return argparse.Namespace(
+        cases=Path(parser.get("eval", "cases", fallback=str(DEFAULT_CASES_PATH))),
+        limit=_optional_limit(parser),
+        output=_auto_path(parser, "eval", "output"),
+        output_dir=Path(parser.get("eval", "output_dir", fallback=str(DEFAULT_RESULTS_DIR))),
+        output_prefix=parser.get(
+            "eval",
+            "output_prefix",
+            fallback=DEFAULT_OUTPUT_PREFIX,
+        ),
+        progress=parser.getboolean("eval", "progress", fallback=True),
+        sleep_seconds_between_cases=_non_negative_float(
+            parser,
+            "eval",
+            "sleep_seconds_between_cases",
+            fallback="0.0",
+        ),
+        max_retries=_non_negative_int(
+            parser,
+            "eval",
+            "max_retries",
+            fallback="0",
+        ),
+        retry_sleep_seconds=_non_negative_float(
+            parser,
+            "eval",
+            "retry_sleep_seconds",
+            fallback="5.0",
+        ),
+        personality=parser.getint("runtime", "personality", fallback=0),
+        debug=parser.getboolean("runtime", "debug", fallback=False),
+        cpu=parser.getboolean("runtime", "cpu", fallback=False),
+        config=Path(parser.get("runtime", "shoptalk_config", fallback=str(DEFAULT_CONFIG_PATH))),
+        model=_config_default_str(parser, "runtime", "model"),
+        temperature=_config_default_float(parser, "runtime", "temperature"),
+        vector_db_output_dir=parser.get(
+            "artifacts",
+            "vector_db_output_dir",
+            fallback=str(VECTOR_DB_OUTPUT_DIR),
+        ),
+        vector_backend=parser.get(
+            "artifacts",
+            "vector_backend",
+            fallback=DEFAULT_VECTOR_BACKEND,
+        ),
+        top_k=parser.getint("artifacts", "top_k", fallback=10),
+        product_blurbs=parser.get(
+            "artifacts",
+            "product_blurbs",
+            fallback=str(COMBINED_BLURBS_PATH),
+        ),
+        images_csv=parser.get("artifacts", "images_csv", fallback=str(IMAGES_CSV)),
+    )
 
 
 def load_jsonl_cases(path: Path, limit: int | None = None) -> list[RetrievalLlmEvalCase]:
@@ -431,6 +528,55 @@ def run_case(recommender: ShopTalkRecommender, case: RetrievalLlmEvalCase) -> di
     }
 
 
+def _looks_like_rate_limit_error(exc: Exception) -> bool:
+    """Return True when an exception appears to be an API rate-limit failure.
+
+    This avoids taking a direct dependency on OpenAI exception classes inside the
+    eval runner. ShopTalk may change LLM providers later, but rate-limit errors
+    usually still include either ``429`` or ``rate limit`` in their message.
+    Non-rate-limit exceptions are re-raised immediately so real bugs do not get
+    hidden behind retry behavior.
+    """
+    message = str(exc).lower()
+    return "429" in message or "rate limit" in message or "rate_limit" in message
+
+
+def run_case_with_retries(
+    recommender: ShopTalkRecommender,
+    case: RetrievalLlmEvalCase,
+    *,
+    max_retries: int,
+    retry_sleep_seconds: float,
+    show_progress: bool,
+) -> dict[str, Any]:
+    """Run one case, retrying short-lived rate-limit failures.
+
+    The eval generator runs many LLM-backed ShopTalk turns in sequence. Without
+    a retry loop, a temporary 429 error can kill the entire batch and waste the
+    successfully completed cases. We only retry likely rate-limit errors; other
+    exceptions still fail fast.
+    """
+    for attempt in range(max_retries + 1):
+        try:
+            return run_case(recommender, case)
+        except Exception as exc:
+            if not _looks_like_rate_limit_error(exc) or attempt >= max_retries:
+                raise
+
+            retry_number = attempt + 1
+            if show_progress:
+                print(
+                    f"Rate limit while running {case.case_id}; "
+                    f"retry {retry_number}/{max_retries} after "
+                    f"{retry_sleep_seconds:.1f}s.",
+                    flush=True,
+                )
+            time.sleep(retry_sleep_seconds)
+
+    # The loop always returns or raises, but this keeps type checkers happy.
+    raise RuntimeError(f"Unexpected retry-loop exit for {case.case_id}")
+
+
 def build_output_payload(
     *,
     args: argparse.Namespace,
@@ -454,6 +600,9 @@ def build_output_payload(
             "top_k": args.top_k,
             "model_name": model_name,
             "temperature": temperature,
+            "sleep_seconds_between_cases": args.sleep_seconds_between_cases,
+            "max_retries": args.max_retries,
+            "retry_sleep_seconds": args.retry_sleep_seconds,
             "human_judgment_scale": {
                 "2": "strong match / good response",
                 "1": "acceptable / partial match",
@@ -483,19 +632,68 @@ def write_json(payload: dict[str, Any], output_path: Path) -> None:
 
 def main() -> int:
     """CLI entry point."""
-    args = parse_args()
+    cli_args = parse_args()
+    args = load_eval_args(cli_args.config)
     cases = load_jsonl_cases(args.cases, limit=args.limit)
-    recommender = build_recommender_from_args(args)
-
-    judgment_cases: list[dict[str, Any]] = []
-    for case in cases:
-        judgment_cases.append(run_case(recommender, case))
-
     output_path = args.output or next_numbered_output_path(
         args.output_dir,
         prefix=args.output_prefix,
         suffix=".json",
     )
+
+    if args.progress:
+        print(f"Loaded {len(cases)} retrieval/LLM eval case(s) from {args.cases}", flush=True)
+        print(f"Judgment output will be written to {output_path}", flush=True)
+        print(
+            "Run pacing: "
+            f"sleep_seconds_between_cases={args.sleep_seconds_between_cases}, "
+            f"max_retries={args.max_retries}, "
+            f"retry_sleep_seconds={args.retry_sleep_seconds}",
+            flush=True,
+        )
+        print("Building ShopTalk recommender...", flush=True)
+
+    recommender = build_recommender_from_args(args)
+
+    if args.progress:
+        print("Starting eval cases...", flush=True)
+
+    judgment_cases: list[dict[str, Any]] = []
+    total_cases = len(cases)
+    for index, case in enumerate(cases, start=1):
+        remaining_after_this = total_cases - index
+        if args.progress:
+            print(
+                f"[{index}/{total_cases}] Running {case.case_id} "
+                f"({case.query_type}, {case.category}); ",
+                flush=True,
+            )
+
+        judgment_record = run_case_with_retries(
+            recommender,
+            case,
+            max_retries=args.max_retries,
+            retry_sleep_seconds=args.retry_sleep_seconds,
+            show_progress=args.progress,
+        )
+        judgment_cases.append(judgment_record)
+
+        if args.progress:
+            retrieved_count = len(judgment_record.get("retrieved_products") or [])
+            print(
+                f"[{index}/{total_cases}] Finished {case.case_id}; "
+                f"captured {retrieved_count} retrieved product(s).",
+                flush=True,
+            )
+
+        if index < total_cases and args.sleep_seconds_between_cases > 0:
+            if args.progress:
+                print(
+                    f"Sleeping {args.sleep_seconds_between_cases:.1f}s before next case...",
+                    flush=True,
+                )
+            time.sleep(args.sleep_seconds_between_cases)
+
     payload = build_output_payload(
         args=args,
         cases_path=args.cases,
