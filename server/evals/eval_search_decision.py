@@ -15,7 +15,7 @@ Run from the repository root:
 Optionally:
 
     python -m server.evals.eval_search_decision \
-        --cases server/evals/search_decision_cases.jsonl \
+        --cases server/evals/eval_cases_search_decision.jsonl \
         --category boundary \
         --show-passes
 """
