@@ -54,6 +54,9 @@ except ImportError:  # Supports running from inside server/: python -m evals...
     )
 
 
+# These defaults keep the generator self-contained: case definitions, generated
+# judgment files, and eval configuration all live beside the eval modules unless
+# the INI file says otherwise.
 DEFAULT_CASES_PATH = Path(__file__).with_name("eval_cases_retrieval_llm.jsonl")
 DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_judgments"
@@ -238,6 +241,8 @@ def load_eval_args(config_path: Path) -> argparse.Namespace:
     parser = configparser.ConfigParser()
     parser.read(config_path)
 
+    # Return an argparse-like namespace so the rest of the module can use the
+    # same attribute names it used when these settings were CLI flags.
     return argparse.Namespace(
         cases=Path(parser.get("eval", "cases", fallback=str(DEFAULT_CASES_PATH))),
         limit=_optional_limit(parser),
@@ -310,6 +315,8 @@ def load_jsonl_cases(path: Path, limit: int | None = None) -> list[RetrievalLlmE
             if not line:
                 continue
 
+            # Parse each line independently so one malformed case reports its
+            # exact line number instead of producing a vague batch-load failure.
             try:
                 payload = json.loads(line)
             except json.JSONDecodeError as exc:
@@ -492,12 +499,17 @@ def run_case(recommender: ShopTalkRecommender, case: RetrievalLlmEvalCase) -> di
     require_case_inputs(case)
     validate_image_path_if_present(case)
 
+    # The full ShopTalk turn is intentionally used here. Unlike the targeted
+    # policy evals, this generator captures retrieval diagnostics and the final
+    # answer that a human will later judge.
     recommender.reset_conversation()
     payload = recommender.generate_reply(
         user_input=case.query,
         image_path=case.image_path,
     )
 
+    # Diagnostics are converted to plain dictionaries before writing JSON so the
+    # hand-editable output has no dependency on internal Python dataclasses.
     diagnostics = diagnostics_to_dict(payload.get("diagnostics"))
     final_response = payload.get("final_response", "")
 
@@ -557,6 +569,8 @@ def run_case_with_retries(
     exceptions still fail fast.
     """
     for attempt in range(max_retries + 1):
+        # ``attempt`` is zero-based; max_retries therefore means "extra tries
+        # after the first failure," not total attempts.
         try:
             return run_case(recommender, case)
         except Exception as exc:
@@ -593,6 +607,8 @@ def build_output_payload(
     )
 
     return {
+        # Keep run metadata with the judgments so a reviewed file remains useful
+        # even after model defaults or eval configuration have changed.
         "metadata": {
             "schema_version": "retrieval_llm_judgments_v1",
             "created_at": datetime.now().isoformat(timespec="seconds"),
@@ -660,6 +676,8 @@ def main() -> int:
 
     judgment_cases: list[dict[str, Any]] = []
     total_cases = len(cases)
+    # Cases are processed sequentially to preserve predictable console output and
+    # to avoid hammering the LLM API during a small hand-reviewed eval run.
     for index, case in enumerate(cases, start=1):
         remaining_after_this = total_cases - index
         if args.progress:

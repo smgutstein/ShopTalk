@@ -47,12 +47,20 @@ except ImportError:  # Supports running from inside server/: python -m evals.eva
     from shoptalk_paths import DEFAULT_CONFIG_PATH
 
 
+# Keep defaults beside this file so the command works from the repository root
+# without requiring callers to remember the eval case path or output directory.
 DEFAULT_CASES_PATH = Path(__file__).with_name("eval_cases_search_decision.jsonl")
 DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 
 
 @dataclass(frozen=True)
 class EvalResult:
+    """Result of one pre-retrieval search-routing case.
+
+    This result captures only the routing decision and the optional query the LLM
+    proposed. It deliberately does not include retrieved products because this
+    evaluator stops before any vector search is executed.
+    """
     case_id: str
     category: str
     latest_user: str
@@ -64,7 +72,12 @@ class EvalResult:
 
 
 def build_conversation_policy(model_name: str, temperature: float) -> ConversationPolicy:
-    """Build the ConversationPolicy used for this evaluation."""
+    """Build the ConversationPolicy used for this evaluation.
+
+    Only the policy wrapper and chat model are needed here. The full ShopTalk
+    recommender, vector database, images, and product metadata are intentionally
+    left out so this stays a targeted routing test.
+    """
     from langchain_openai import ChatOpenAI
 
     api_key = load_openai_api_key()
@@ -80,7 +93,12 @@ def build_conversation_policy(model_name: str, temperature: float) -> Conversati
 
 
 def load_cases(path: Path) -> list[dict[str, Any]]:
-    """Load search-decision eval cases from a JSON or JSONL file."""
+    """Load search-decision eval cases from a JSON or JSONL file.
+
+    JSONL is the normal format for hand-maintained case suites. Plain JSON is
+    still supported so older list-based case files can be evaluated without a
+    migration step.
+    """
     if not path.exists():
         raise FileNotFoundError(f"Case file not found: {path}")
 
@@ -114,7 +132,12 @@ def load_cases(path: Path) -> list[dict[str, Any]]:
 
 
 def message_from_dict(message: dict[str, str]):
-    """Convert a case-history message dict into a LangChain message."""
+    """Convert a case-history message dict into a LangChain message.
+
+    Search routing depends on conversational context, so prior assistant turns
+    and prior user turns must be reconstructed in the same message format used by
+    the real ConversationPolicy.
+    """
     role = message.get("role")
     content = message.get("content", "")
 
@@ -128,14 +151,24 @@ def message_from_dict(message: dict[str, str]):
 
 
 def build_conversation_history(case: dict[str, Any]):
-    """Build conversation history including the latest user message."""
+    """Build conversation history including the latest user message.
+
+    Cases store previous turns under ``history`` and the utterance under test as
+    ``latest_user``. Appending the latest user message here makes the eval file
+    easier to read and keeps the tested turn explicit.
+    """
     history = [message_from_dict(message) for message in case.get("history", [])]
     history.append(HumanMessage(content=case["latest_user"]))
     return history
 
 
 def evaluate_case(policy: ConversationPolicy, case: dict[str, Any]) -> EvalResult:
-    """Run one eval case through the SearchDecision layer."""
+    """Run one eval case through the SearchDecision layer.
+
+    The pass/fail check is intentionally limited to the action. The generated
+    search query is recorded for inspection, but this module does not yet grade
+    query quality because that is a fuzzier retrieval-facing concern.
+    """
     conversation_history = build_conversation_history(case)
     decision = policy.decide_search_action(conversation_history)
 
@@ -313,7 +346,12 @@ def print_detailed_cases(results: list[EvalResult]) -> None:
             print()
 
 def print_passes(results: list[EvalResult]) -> None:
-    """Print passing cases for inspection."""
+    """Print passing cases for inspection.
+
+    Passing cases are omitted by default to keep routine reports short. They can
+    be useful while validating a new case suite or auditing the model's proposed
+    search queries.
+    """
     passes = [result for result in results if result.passed]
 
     print()
@@ -332,6 +370,11 @@ def print_passes(results: list[EvalResult]) -> None:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse CLI options for the search-routing eval.
+
+    ``argv`` is injectable so tests can call this parser without mutating
+    ``sys.argv``.
+    """
     parser = argparse.ArgumentParser(
         description="Evaluate SearchDecision behavior on labeled cases."
     )
@@ -395,7 +438,11 @@ def select_cases(
     categories: list[str] | None,
     limit: int | None,
 ) -> list[dict[str, Any]]:
-    """Filter cases according to CLI arguments."""
+    """Filter cases according to CLI arguments.
+
+    Category filtering is useful when debugging one decision boundary, while
+    ``limit`` keeps quick smoke runs cheap during prompt iteration.
+    """
     selected = cases
 
     if categories:
@@ -409,6 +456,7 @@ def select_cases(
 
 
 def main(argv: list[str] | None = None) -> int:
+    """CLI entry point for the pre-retrieval search-decision eval."""
     args = parse_args(argv)
 
     cases = load_cases(args.cases)

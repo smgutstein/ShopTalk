@@ -18,6 +18,7 @@ import os
 from contextlib import redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
+from tqdm import tqdm
 from typing import Any, Iterable
 
 try:  # Supports: python -m server.evals.eval_llm_decision
@@ -36,12 +37,25 @@ except ImportError:  # Supports running from inside server/: python -m evals.eva
 from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
 
 
+# Keep the default paths next to this module so the eval can be run from the
+# repository root without supplying a long list of command-line arguments.
 DEFAULT_CASES_PATH = Path(__file__).with_name("eval_cases_llm_decision.jsonl")
 DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 
 
 @dataclass(frozen=True)
 class EvalCase:
+    """One normalized post-retrieval decision test case.
+
+    The raw JSONL file is intentionally simple and hand-editable. This dataclass
+    is the stricter in-memory representation used after the JSON has been parsed
+    into LangChain messages and ProductCandidate objects.
+
+    The evaluator supplies ``found_products`` and ``source_knowledge`` directly
+    because this test is not supposed to call FAISS/ImageBind retrieval. It only
+    asks whether the policy reacts correctly to the candidate products it was
+    handed.
+    """
     case_id: str
     category: str
     conversation_history: list[Any]
@@ -54,6 +68,12 @@ class EvalCase:
 
 @dataclass(frozen=True)
 class EvalResult:
+    """Result of running one EvalCase through ConversationPolicy.
+
+    The report stores both compact machine-checkable fields and richer context
+    such as the latest user utterance and product summaries. That keeps failures
+    inspectable without reopening the JSONL case file.
+    """
     case_id: str
     category: str
     latest_user: str
@@ -67,6 +87,12 @@ class EvalResult:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI options for the focused LLM-decision eval.
+
+    These options intentionally control only the eval harness: case source, model
+    override, result output, and optional limiting. Product retrieval settings do
+    not belong here because this module never performs retrieval.
+    """
     parser = argparse.ArgumentParser(
         description="Evaluate ConversationPolicy.decide_next_action on JSONL cases."
     )
@@ -134,6 +160,11 @@ def build_conversation_policy(model_name: str, temperature: float) -> Conversati
 
 
 def load_cases(path: Path, limit: int | None = None) -> list[EvalCase]:
+    """Load JSONL cases and convert them to EvalCase objects.
+
+    Empty lines are ignored to make the case file easier to edit by hand. JSON
+    syntax errors include the line number so a broken case can be fixed quickly.
+    """
     cases: list[EvalCase] = []
     with path.open("r", encoding="utf-8") as infile:
         for line_number, raw_line in enumerate(infile, start=1):
@@ -153,6 +184,11 @@ def load_cases(path: Path, limit: int | None = None) -> list[EvalCase]:
 
 
 def parse_case(case_data: dict[str, Any], *, line_number: int) -> EvalCase:
+    """Normalize one raw JSON case into the evaluator's internal shape.
+
+    If ``source_knowledge`` is omitted, it is built from the candidate products so
+    cases do not have to duplicate the same product text twice.
+    """
     case_id = case_data.get("case_id") or f"line_{line_number}"
     conversation_history = parse_messages(case_data.get("messages", []))
     found_products = parse_products(case_data.get("products", []))
@@ -176,6 +212,11 @@ def parse_case(case_data: dict[str, Any], *, line_number: int) -> EvalCase:
 
 
 def parse_messages(messages: Iterable[dict[str, str]]) -> list[Any]:
+    """Convert JSON message dictionaries into LangChain message objects.
+
+    The ConversationPolicy expects LangChain message classes, while the case file
+    uses plain JSON objects so it remains readable and version-control friendly.
+    """
     parsed_messages: list[Any] = []
     for message in messages:
         role = message.get("role", "user")
@@ -194,6 +235,11 @@ def parse_messages(messages: Iterable[dict[str, str]]) -> list[Any]:
 
 
 def parse_products(products: Iterable[dict[str, Any]]) -> dict[str, ProductCandidate]:
+    """Convert JSON product stubs into ProductCandidate objects.
+
+    The products are keyed by product_id because ``decide_next_action`` receives
+    the same dictionary shape that the real recommender uses after retrieval.
+    """
     found_products: dict[str, ProductCandidate] = {}
     for product in products:
         product_id = product["product_id"]
@@ -209,6 +255,11 @@ def parse_products(products: Iterable[dict[str, Any]]) -> dict[str, ProductCandi
 
 
 def build_source_knowledge(found_products: dict[str, ProductCandidate]) -> str:
+    """Build the product text block passed to the LLM decision prompt.
+
+    This mirrors the source-knowledge style used by the application: each
+    product is rendered with a stable ID, title, type, and description.
+    """
     return "\n\n".join(
         f"product_id: {product.product_id}\n"
         f"item_name: {product.item_name}\n"
@@ -238,8 +289,14 @@ def summarize_products(found_products: dict[str, ProductCandidate]) -> list[str]
 
 
 def run_eval(policy: ConversationPolicy, cases: list[EvalCase]) -> list[EvalResult]:
+    """Run all cases through the post-retrieval decision policy.
+
+    A case passes only when both the action and selected product ID match. For
+    non-recommend actions, the product ID is normalized to None because the policy
+    should not select a product when it asks for clarification or rejects results.
+    """
     results: list[EvalResult] = []
-    for case in cases:
+    for case in tqdm(cases):
         action = policy.decide_next_action(
             conversation_history=case.conversation_history,
             found_products=case.found_products,
@@ -324,6 +381,7 @@ def print_run_info(
 
 
 def print_results(results: list[EvalResult]) -> None:
+    """Print a compact pass/fail table for the whole run."""
     passed_count = sum(result.passed for result in results)
     total_count = len(results)
 
@@ -390,6 +448,7 @@ def print_detailed_cases(results: list[EvalResult]) -> None:
             print()
 
 def write_csv(results: list[EvalResult], output_path: Path) -> None:
+    """Write minimal machine-readable results for spreadsheet inspection."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as outfile:
         writer = csv.DictWriter(
@@ -418,6 +477,7 @@ def write_csv(results: list[EvalResult], output_path: Path) -> None:
 
 
 def main() -> int:
+    """CLI entry point for the focused post-retrieval decision eval."""
     args = parse_args()
     file_config = load_shoptalk_config(args.config)
     model_name = args.model or file_config.eval_model_name

@@ -22,6 +22,8 @@ from statistics import mean
 from typing import Any
 
 
+# The scorer writes reports beside the eval modules by default, matching the
+# generator's output convention and avoiding accidental overwrites via numbering.
 DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_metrics"
 DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
@@ -104,6 +106,8 @@ def load_score_args(config_path: Path) -> argparse.Namespace:
     parser = configparser.ConfigParser()
     parser.read(config_path)
 
+    # Keep the old argparse-like shape internally while moving user-facing
+    # configuration into the shared eval INI file.
     return argparse.Namespace(
         judgments=_required_path(parser, "score", "judgments"),
         output=_auto_path(parser, "score", "output"),
@@ -125,6 +129,9 @@ def load_judgments(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as infile:
         payload = json.load(infile)
 
+    # Schema validation is deliberately minimal but important: the scorer should
+    # fail loudly if pointed at an unrelated JSON file or a future incompatible
+    # judgment format.
     schema_version = payload.get("metadata", {}).get("schema_version")
     if schema_version != EXPECTED_SCHEMA_VERSION:
         raise ValueError(
@@ -281,6 +288,9 @@ def compute_retrieval_metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
 
     target_retrieved_values: list[bool | None] = []
     for case in positive_cases:
+        # Prefer the human field when present, but infer from product IDs as a
+        # convenience when the target product is explicit and the reviewer has
+        # not manually filled in the case-level flag.
         manual_value = judged_bool(human_eval(case).get("target_product_retrieved"))
         target_retrieved_values.append(
             manual_value
@@ -288,16 +298,23 @@ def compute_retrieval_metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
             else target_product_retrieved_from_products(case)
         )
 
+    # Strict metrics count only strong matches. The lenient Hit@5 metric also
+    # credits acceptable partial matches, which is useful for shopping queries
+    # where a near miss may still be worth showing.
     hit_at_1_strict = [hit_at_k(case, k=1, threshold=2.0) for case in positive_cases]
     hit_at_5_strict = [hit_at_k(case, k=5, threshold=2.0) for case in positive_cases]
     hit_at_5_lenient = [hit_at_k(case, k=5, threshold=1.0) for case in positive_cases]
 
     reciprocal_ranks: list[float | None] = []
     for case in positive_cases:
+        # MRR rewards placing the first strong match high in the retrieved list.
         first_rank = first_strict_relevant_rank(case, threshold=2.0)
         reciprocal_ranks.append(None if first_rank is None else 1.0 / first_rank)
 
     return {
+        # Missing-product cases are excluded from ranking metrics because there
+        # is no expected positive target to retrieve. They still contribute to
+        # overall retrieval_quality below.
         "positive_cases": len(positive_cases),
         "target_retrieved_rate": average_bool(target_retrieved_values),
         "strict_hit_at_1": average_bool(hit_at_1_strict),
@@ -322,6 +339,9 @@ def compute_llm_metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
     missing_cases = [case for case in cases if is_missing_product_case(case)]
 
     return {
+        # Missing-product cases are excluded from ranking metrics because there
+        # is no expected positive target to retrieve. They still contribute to
+        # overall retrieval_quality below.
         "positive_cases": len(positive_cases),
         "missing_product_cases": len(missing_cases),
         "good_choice_rate_positive": average_bool(
@@ -439,6 +459,8 @@ def write_metrics_report(
     cases = payload.get("cases", [])
 
     with output_path.open("w", encoding="utf-8") as outfile:
+        # redirect_stdout keeps the report formatting simple while still writing
+        # directly to a durable numbered text file instead of the console.
         with redirect_stdout(outfile):
             print("ShopTalk Retrieval + LLM Eval Metrics")
             print("====================================")
@@ -492,6 +514,8 @@ def main() -> int:
     cases = payload["cases"]
 
     warnings = find_unjudged_fields(cases)
+    # By default, refuse to score partial judgment files. This prevents a half-
+    # reviewed file from producing deceptively clean metrics.
     if warnings and not args.allow_unjudged:
         print(
             "Judgment file still has unjudged fields. "
