@@ -30,20 +30,6 @@ DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
 EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v1"
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse the single eval-config argument."""
-    parser = argparse.ArgumentParser(
-        description="Score a hand-edited ShopTalk retrieval/LLM judgment JSON file."
-    )
-    parser.add_argument(
-        "--config",
-        type=Path,
-        default=DEFAULT_EVAL_CONFIG_PATH,
-        help=f"Path to retrieval/LLM eval INI file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
-    )
-    return parser.parse_args()
-
-
 def _config_value(
     parser: configparser.ConfigParser,
     section: str,
@@ -101,7 +87,10 @@ def load_score_args(config_path: Path) -> argparse.Namespace:
     config file.
     """
     if not config_path.exists():
-        raise FileNotFoundError(f"Eval config file not found: {config_path}")
+        if  Path(__file__).with_name(config_path.name).exists():
+            config_path = Path(__file__).with_name(config_path.name)
+        else:
+            raise FileNotFoundError(f"Eval config file not found: {config_path}")
 
     parser = configparser.ConfigParser()
     parser.read(config_path)
@@ -263,6 +252,17 @@ def human_eval(case: dict[str, Any]) -> dict[str, Any]:
     return case.get("human_eval") or {}
 
 
+def case_has_chosen_product(case: dict[str, Any]) -> bool:
+    """Return True when the LLM actually selected a catalog product.
+
+    ``llm_chose_good_product`` is only meaningful when there is a selected
+    product to judge. For dive-deeper or wrong-track/no-match responses, a null
+    value is not an incomplete judgment; it means the field is not applicable.
+    """
+    system_output = case.get("system_output") or {}
+    return system_output.get("chosen_product_id") is not None
+
+
 def average_bool(values: list[bool | None]) -> float | None:
     """Average judged booleans as rates, ignoring nulls."""
     judged = [value for value in values if value is not None]
@@ -353,8 +353,12 @@ def compute_llm_metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "grounded_response_rate_all": average_bool(
             [judged_bool(human_eval(case).get("llm_response_grounded")) for case in cases]
         ),
+        # For missing-product cases, ``llm_chose_good_product`` is normally
+        # null because there is no product recommendation to judge. A false
+        # recommendation is therefore an observable system behavior: did the
+        # LLM choose any product when the catalog should have had no match?
         "false_recommendation_rate_missing": average_bool(
-            [judged_bool(human_eval(case).get("llm_chose_good_product")) for case in missing_cases]
+            [case_has_chosen_product(case) for case in missing_cases]
         ),
         "correct_no_match_rate_missing": average_bool(
             [judged_bool(human_eval(case).get("should_have_refused_or_said_no_match")) for case in missing_cases]
@@ -374,7 +378,6 @@ def find_unjudged_fields(cases: list[dict[str, Any]]) -> list[str]:
     required_case_fields = [
         "target_product_retrieved",
         "retrieval_quality",
-        "llm_chose_good_product",
         "llm_response_quality",
         "llm_response_grounded",
         "should_have_refused_or_said_no_match",
@@ -386,6 +389,12 @@ def find_unjudged_fields(cases: list[dict[str, Any]]) -> list[str]:
         for field in required_case_fields:
             if per_case_eval.get(field) is None:
                 warnings.append(f"{case_id}: human_eval.{field} is null")
+
+        # ``llm_chose_good_product`` is required only when the LLM chose a
+        # product. If the LLM correctly produced a no-match/wrong-track or
+        # dive-deeper response, null means not applicable rather than unjudged.
+        if case_has_chosen_product(case) and per_case_eval.get("llm_chose_good_product") is None:
+            warnings.append(f"{case_id}: human_eval.llm_chose_good_product is null")
 
         for product in case.get("retrieved_products") or []:
             product_id = product.get("product_id", "<unknown>")
@@ -426,7 +435,11 @@ def summarize_failures(cases: list[dict[str, Any]]) -> list[str]:
             failures.append(f"{case_id}: final LLM response was not grounded")
 
         no_match_expected = judged_bool(eval_obj.get("should_have_refused_or_said_no_match"))
-        if is_missing_product_case(case) and no_match_expected is True and llm_chose_good_product:
+        if (
+            is_missing_product_case(case)
+            and no_match_expected is True
+            and case_has_chosen_product(case)
+        ):
             failures.append(
                 f"{case_id}: missing-product case appears to have received a false recommendation"
             )
@@ -446,6 +459,7 @@ def format_metric(value: Any) -> str:
 def write_metrics_report(
     *,
     payload: dict[str, Any],
+    judgment_path: Path,
     output_path: Path,
     warnings: list[str],
     retrieval_metrics: dict[str, Any],
@@ -467,6 +481,7 @@ def write_metrics_report(
             print()
             print("Run metadata")
             print("------------")
+            print(f"judgments:    {judgment_path}")
             print(f"cases_path:   {metadata.get('cases_path', '<unknown>')}")
             print(f"created_at:   {metadata.get('created_at', '<unknown>')}")
             print(f"model:        {metadata.get('model_name', '<unknown>')}")
@@ -510,6 +525,8 @@ def main() -> int:
     """CLI entry point."""
     cli_args = parse_args()
     args = load_score_args(cli_args.config)
+    if cli_args.allow_unjudged:
+        args.allow_unjudged = True
     payload = load_judgments(args.judgments)
     cases = payload["cases"]
 
@@ -519,7 +536,8 @@ def main() -> int:
     if warnings and not args.allow_unjudged:
         print(
             "Judgment file still has unjudged fields. "
-            "Use --allow-unjudged to compute partial metrics anyway."
+            "Set [score] allow_unjudged=true in the INI or use "
+            "--allow-unjudged to compute partial metrics anyway."
         )
         for warning in warnings[:25]:
             print(f"  - {warning}")
@@ -538,6 +556,7 @@ def main() -> int:
     )
     write_metrics_report(
         payload=payload,
+        judgment_path=args.judgments,
         output_path=output_path,
         warnings=warnings,
         retrieval_metrics=retrieval_metrics,
@@ -545,8 +564,31 @@ def main() -> int:
         failures=failures,
     )
 
+    print(f"Scored judgment file: {args.judgments}")
     print(f"Wrote retrieval/LLM metrics report to {output_path}")
     return 0
+
+def parse_args() -> argparse.Namespace:
+    """Parse the single eval-config argument."""
+    parser = argparse.ArgumentParser(
+        description="Score a hand-edited ShopTalk retrieval/LLM judgment JSON file."
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=Path,
+        default=DEFAULT_EVAL_CONFIG_PATH,
+        help=f"Path to retrieval/LLM eval INI file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
+    )
+    parser.add_argument(
+        "--allow-unjudged",
+        action="store_true",
+        help=(
+            "Compute partial metrics even when judgment fields are still null. "
+            "This overrides [score] allow_unjudged=false in the INI."
+        ),
+    )
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
