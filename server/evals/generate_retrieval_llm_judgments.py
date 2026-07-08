@@ -451,7 +451,7 @@ def build_human_eval_stub() -> dict[str, Any]:
     judge the whole case and the LLM response built on top of retrieval.
     """
     return {
-        "target_product_retrieved": None,
+        "target_or_equivalent_retrieved": None,
         "retrieval_quality": None,
         "llm_chose_good_product": None,
         "llm_response_quality": None,
@@ -606,7 +606,10 @@ def build_output_payload(
                 "null": "not yet judged",
             },
             "human_eval_fields": {
-                "target_product_retrieved": "true/false/null; whether target_product_id appears in retrieved_products",
+                "target_or_equivalent_retrieved": (
+                    "true/false/null; whether retrieved_products include the exact target "
+                    "or a human-judged equivalent satisfying the user's specified attributes"
+                ),
                 "retrieval_quality": "2/1/0/null; overall quality of retrieved set",
                 "llm_chose_good_product": "true/false/null; whether final product choice was reasonable",
                 "llm_response_quality": "2/1/0/null; overall final answer quality",

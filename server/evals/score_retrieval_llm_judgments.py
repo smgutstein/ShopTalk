@@ -146,6 +146,32 @@ def next_numbered_output_path(output_dir: Path, *, prefix: str, suffix: str) -> 
         index += 1
 
 
+def default_scored_output_path(output_dir: Path, judgment_path: Path) -> Path:
+    """Return the default score report path for one judgment file.
+
+    The report name is derived from the reviewed judgment file so it remains
+    obvious which JSON produced the metrics report. The first report uses:
+
+        <judgment-file-stem>_scored.txt
+
+    Later reports for the same judgment file get numbered suffixes rather than
+    overwriting the earlier report.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    base_name = f"{judgment_path.stem}_scored"
+    first_candidate = output_dir / f"{base_name}_001.txt"
+    if not first_candidate.exists():
+        return first_candidate
+
+    index = 2
+    while True:
+        candidate = output_dir / f"{base_name}_{index:03d}.txt"
+        if not candidate.exists():
+            return candidate
+        index += 1
+
+
 def is_positive_case(case: dict[str, Any]) -> bool:
     """Return True when the catalog is expected to contain a good match."""
     return bool(case.get("expected_available"))
@@ -231,11 +257,13 @@ def mean_relevance_at_k(case: dict[str, Any], *, k: int) -> float | None:
     return mean(judged_values) if judged_values else None
 
 
-def target_product_retrieved_from_products(case: dict[str, Any]) -> bool | None:
-    """Infer target retrieval from retrieved product IDs when possible.
+def exact_target_product_retrieved_from_products(case: dict[str, Any]) -> bool | None:
+    """Infer whether the exact target product ID appears in retrieved products.
 
-    The generated file also has a manual target_product_retrieved field. This
-    helper is used as a fallback when that field is still null for positive cases.
+    Exact target retrieval is a diagnostic for case construction and retrieval
+    behavior. It is intentionally separate from the primary shopping-success
+    field, ``target_or_equivalent_retrieved``, because natural user queries may
+    be satisfied by products other than the product that inspired the case.
     """
     target_product_id = case.get("target_product_id")
     if not target_product_id:
@@ -245,6 +273,20 @@ def target_product_retrieved_from_products(case: dict[str, Any]) -> bool | None:
         if product.get("product_id") == target_product_id:
             return True
     return False
+
+
+def target_or_equivalent_retrieved(case: dict[str, Any]) -> bool | None:
+    """Return the human judgment for retrieval of a target or equivalent item.
+
+    New judgment files use ``target_or_equivalent_retrieved`` as the primary
+    retrieval-success field. For older reviewed files, fall back to
+    ``target_product_retrieved`` so historical outputs can still be scored.
+    """
+    eval_obj = human_eval(case)
+    manual_value = judged_bool(eval_obj.get("target_or_equivalent_retrieved"))
+    if manual_value is not None:
+        return manual_value
+    return judged_bool(eval_obj.get("target_product_retrieved"))
 
 
 def human_eval(case: dict[str, Any]) -> dict[str, Any]:
@@ -286,17 +328,12 @@ def compute_retrieval_metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
     """
     positive_cases = [case for case in cases if is_positive_case(case)]
 
-    target_retrieved_values: list[bool | None] = []
-    for case in positive_cases:
-        # Prefer the human field when present, but infer from product IDs as a
-        # convenience when the target product is explicit and the reviewer has
-        # not manually filled in the case-level flag.
-        manual_value = judged_bool(human_eval(case).get("target_product_retrieved"))
-        target_retrieved_values.append(
-            manual_value
-            if manual_value is not None
-            else target_product_retrieved_from_products(case)
-        )
+    target_or_equivalent_values = [
+        target_or_equivalent_retrieved(case) for case in positive_cases
+    ]
+    exact_target_retrieved_values = [
+        exact_target_product_retrieved_from_products(case) for case in positive_cases
+    ]
 
     # Strict metrics count only strong matches. The lenient Hit@5 metric also
     # credits acceptable partial matches, which is useful for shopping queries
@@ -316,7 +353,8 @@ def compute_retrieval_metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
         # is no expected positive target to retrieve. They still contribute to
         # overall retrieval_quality below.
         "positive_cases": len(positive_cases),
-        "target_retrieved_rate": average_bool(target_retrieved_values),
+        "target_or_equivalent_retrieved_rate": average_bool(target_or_equivalent_values),
+        "exact_target_retrieved_rate_diagnostic": average_bool(exact_target_retrieved_values),
         "strict_hit_at_1": average_bool(hit_at_1_strict),
         "strict_hit_at_5": average_bool(hit_at_5_strict),
         "lenient_hit_at_5": average_bool(hit_at_5_lenient),
@@ -376,7 +414,6 @@ def find_unjudged_fields(cases: list[dict[str, Any]]) -> list[str]:
     warnings: list[str] = []
 
     required_case_fields = [
-        "target_product_retrieved",
         "retrieval_quality",
         "llm_response_quality",
         "llm_response_grounded",
@@ -386,6 +423,12 @@ def find_unjudged_fields(cases: list[dict[str, Any]]) -> list[str]:
     for case in cases:
         case_id = case.get("case_id", "<unknown>")
         per_case_eval = human_eval(case)
+
+        if target_or_equivalent_retrieved(case) is None:
+            warnings.append(
+                f"{case_id}: human_eval.target_or_equivalent_retrieved is null"
+            )
+
         for field in required_case_fields:
             if per_case_eval.get(field) is None:
                 warnings.append(f"{case_id}: human_eval.{field} is null")
@@ -418,9 +461,9 @@ def summarize_failures(cases: list[dict[str, Any]]) -> list[str]:
         case_id = case.get("case_id", "<unknown>")
         eval_obj = human_eval(case)
 
-        target_retrieved = judged_bool(eval_obj.get("target_product_retrieved"))
-        if is_positive_case(case) and target_retrieved is False:
-            failures.append(f"{case_id}: target product was not retrieved")
+        target_or_equivalent = target_or_equivalent_retrieved(case)
+        if is_positive_case(case) and target_or_equivalent is False:
+            failures.append(f"{case_id}: no target-or-equivalent product was retrieved")
 
         retrieval_quality = judged_number(eval_obj.get("retrieval_quality"))
         if retrieval_quality == 0:
@@ -549,10 +592,9 @@ def main() -> int:
     llm_metrics = compute_llm_metrics(cases)
     failures = summarize_failures(cases)
 
-    output_path = args.output or next_numbered_output_path(
+    output_path = args.output or default_scored_output_path(
         args.output_dir,
-        prefix=args.output_prefix,
-        suffix=".txt",
+        args.judgments,
     )
     write_metrics_report(
         payload=payload,
