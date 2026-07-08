@@ -104,29 +104,6 @@ class RetrievalLlmEvalCase:
     notes: str = ""
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse the single eval-config argument.
-
-    Earlier versions of this eval runner exposed every path and runtime setting
-    as a command-line flag. That worked, but the command became noisy and easy to
-    mistype. The normal interface is now intentionally narrow: point the script
-    at one INI file, and keep the eval setup there.
-    """
-    parser = argparse.ArgumentParser(
-        description=(
-            "Run preset ShopTalk cases and write a hand-editable retrieval/LLM "
-            "judgment JSON file."
-        )
-    )
-    parser.add_argument(
-        "--config",
-        type=Path,
-        default=DEFAULT_EVAL_CONFIG_PATH,
-        help=f"Path to retrieval/LLM eval INI file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
-    )
-    return parser.parse_args()
-
-
 def _config_value(
     parser: configparser.ConfigParser,
     section: str,
@@ -236,7 +213,10 @@ def load_eval_args(config_path: Path) -> argparse.Namespace:
     of the evaluation code.
     """
     if not config_path.exists():
-        raise FileNotFoundError(f"Eval config file not found: {config_path}")
+        if  Path(__file__).with_name(config_path.name).exists():
+            config_path = Path(__file__).with_name(config_path.name)
+        else:
+            raise FileNotFoundError(f"Eval config file not found: {config_path}")
 
     parser = configparser.ConfigParser()
     parser.read(config_path)
@@ -644,6 +624,30 @@ def write_json(payload: dict[str, Any], output_path: Path) -> None:
     with output_path.open("w", encoding="utf-8") as outfile:
         json.dump(payload, outfile, indent=2, ensure_ascii=False)
         outfile.write("\n")
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse the single eval-config argument.
+
+    Earlier versions of this eval runner exposed every path and runtime setting
+    as a command-line flag. That worked, but the command became noisy and easy to
+    mistype. The normal interface is now intentionally narrow: point the script
+    at one INI file, and keep the eval setup there.
+    """
+    parser = argparse.ArgumentParser(
+        description=(
+            "Run preset ShopTalk cases and write a hand-editable retrieval/LLM "
+            "judgment JSON file."
+        )
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=Path,
+        default=DEFAULT_EVAL_CONFIG_PATH,
+        help=f"Path to retrieval/LLM eval INI file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
+    )
+    return parser.parse_args()
 
 
 def main() -> int:
