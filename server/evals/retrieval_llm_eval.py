@@ -54,7 +54,7 @@ DEFAULT_RESULTS_DIR = Path(__file__).with_name("eval_results")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_judgments"
 DEFAULT_SCORE_OUTPUT_PREFIX = "retrieval_llm_metrics"
 DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
-EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v1"
+EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v3"
 
 
 @dataclass(frozen=True)
@@ -403,26 +403,91 @@ def build_recommender_from_args(args: argparse.Namespace) -> ShopTalkRecommender
     return build_recommender(config)
 
 
-def serialize_retrieved_products(diagnostics: dict[str, Any]) -> list[dict[str, Any]]:
+def load_product_blurb_source(path: Path) -> dict[str, Any]:
+    """Load the product-blurb artifact used by the ShopTalk run.
+
+    The generated judgment file now carries inline evidence for each retrieved
+    product. That evidence should come from the same source configured for the
+    recommender, not from a richer external catalog. Otherwise the grounding
+    review would answer the wrong question: whether the response is true in some
+    broader sense rather than whether it was supported by what ShopTalk gave the
+    LLM.
+    """
+    if not path.exists():
+        raise FileNotFoundError(f"Product blurb file not found: {path}")
+
+    with path.open("r", encoding="utf-8") as infile:
+        payload = json.load(infile)
+
+    # The current combined-blurb artifact is expected to be a product_id-keyed
+    # JSON object. Failing early is preferable to silently emitting null evidence
+    # for every product and making the human reviewer guess what went wrong.
+    if not isinstance(payload, dict):
+        raise ValueError(f"Product blurb file must contain a JSON object: {path}")
+    return payload
+
+
+def product_llm_evidence(
+    product_blurbs: dict[str, Any],
+    product_id: Any,
+) -> str | None:
+    """Return the exact LLM-facing product text for one product, if present.
+
+    The preferred source is ``product_blurbs[product_id]["llm_str"]`` because
+    that is the compact product description intended for LLM prompting. Storing
+    it beside each retrieved product makes the review file self-contained: when
+    the final response claims a material, style, dimension, or use case, the
+    reviewer can immediately check whether that claim is grounded.
+
+    A direct string value is accepted as a defensive fallback in case a future
+    artifact maps ``product_id -> llm_string`` directly. Other shapes return
+    ``None`` rather than inventing evidence from unrelated fields.
+    """
+    if not product_id:
+        return None
+
+    source_record = product_blurbs.get(str(product_id))
+    if isinstance(source_record, str):
+        return source_record
+    if isinstance(source_record, dict):
+        value = source_record.get("llm_str")
+        if isinstance(value, str):
+            return value
+    return None
+
+
+def serialize_retrieved_products(
+    diagnostics: dict[str, Any],
+    product_blurbs: dict[str, Any],
+) -> list[dict[str, Any]]:
     """Convert retrieval diagnostics into editable candidate judgments.
 
-    Diagnostics already provide a compact top_products list. This function adds a
-    rank and blank human relevance fields. The rank is important because the
-    scorer can later compute Hit@1/Hit@5 style metrics from the same file you
-    reviewed by hand.
+    Diagnostics already provide a compact ``top_products`` list. This function
+    adds rank, blank human relevance fields, and ``llm_evidence`` copied from
+    the configured product-blurb artifact. Keeping evidence inline is deliberate:
+    it makes each retrieved-product judgment auditable without a paired reference
+    file, while still limiting the extra text to products that were actually
+    returned for a case.
     """
     products = diagnostics.get("top_products") or []
     serialized: list[dict[str, Any]] = []
 
     for rank, product in enumerate(products, start=1):
+        product_id = product.get("product_id")
         serialized.append(
             {
                 "rank": rank,
-                "product_id": product.get("product_id"),
+                "product_id": product_id,
                 "title": product.get("item_name"),
                 "score": product.get("score"),
                 "product_type": product.get("product_type"),
                 "image_paths": product.get("image_paths", []),
+                # This is the exact product text reviewers should use when
+                # checking whether the final LLM response made unsupported
+                # product claims. It is intentionally named for its role in the
+                # eval output rather than for the source artifact key
+                # (product_blurbs[product_id]["llm_str"]).
+                "llm_evidence": product_llm_evidence(product_blurbs, product_id),
                 # Human-edited field. Use:
                 #   2 = strong match
                 #   1 = acceptable / partial match
@@ -450,6 +515,8 @@ def build_human_eval_stub() -> dict[str, Any]:
         "llm_chose_good_product": None,
         "llm_response_quality": None,
         "llm_response_grounded": None,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
         "should_have_refused_or_said_no_match": None,
         "human_notes": "",
     }
@@ -463,7 +530,11 @@ def chosen_product_title(payload: dict[str, Any]) -> str | None:
     return getattr(chosen_product, "item_name", None)
 
 
-def run_case(recommender: ShopTalkRecommender, case: RetrievalLlmEvalCase) -> dict[str, Any]:
+def run_case(
+    recommender: ShopTalkRecommender,
+    case: RetrievalLlmEvalCase,
+    product_blurbs: dict[str, Any],
+) -> dict[str, Any]:
     """Run one case through ShopTalk and build one judgment record.
 
     A conversation reset before every case is non-negotiable. Without it, earlier
@@ -509,7 +580,7 @@ def run_case(recommender: ShopTalkRecommender, case: RetrievalLlmEvalCase) -> di
             "final_response": final_response,
             "timings": diagnostics.get("timings", {}),
         },
-        "retrieved_products": serialize_retrieved_products(diagnostics),
+        "retrieved_products": serialize_retrieved_products(diagnostics, product_blurbs),
         "human_eval": build_human_eval_stub(),
     }
 
@@ -530,6 +601,7 @@ def _looks_like_rate_limit_error(exc: Exception) -> bool:
 def run_case_with_retries(
     recommender: ShopTalkRecommender,
     case: RetrievalLlmEvalCase,
+    product_blurbs: dict[str, Any],
     *,
     max_retries: int,
     retry_sleep_seconds: float,
@@ -546,7 +618,7 @@ def run_case_with_retries(
         # ``attempt`` is zero-based; max_retries therefore means "extra tries
         # after the first failure," not total attempts.
         try:
-            return run_case(recommender, case)
+            return run_case(recommender, case, product_blurbs)
         except Exception as exc:
             if not _looks_like_rate_limit_error(exc) or attempt >= max_retries:
                 raise
@@ -584,7 +656,7 @@ def build_output_payload(
         # Keep run metadata with the judgments so a reviewed file remains useful
         # even after model defaults or eval configuration have changed.
         "metadata": {
-            "schema_version": "retrieval_llm_judgments_v1",
+            "schema_version": EXPECTED_SCHEMA_VERSION,
             "created_at": datetime.now().isoformat(timespec="seconds"),
             "cases_path": str(cases_path),
             "top_k": args.top_k,
@@ -608,6 +680,8 @@ def build_output_payload(
                 "llm_chose_good_product": "true/false/null; whether final product choice was reasonable",
                 "llm_response_quality": "2/1/0/null; overall final answer quality",
                 "llm_response_grounded": "true/false/null; whether response sticks to retrieved products/catalog evidence",
+                "unsupported_claims": "list[str]; specific response claims not supported by retrieved_products[*].llm_evidence",
+                "contradicted_claims": "list[str]; specific response claims contradicted by retrieved_products[*].llm_evidence",
                 "should_have_refused_or_said_no_match": "true/false/null; especially useful for expected_available=false cases",
             },
         },
@@ -686,7 +760,13 @@ def load_score_args(config_path: Path) -> argparse.Namespace:
 
 
 def load_judgments(path: Path) -> dict[str, Any]:
-    """Load and minimally validate a judgment JSON file."""
+    """Load and minimally validate a judgment JSON file.
+
+    The eval format is still evolving, so this scorer intentionally accepts only
+    the current schema. That keeps the code simple while the project is still in
+    development and avoids pretending old generated artifacts are first-class
+    compatibility targets.
+    """
     if not path.exists():
         raise FileNotFoundError(f"Judgment file not found: {path}")
 
@@ -851,17 +931,8 @@ def exact_target_product_retrieved_from_products(case: dict[str, Any]) -> bool |
 
 
 def target_or_equivalent_retrieved(case: dict[str, Any]) -> bool | None:
-    """Return the human judgment for retrieval of a target or equivalent item.
-
-    New judgment files use ``target_or_equivalent_retrieved`` as the primary
-    retrieval-success field. For older reviewed files, fall back to
-    ``target_product_retrieved`` so historical outputs can still be scored.
-    """
-    eval_obj = human_eval(case)
-    manual_value = judged_bool(eval_obj.get("target_or_equivalent_retrieved"))
-    if manual_value is not None:
-        return manual_value
-    return judged_bool(eval_obj.get("target_product_retrieved"))
+    """Return the human judgment for retrieval of a target or equivalent item."""
+    return judged_bool(human_eval(case).get("target_or_equivalent_retrieved"))
 
 
 def human_eval(case: dict[str, Any]) -> dict[str, Any]:
@@ -1139,7 +1210,14 @@ def write_metrics_report(
                 print("No judged failures detected.")
 
 def generate_main(config_path: Path = DEFAULT_EVAL_CONFIG_PATH) -> int:
-    """Run preset ShopTalk cases and write a hand-editable judgment JSON file."""
+    """Run preset ShopTalk cases and write a hand-editable judgment JSON file.
+
+    The generated file is intentionally self-contained for human review. Each
+    retrieved product includes ``llm_evidence`` copied from
+    ``product_blurbs[product_id]["llm_str"]``. That keeps grounding checks close
+    to the response being judged without adding a separate evidence file or run
+    manifest while the eval format is still changing.
+    """
     args = load_eval_args(config_path)
     cases = load_jsonl_cases(args.cases, limit=args.limit)
     output_path = args.output or next_numbered_output_path(
@@ -1158,6 +1236,11 @@ def generate_main(config_path: Path = DEFAULT_EVAL_CONFIG_PATH) -> int:
             f"retry_sleep_seconds={args.retry_sleep_seconds}",
             flush=True,
         )
+        print("Loading product blurb evidence...", flush=True)
+
+    product_blurbs = load_product_blurb_source(Path(args.product_blurbs))
+
+    if args.progress:
         print("Building ShopTalk recommender...", flush=True)
 
     recommender = build_recommender_from_args(args)
@@ -1180,6 +1263,7 @@ def generate_main(config_path: Path = DEFAULT_EVAL_CONFIG_PATH) -> int:
         judgment_record = run_case_with_retries(
             recommender,
             case,
+            product_blurbs,
             max_retries=args.max_retries,
             retry_sleep_seconds=args.retry_sleep_seconds,
             show_progress=args.progress,
