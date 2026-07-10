@@ -54,7 +54,7 @@ DEFAULT_RESULTS_DIR = Path(__file__).with_name("results")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_judgments"
 DEFAULT_SCORE_OUTPUT_PREFIX = "retrieval_llm_metrics"
 DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
-EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v3"
+EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v4"
 
 
 @dataclass(frozen=True)
@@ -456,6 +456,28 @@ def product_llm_evidence(
     return None
 
 
+def serialize_target_product(
+    case: RetrievalLlmEvalCase,
+    product_blurbs: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Return target-product metadata plus the LLM-facing evidence string.
+
+    The target product is part of the eval-case design, not a product chosen by
+    the running system. Including its ``llm_evidence`` lets the reviewer check
+    whether the case's intended target actually satisfies the user request. That
+    is separate from judging whether retrieval found the target or an equivalent
+    item.
+    """
+    if not case.target_product_id:
+        return None
+
+    return {
+        "product_id": case.target_product_id,
+        "title": case.target_title,
+        "llm_evidence": product_llm_evidence(product_blurbs, case.target_product_id),
+    }
+
+
 def serialize_retrieved_products(
     diagnostics: dict[str, Any],
     product_blurbs: dict[str, Any],
@@ -511,8 +533,9 @@ def build_human_eval_stub() -> dict[str, Any]:
     """
     return {
         "target_or_equivalent_retrieved": None,
+        "target_product_appropriate": None,
         "retrieval_quality": None,
-        "llm_chose_good_product": None,
+        "llm_product_decision_correct": None,
         "llm_response_quality": None,
         "llm_response_grounded": None,
         "unsupported_claims": [],
@@ -566,6 +589,7 @@ def run_case(
         "image_path": case.image_path,
         "target_product_id": case.target_product_id,
         "target_title": case.target_title,
+        "target_product": serialize_target_product(case, product_blurbs),
         "expected_available": case.expected_available,
         "requires_image": case.requires_image,
         "case_notes": case.notes,
@@ -676,8 +700,15 @@ def build_output_payload(
                     "true/false/null; whether retrieved_products include the exact target "
                     "or a human-judged equivalent satisfying the user's specified attributes"
                 ),
+                "target_product_appropriate": (
+                    "true/false/null; optional review of whether the case target itself "
+                    "is an appropriate answer to the query, based on target_product.llm_evidence"
+                ),
                 "retrieval_quality": "2/1/0/null; overall quality of retrieved set",
-                "llm_chose_good_product": "true/false/null; whether final product choice was reasonable",
+                "llm_product_decision_correct": (
+                    "true/false/null; whether the LLM made the correct product-selection "
+                    "decision, including correctly choosing no product for no-match cases"
+                ),
                 "llm_response_quality": "2/1/0/null; overall final answer quality",
                 "llm_response_grounded": "true/false/null; whether response sticks to retrieved products/catalog evidence",
                 "unsupported_claims": "list[str]; specific response claims not supported by retrieved_products[*].llm_evidence",
@@ -943,9 +974,10 @@ def human_eval(case: dict[str, Any]) -> dict[str, Any]:
 def case_has_chosen_product(case: dict[str, Any]) -> bool:
     """Return True when the LLM actually selected a catalog product.
 
-    ``llm_chose_good_product`` is only meaningful when there is a selected
-    product to judge. For dive-deeper or wrong-track/no-match responses, a null
-    value is not an incomplete judgment; it means the field is not applicable.
+    This helper is used for false-recommendation metrics on missing-product cases.
+    The explicit human judgment field, ``llm_product_decision_correct``, is now
+    scored separately because a good LLM decision can be either choosing a good
+    product or correctly choosing no product.
     """
     system_output = case.get("system_output") or {}
     return system_output.get("chosen_product_id") is not None
@@ -1028,8 +1060,11 @@ def compute_llm_metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
         # overall retrieval_quality below.
         "positive_cases": len(positive_cases),
         "missing_product_cases": len(missing_cases),
-        "good_choice_rate_positive": average_bool(
-            [judged_bool(human_eval(case).get("llm_chose_good_product")) for case in positive_cases]
+        "product_decision_correct_rate_positive": average_bool(
+            [
+                judged_bool(human_eval(case).get("llm_product_decision_correct"))
+                for case in positive_cases
+            ]
         ),
         "mean_response_quality_all": average_number(
             [judged_number(human_eval(case).get("llm_response_quality")) for case in cases]
@@ -1037,9 +1072,7 @@ def compute_llm_metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "grounded_response_rate_all": average_bool(
             [judged_bool(human_eval(case).get("llm_response_grounded")) for case in cases]
         ),
-        # For missing-product cases, ``llm_chose_good_product`` is normally
-        # null because there is no product recommendation to judge. A false
-        # recommendation is therefore an observable system behavior: did the
+        # False recommendations are measured from observed system behavior: did the
         # LLM choose any product when the catalog should have had no match?
         "false_recommendation_rate_missing": average_bool(
             [case_has_chosen_product(case) for case in missing_cases]
@@ -1061,6 +1094,7 @@ def find_unjudged_fields(cases: list[dict[str, Any]]) -> list[str]:
 
     required_case_fields = [
         "retrieval_quality",
+        "llm_product_decision_correct",
         "llm_response_quality",
         "llm_response_grounded",
         "should_have_refused_or_said_no_match",
@@ -1078,12 +1112,6 @@ def find_unjudged_fields(cases: list[dict[str, Any]]) -> list[str]:
         for field in required_case_fields:
             if per_case_eval.get(field) is None:
                 warnings.append(f"{case_id}: human_eval.{field} is null")
-
-        # ``llm_chose_good_product`` is required only when the LLM chose a
-        # product. If the LLM correctly produced a no-match/wrong-track or
-        # dive-deeper response, null means not applicable rather than unjudged.
-        if case_has_chosen_product(case) and per_case_eval.get("llm_chose_good_product") is None:
-            warnings.append(f"{case_id}: human_eval.llm_chose_good_product is null")
 
         for product in case.get("retrieved_products") or []:
             product_id = product.get("product_id", "<unknown>")
@@ -1115,9 +1143,11 @@ def summarize_failures(cases: list[dict[str, Any]]) -> list[str]:
         if retrieval_quality == 0:
             failures.append(f"{case_id}: retrieval set judged bad")
 
-        llm_chose_good_product = judged_bool(eval_obj.get("llm_chose_good_product"))
-        if llm_chose_good_product is False:
-            failures.append(f"{case_id}: LLM did not choose a good product")
+        product_decision_correct = judged_bool(
+            eval_obj.get("llm_product_decision_correct")
+        )
+        if product_decision_correct is False:
+            failures.append(f"{case_id}: LLM product decision judged incorrect")
 
         grounded = judged_bool(eval_obj.get("llm_response_grounded"))
         if grounded is False:
@@ -1218,8 +1248,7 @@ def generate_main(config_path: Path = DEFAULT_EVAL_CONFIG_PATH) -> int:
     to the response being judged without adding a separate evidence file or run
     manifest while the eval format is still changing.
     """
-    import pdb
-    pdb.set_trace()
+  
     args = load_eval_args(config_path)
     cases = load_jsonl_cases(args.cases, limit=args.limit)
     output_path = args.output or next_numbered_output_path(
