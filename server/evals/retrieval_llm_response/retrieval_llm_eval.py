@@ -56,6 +56,12 @@ DEFAULT_SCORE_OUTPUT_PREFIX = "retrieval_llm_metrics"
 DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
 EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v4"
 
+REQUIRED_CASE_NOTE_PREFIXES = (
+    "valid-match case.",
+    "difficult/ambiguous match case.",
+    "no appropriate product case.",
+)
+
 
 @dataclass(frozen=True)
 class RetrievalLlmEvalCase:
@@ -83,7 +89,8 @@ class RetrievalLlmEvalCase:
         requires_image: Marker for future image-only/text+image case generation.
             Text-only cases can still set this to True to indicate their target
             product should have a usable image artifact.
-        notes: Free-form explanation of what the case is meant to test.
+        notes: Explanation of what the case is meant to test. It must begin
+            with one of the exact prefixes in ``REQUIRED_CASE_NOTE_PREFIXES``.
     """
 
     case_id: str
@@ -299,16 +306,36 @@ def load_jsonl_cases(path: Path, limit: int | None = None) -> list[RetrievalLlmE
                 ) from exc
 
             try:
-                cases.append(RetrievalLlmEvalCase(**payload))
+                case = RetrievalLlmEvalCase(**payload)
             except TypeError as exc:
                 raise ValueError(
                     f"Invalid case schema on line {line_number} of {path}: {exc}"
                 ) from exc
 
+            validate_case_notes(case)
+            cases.append(case)
+
             if limit is not None and len(cases) >= limit:
                 break
 
     return cases
+
+
+def validate_case_notes(case: RetrievalLlmEvalCase) -> None:
+    """Require an exact case-classification prefix in every case note.
+
+    The classification stays in the existing free-form ``notes`` field rather
+    than adding another schema field. Requiring one of three exact prefixes
+    keeps the generated ``case_notes`` readable and consistently searchable.
+    """
+    if case.notes.startswith(REQUIRED_CASE_NOTE_PREFIXES):
+        return
+
+    expected = ", ".join(repr(prefix) for prefix in REQUIRED_CASE_NOTE_PREFIXES)
+    raise ValueError(
+        f"{case.case_id}: notes must begin with one of these exact prefixes: "
+        f"{expected}"
+    )
 
 
 def require_case_inputs(case: RetrievalLlmEvalCase) -> None:
