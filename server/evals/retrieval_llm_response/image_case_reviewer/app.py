@@ -78,19 +78,27 @@ class ImageCaseReviewerApp:
             case_summary = gr.Markdown(initial_values[1])
             progress_summary = gr.Markdown(initial_values[2])
 
-            # Previous/Next support the normal sequential workflow.  The
-            # slider provides a quick way to jump directly to any case while
-            # remaining synchronized with button-based navigation.
+            # The filter controls which cases Previous and Next traverse.
+            # The slider always uses absolute case numbers, so it can still
+            # jump directly to any case regardless of the active filter.
             with gr.Row():
-                previous_button = gr.Button("← Previous")
+                view_filter = gr.Dropdown(
+                    label="View",
+                    choices=["All", "Completed", "Incomplete"],
+                    value="All",
+                    interactive=True,
+                )
                 case_slider = gr.Slider(
                     minimum=1,
                     maximum=len(self.records),
                     step=1,
                     value=initial_values[3],
-                    label="Go to case",
+                    label="Go directly to case",
                     interactive=True,
                 )
+
+            with gr.Row():
+                previous_button = gr.Button("← Previous")
                 next_button = gr.Button("Next →")
 
             user_query = gr.Textbox(
@@ -110,6 +118,16 @@ class ImageCaseReviewerApp:
                     scale=5,
                 )
                 search_button = gr.Button("Search", variant="primary", scale=1)
+
+            # Show the image previously saved through this reviewer.  This is
+            # intentionally based on provenance rather than the raw source
+            # image_path, which may contain a planned or placeholder value.
+            assigned_image = gr.Image(
+                label="Currently assigned reviewer image",
+                value=initial_values[6],
+                height=320,
+                interactive=False,
+            )
 
             gallery = gr.Gallery(
                 label="Candidate images — click one to select it",
@@ -146,6 +164,7 @@ class ImageCaseReviewerApp:
                 case_slider,
                 user_query,
                 search_text,
+                assigned_image,
                 gallery,
                 candidates_state,
                 selected_index_state,
@@ -154,20 +173,26 @@ class ImageCaseReviewerApp:
             ]
 
             previous_button.click(
-                fn=lambda index: self._move_case(index, -1),
-                inputs=index_state,
+                fn=lambda index, view: self._move_case(index, -1, view),
+                inputs=[index_state, view_filter],
                 outputs=case_outputs,
             )
 
             next_button.click(
-                fn=lambda index: self._move_case(index, 1),
-                inputs=index_state,
+                fn=lambda index, view: self._move_case(index, 1, view),
+                inputs=[index_state, view_filter],
                 outputs=case_outputs,
             )
 
             case_slider.release(
                 fn=self._jump_to_case,
                 inputs=case_slider,
+                outputs=case_outputs,
+            )
+
+            view_filter.change(
+                fn=self._change_view,
+                inputs=[view_filter, index_state],
                 outputs=case_outputs,
             )
 
@@ -204,7 +229,13 @@ class ImageCaseReviewerApp:
             save_button.click(
                 fn=self._save_selection,
                 inputs=[index_state, selected_index_state, candidates_state],
-                outputs=[case_summary, progress_summary, saved_file, status],
+                outputs=[
+                    case_summary,
+                    progress_summary,
+                    assigned_image,
+                    saved_file,
+                    status,
+                ],
             )
 
         return demo
@@ -230,6 +261,7 @@ class ImageCaseReviewerApp:
             index + 1,  # slider uses human-friendly one-based case numbers
             query,
             query,
+            self._assigned_image_path(record),
             [],       # gallery
             [],       # candidates state
             -1,       # selected candidate index
@@ -258,13 +290,84 @@ class ImageCaseReviewerApp:
 
         return 0
 
-    def _move_case(self, index: int, amount: int) -> tuple[Any, ...]:
-        """Move relative to the current zero-based case index."""
-        return self._case_values(index + amount)
+    def _indices_for_view(self, view: str) -> list[int]:
+        """Return the absolute record indices included in ``view``."""
+        completed_case_ids = self._completed_case_ids()
+
+        if view == "Completed":
+            return [
+                index
+                for index, record in enumerate(self.records)
+                if record["case_id"] in completed_case_ids
+            ]
+
+        if view == "Incomplete":
+            return [
+                index
+                for index, record in enumerate(self.records)
+                if record["case_id"] not in completed_case_ids
+            ]
+
+        # Treat an unexpected value as "All" so navigation remains usable.
+        return list(range(len(self.records)))
+
+    def _move_case(
+        self,
+        index: int,
+        amount: int,
+        view: str,
+    ) -> tuple[Any, ...]:
+        """Move to the previous or next case within the selected view."""
+        visible_indices = self._indices_for_view(view)
+        index = max(0, min(int(index), len(self.records) - 1))
+
+        # Completed can be empty before the first save, and Incomplete can be
+        # empty after every case is finished.  Keep displaying the current case
+        # rather than producing an invalid index.
+        if not visible_indices:
+            return self._case_values(index)
+
+        if index not in visible_indices:
+            target = visible_indices[0] if amount >= 0 else visible_indices[-1]
+            return self._case_values(target)
+
+        visible_position = visible_indices.index(index)
+        target_position = max(
+            0,
+            min(visible_position + amount, len(visible_indices) - 1),
+        )
+        return self._case_values(visible_indices[target_position])
 
     def _jump_to_case(self, case_number: int | float) -> tuple[Any, ...]:
-        """Load the one-based case number selected with the slider."""
+        """Load the absolute one-based case number selected by the slider."""
         return self._case_values(int(case_number) - 1)
+
+    def _change_view(self, view: str, index: int) -> tuple[Any, ...]:
+        """Keep the current case if it belongs to the newly selected view."""
+        visible_indices = self._indices_for_view(view)
+        index = max(0, min(int(index), len(self.records) - 1))
+
+        if not visible_indices or index in visible_indices:
+            return self._case_values(index)
+
+        return self._case_values(visible_indices[0])
+
+    def _assigned_image_path(self, record: dict[str, Any]) -> str | None:
+        """Return the reviewer-saved local image for ``record``, if present."""
+        provenance_entry = self._load_provenance().get(record["case_id"])
+        if not isinstance(provenance_entry, dict):
+            return None
+
+        image_path = provenance_entry.get("image_path")
+        if not isinstance(image_path, str) or not image_path.strip():
+            return None
+
+        path = Path(image_path).expanduser()
+        if not path.is_absolute():
+            path = self.config.project_root / path
+
+        path = path.resolve()
+        return str(path) if path.is_file() else None
 
     def _perform_search(self, query: str) -> tuple[Any, ...]:
         """Run one configured image search and populate the gallery."""
@@ -318,7 +421,7 @@ class ImageCaseReviewerApp:
         case_index: int,
         selected_index: int,
         candidates_data: list[dict[str, Any]],
-    ) -> tuple[str, str, str, str]:
+    ) -> tuple[str, str, str, str, str]:
         """Save the selected image and update the current working record."""
         if selected_index < 0:
             raise gr.Error("Select an image before saving.")
@@ -350,6 +453,7 @@ class ImageCaseReviewerApp:
         return (
             self._case_markdown(record, case_index),
             self._progress_markdown(case_index),
+            str(saved.absolute_path),
             str(saved.absolute_path),
             status,
         )
@@ -404,7 +508,6 @@ class ImageCaseReviewerApp:
             path,
             json.dumps(provenance, indent=2, ensure_ascii=False) + "\n",
         )
-
 
     def _progress_markdown(self, index: int) -> str:
         """Render current-position and completion information.

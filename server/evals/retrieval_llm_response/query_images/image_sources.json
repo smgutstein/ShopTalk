@@ -144,13 +144,13 @@
     "format": "JPEG"
   },
   "text_image_017": {
-    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_017.png",
-    "image_url": "https://i.pinimg.com/originals/e9/61/17/e96117387ae7b1c7450b8974cc4f1131.png",
-    "source_url": "https://www.pinterest.com/pin/10-liquid-alternatives-to-water-for-gourmet-rice-recipes-in-2025--242842604902221499/",
-    "search_result_title": "10 Liquid Alternatives to Water for Gourmet Rice Recipes 🌿 in 2025 ...",
-    "width": 1000,
-    "height": 1500,
-    "format": "PNG"
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_017.jpg",
+    "image_url": "https://healthyrecipesblogs.com/wp-content/uploads/2012/10/chicken-broth-featured-2021.jpg",
+    "source_url": "https://healthyrecipesblogs.com/chicken-soup-recipe/",
+    "search_result_title": "Homemade Chicken Broth Recipe - Healthy Recipes Blog",
+    "width": 1200,
+    "height": 1200,
+    "format": "JPEG"
   },
   "text_image_018": {
     "image_path": "server/evals/retrieval_llm_response/query_images/text_image_018.jpg",
