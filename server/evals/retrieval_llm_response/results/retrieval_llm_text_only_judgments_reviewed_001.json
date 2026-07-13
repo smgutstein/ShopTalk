@@ -1,0 +1,1983 @@
+{
+  "metadata": {
+    "schema_version": "retrieval_llm_judgments_v4",
+    "created_at": "2026-07-09T16:02:25",
+    "cases_path": "server/evals/retrieval_llm_response/cases/eval_cases_retrieval_llm_text_only_10_5.jsonl",
+    "top_k": 5,
+    "model_name": "gpt-4o",
+    "temperature": 0.0,
+    "sleep_seconds_between_cases": 0.1,
+    "max_retries": 3,
+    "retry_sleep_seconds": 5.0,
+    "human_judgment_scale": {
+      "2": "strong match / good response",
+      "1": "acceptable / partial match",
+      "0": "irrelevant / bad response",
+      "null": "not yet judged"
+    },
+    "human_eval_fields": {
+      "target_or_equivalent_retrieved": "true/false/null; whether retrieved_products include the exact target or a human-judged equivalent satisfying the user's specified attributes",
+      "target_product_appropriate": "true/false/null; optional review of whether the case target itself is an appropriate answer to the query, based on target_product.llm_evidence",
+      "retrieval_quality": "2/1/0/null; overall quality of retrieved set",
+      "llm_product_decision_correct": "true/false/null; whether final product choice was reasonable",
+      "llm_response_quality": "2/1/0/null; overall final answer quality",
+      "llm_response_grounded": "true/false/null; whether response sticks to retrieved products/catalog evidence",
+      "unsupported_claims": "list[str]; specific response claims not supported by retrieved_products[*].llm_evidence",
+      "contradicted_claims": "list[str]; specific response claims contradicted by retrieved_products[*].llm_evidence",
+      "should_have_refused_or_said_no_match": "true/false/null; especially useful for expected_available=false cases"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "txt_001_chair_headrest_gray",
+      "query_type": "text_only",
+      "category": "office_furniture",
+      "query": "I need a gray office chair with a headrest and arms that can flip up or move out of the way",
+      "image_path": null,
+      "target_product_id": "B07Q44L76B",
+      "target_title": "AmazonBasics Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest – Grey",
+      "target_product": {
+        "product_id": "B07Q44L76B",
+        "title": "AmazonBasics Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest – Grey",
+        "llm_evidence": "We sell Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest – Grey. It is important to note that its Product ID is B07Q44L76B.. Its brand is AmazonBasics.  This product type may be categorized as a chair product. It weighs 37.48 pounds. Its length is 25.60 inches. Its width is 25.20 inches. Its height is 43.31 inches. Its color may be described as Grey, or more simply Gray. It consists of Textile. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. Adjustable desk chair for home or office\n    2. High-back mesh design with breathable mesh seat for extra support and extra comfort with airflow\n    3. 360-degree swivel mobility and caster wheels allow you to move around your workspace easily\n    4. Adjustable seat height, flip-up arm rests and multi-tilt locks\n    5. Sturdy 5-point base and durable, reliable construction\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for a gray high-back office chair with headrest and flip-up arms. Target image id from mini_dict_text_image.json: 81ZZm8EMs2L.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "gray office chair headrest flip-up arms",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B07Q44L76B",
+        "chosen_product_title": "AmazonBasics Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest – Grey",
+        "initial_llm_response": "<B07Q44L76B>",
+        "final_response": "Well, honey, I've got just the thing for you! Check out the Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest in a sleek gray color. It's from AmazonBasics, and it's got all the bells and whistles you need for comfort and style in your office.\n\nThis chair features a high-back mesh design for breathability and support, and those flip-up arms will give you the flexibility to move them out of the way when you need a little more elbow room. Plus, with its 360-degree swivel and caster wheels, you'll be gliding around your workspace like a star.\n\nIt's got adjustable seat height and multi-tilt locks, so you can find just the right position to keep you comfy all day long. And with a sturdy 5-point base, it's built to last. Sounds like a perfect match, don't you think?",
+        "timings": {
+          "total_seconds": 6.216586
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07Q5SBTK5",
+          "title": "AmazonBasics Adjustable High-Back Mesh Chair with Flip-Up Arms and Head Rest - Black",
+          "score": 0.45909836888313293,
+          "product_type": "chair",
+          "image_paths": [
+            "69/699c160b.jpg",
+            "60/607f6be0.jpg",
+            "b4/b4a430a6.jpg",
+            "d7/d7e71dab.jpg",
+            "c2/c2c4d7cb.jpg",
+            "3a/3a7e649f.jpg",
+            "87/877cb404.jpg",
+            "92/92d40b2c.jpg",
+            "5e/5ecebb2d.jpg",
+            "92/92054f46.jpg"
+          ],
+          "llm_evidence": "We sell Adjustable High-Back Mesh Chair with Flip-Up Arms and Head Rest - Black. It is important to note that its Product ID is B07Q5SBTK5.. Its brand is AmazonBasics.  This product type may be categorized as a chair product. It weighs 37.48 pounds. Its length is 25.60 inches. Its width is 25.20 inches. Its height is 43.31 inches. Its color may be described as Black. It consists of Mesh. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. Adjustable desk chair for home or office\n    2. High-back mesh design with breathable mesh seat for extra support and extra comfort with airflow\n    3. 360-degree swivel mobility and caster wheels allow you to move around your workspace easily\n    4. Adjustable seat height, flip-up arm rests and multi-tilt locks\n    5. Sturdy 5-point base and durable, reliable construction\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 2,
+          "product_id": "B07Q44L76B",
+          "title": "AmazonBasics Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest – Grey",
+          "score": 0.4563717842102051,
+          "product_type": "chair",
+          "image_paths": [
+            "d5/d59c5cc8.jpg",
+            "96/9646cfcb.jpg",
+            "9e/9e3cced5.jpg",
+            "5e/5e927c3b.jpg",
+            "63/6340618f.jpg",
+            "f4/f44e2e2f.jpg",
+            "85/85fee53a.jpg",
+            "51/51b9105f.jpg",
+            "67/67ac4251.jpg",
+            "2f/2f4173e2.jpg"
+          ],
+          "llm_evidence": "We sell Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest – Grey. It is important to note that its Product ID is B07Q44L76B.. Its brand is AmazonBasics.  This product type may be categorized as a chair product. It weighs 37.48 pounds. Its length is 25.60 inches. Its width is 25.20 inches. Its height is 43.31 inches. Its color may be described as Grey, or more simply Gray. It consists of Textile. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. Adjustable desk chair for home or office\n    2. High-back mesh design with breathable mesh seat for extra support and extra comfort with airflow\n    3. 360-degree swivel mobility and caster wheels allow you to move around your workspace easily\n    4. Adjustable seat height, flip-up arm rests and multi-tilt locks\n    5. Sturdy 5-point base and durable, reliable construction\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "target product"
+        },
+        {
+          "rank": 3,
+          "product_id": "B08DM39BS6",
+          "title": "AmazonCommercial Ergonomic High-Back Executive Mesh Chair, with Adjustable Lumbar Support, Headrest and 3D Armrests (Renewed)",
+          "score": 0.44408971071243286,
+          "product_type": "chair",
+          "image_paths": [
+            "ec/ecc76109.jpg",
+            "1d/1da07365.jpg",
+            "c4/c477a9a9.jpg",
+            "06/069cf020.jpg",
+            "1f/1f6a995c.jpg"
+          ],
+          "llm_evidence": "We sell Amazon Commercial Ergonomic High-Back Executive Mesh Chair, with Adjustable Lumbar Support, Headrest and 3D Armrests (Renewed). It is important to note that its Product ID is B08DM39BS6.. Its brand is AmazonCommercial.  This product type may be categorized as a chair product. It weighs 44.10 pounds. Its length is 22.44 inches. Its width is 26.38 inches. Its height is 43.31 inches. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. Ergonomic, BIFMA-certified quality executive office chair for home or office\n    2. High-back mesh design with a adjustable headrest and molded foam seat to provide extra support and comfort\n    3. Adjustable seat height, depth and tilt mechanism to accommodate perfect positions\n    4. Sturdy 5-point base and durable, reliable construction\n    5. 360-degree swivel mobility and caster wheels allow you to move around your workspace easily\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "unspecified relevant property"
+        },
+        {
+          "rank": 4,
+          "product_id": "B07S57CCXF",
+          "title": "AmazonCommercial Ergonomic High-Back Bonded Leather Executive Chair with Flip-Up Arms and Lumbar Support, Cream",
+          "score": 0.4256913661956787,
+          "product_type": "chair",
+          "image_paths": [
+            "15/1516f630.jpg",
+            "7f/7f50672c.jpg",
+            "5a/5a2f0707.jpg",
+            "75/753259a2.jpg",
+            "98/98b4f96b.jpg",
+            "d7/d70c229d.jpg"
+          ],
+          "llm_evidence": "We sell Amazon Commercial Ergonomic High-Back Bonded Leather Executive Chair with Flip-Up Arms and Lumbar Support, Cream. It is important to note that its Product ID is B07S57CCXF.. Its brand is AmazonCommercial.  This product type may be categorized as a chair product. It weighs 40.90 pounds. Its length is 31.00 inches. Its width is 28.50 inches. Its height is 44.75 inches. Its color may be described as Cream, or more simply Beige. It consists of Faux Leather. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. Adjustable high-back executive chair for home or office work spaces; BIFMA certified\n    2. Upholstered in quality leather for style and durability\n    3. Ergonomic design with segmented padding on the seat and back\n    4. Adjustable seat height, and tilt\n    5. Flip-up arm rests to allow for more flexibility and motion-range when desired\n    6. Sturdy framework set on a 5-point aluminum base with oversized rolling caster wheels for extra durability and mobility; 360 degree swivel\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 5,
+          "product_id": "B07RZTRBVQ",
+          "title": "AmazonCommercial Ergonomic High-Back Bonded Leather Executive Chair with Flip-Up Arms and Lumbar Support, Brown",
+          "score": 0.4236412048339844,
+          "product_type": "chair",
+          "image_paths": [
+            "9e/9e787128.jpg",
+            "fe/fea03190.jpg",
+            "68/687d1e36.jpg",
+            "73/739df9a3.jpg",
+            "3d/3da611ce.jpg",
+            "49/4938b134.jpg"
+          ],
+          "llm_evidence": "We sell Amazon Commercial Ergonomic High-Back Bonded Leather Executive Chair with Flip-Up Arms and Lumbar Support, Brown. It is important to note that its Product ID is B07RZTRBVQ.. Its brand is AmazonCommercial.  This product type may be categorized as a chair product. It weighs 40.90 pounds. Its length is 31.00 inches. Its width is 28.50 inches. Its height is 44.75 inches. Its color may be described as Brown. It consists of Faux Leather. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. Adjustable high-back executive chair for home or office work spaces; BIFMA certified\n    2. Upholstered in quality leather for style and durability\n    3. Ergonomic design with segmented padding on the seat and back\n    4. Adjustable seat height, and tilt\n    5. Flip-up arm rests to allow for more flexibility and motion-range when desired\n    6. Sturdy framework set on a 5-point aluminum base with oversized rolling caster wheels for extra durability and mobility; 360 degree swivel\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": true,
+        "target_product_appropriate": true,
+        "retrieval_quality": 2,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": "Most had slightly off color, but other than that, they were good, and I don't know that the RAG actually had any other 'perfect' items. So overall quality=2"
+      }
+    },
+    {
+      "case_id": "txt_002_executive_ivory_chair",
+      "query_type": "text_only",
+      "category": "office_furniture",
+      "query": "Can you find me a roomy ivory executive desk chair with an oversized cushion?",
+      "image_path": null,
+      "target_product_id": "B07V6Z97QJ",
+      "target_title": "AmazonBasics Modern LeatherSoft Executive Chair, 300lbs Capacity with Oversized Seat Cushion, Ivory",
+      "target_product": {
+        "product_id": "B07V6Z97QJ",
+        "title": "AmazonBasics Modern LeatherSoft Executive Chair, 300lbs Capacity with Oversized Seat Cushion, Ivory",
+        "llm_evidence": "We sell Modern LeatherSoft Executive Chair, 300lbs Capacity with Oversized Seat Cushion, Ivory. It is important to note that its Product ID is B07V6Z97QJ.. Its brand is AmazonBasics.  This product type may be categorized as a home furniture and decor product. It weighs 37.26 pounds. Its length is 29.13 inches. Its width is 25.20 inches. Its height is 43.11 inches. Its color may be described as Ivory. The categorical groups of this item, going from most general to least general are:\n    1. Office Furniture & Lighting\nThere are several bullet points associated with this item:\n    1. Padded executive chair with extra-wide seat cushion and 275 pound weight capacity\n    2. Contoured, segmented seat design provides plush comfort and support throughout the work day\n    3. Smooth, elegant and supple LeatherSoft upholstery offers a modern look\n    4. Pneumatic height lever and tilt mechanism with infinite locking adjustment\n    5. Sturdy 5-point base for extra stability\n    6. Rolling caster wheels and 360 degree swivel mobility\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for an ivory oversized executive office chair. Target image id from mini_dict_text_image.json: 715wPeALa1L.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "roomy ivory executive desk chair oversized cushion",
+        "embedding_mode": "text",
+        "decision": "dive_deeper",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<DIVE DEEPER>",
+        "final_response": "Well, honey, it looks like we've got a few options to consider. Tell me, are you looking for something with a high back for extra support, or is the cushion the main star of the show for you? And how about those armrests—are they a must-have or just a nice-to-have? Let me know what tickles your fancy, and we'll find the perfect chair to make your office feel like a throne room.",
+        "timings": {
+          "total_seconds": 3.683979
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07QC85YBY",
+          "title": "Amazon Brand – Stone & Beam Modern Upholstered High-Back Swivel Chair, 25.2\"W, Beige",
+          "score": 0.5122896432876587,
+          "product_type": "chair",
+          "image_paths": [
+            "84/84a4b148.jpg",
+            "a2/a224d693.jpg",
+            "f4/f4e28d3d.jpg",
+            "82/82ee4e86.jpg",
+            "10/10e8bff2.jpg",
+            "b9/b9dea7a8.jpg"
+          ],
+          "llm_evidence": "We sell Stone & Beam Modern Upholstered High-Back Swivel Chair, 25.2\"W, Beige. It is important to note that its Product ID is B07QC85YBY.. Its brand is Stone & Beam.  This product type may be categorized as a chair product. It weighs 26.50 pounds. Its length is 24.40 inches. Its width is 25.20 inches. Its height is 41.30 inches. Its color may be described as Brown. It consists of Textile. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. With a tall back and low-sloping arms, this modern captain's chair in a usefully neutral beige brings a distinctive flair to your desk or to the conference room. The adjustable height and tilt mechanism provide maximum comfort.\n    2. 25.2\"W x 24.4\"D x 41.3–44.3\"H\n    3. Fabric upholstery over plywood and metal frame; metal legs with rollers\n    4. This modern chair with adjustable height has a 360-degree swivel mechanism; a tilt lock; and waterproof and stain-resistant fabric upholstery.\n    5. The beige linen upholstery lends an air of refinement to this high-backed modern swivel chair.\n    6. Assemble in 15 minutes or less\n    7. Wipe clean with a soft, dry cloth.\n    8. Free returns for 30 days. 3-year warranty.\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color, no oversize cushion"
+        },
+        {
+          "rank": 2,
+          "product_id": "B07XSKL25C",
+          "title": "Stone & Beam Modern Upholstered High-Back Swivel Chair, 25.2\"W, Beige (Renewed)",
+          "score": 0.5117350816726685,
+          "product_type": "chair",
+          "image_paths": [
+            "c6/c6841dd3.jpg",
+            "45/45bcc03b.jpg",
+            "0c/0c6ac96f.jpg",
+            "11/116915bc.jpg"
+          ],
+          "llm_evidence": "We sell Stone & Beam Modern Upholstered High-Back Swivel Chair, 25.2\"W, Beige (Renewed). It is important to note that its Product ID is B07XSKL25C.. Its brand is Stone & Beam.  This product type may be categorized as a chair product. Its length is 24.40 inches. Its width is 25.20 inches. Its height is 41.30 inches. Its color may be described as Brown. It consists of Textile. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. With a tall back and low-sloping arms, this modern captain's chair in a usefully neutral beige brings a distinctive flair to your desk or to the conference room. The adjustable height and tilt mechanism provide maximum comfort.\n    2. 25.2\"W x 24.4\"D x 41.3–44.3\"H\n    3. Fabric upholstery over plywood and metal frame; metal legs with rollers\n    4. This modern chair with adjustable height has a 360-degree swivel mechanism; a tilt lock; and waterproof and stain-resistant fabric upholstery.\n    5. The beige linen upholstery lends an air of refinement to this high-backed modern swivel chair.\n    6. Assemble in 15 minutes or less\n    7. Wipe clean with a soft, dry cloth.\n    8. Free returns for 30 days. 3-year warranty.\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color, no oversize cushion"
+        },
+        {
+          "rank": 3,
+          "product_id": "B07M66SYGT",
+          "title": "AmazonBasics Classic, Adjustable, Swivel Office Desk Chair with Casters and Twill Fabric, Beige",
+          "score": 0.503708004951477,
+          "product_type": "chair",
+          "image_paths": [
+            "16/16ecbbcc.jpg",
+            "ee/eef1ed1d.jpg",
+            "30/30460bc1.jpg",
+            "31/319ca306.jpg",
+            "b2/b2c7a881.jpg",
+            "5b/5b458d3b.jpg",
+            "22/22a18aab.jpg",
+            "48/4891f243.jpg"
+          ],
+          "llm_evidence": "We sell Classic, Adjustable, Swivel Office Desk Chair with Casters and Twill Fabric, Beige. It is important to note that its Product ID is B07M66SYGT.. Its brand is AmazonBasics.  This product type may be categorized as a chair product. It weighs 23.81 pounds. Its length is 25.79 inches. Its width is 23.62 inches. Its height is 32.28 inches. Its color may be described as Beige. It consists of Textile. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. 360 degree swiveling office chair for home or business use\n    2. Set on a sturdy 5-point stainless steel base with chrome finish and rolling caster wheels\n    3. Twill upholstery provides a classic look and long-lasting durability\n    4. Foam cushioning for ergonomic comfort and support\n    5. Adjustable lever allows you to set the chair to your ideal height, reducing posture-related strain\n    6. BIFMA Certified\n    7. Chair Dimensions: 25.8 x 23.6 x 32.3 inches; easy to assemble; hardware included\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color, no oversize cushion"
+        },
+        {
+          "rank": 4,
+          "product_id": "B07L3WRJ6R",
+          "title": "AmazonBasics Classic Office Desk Computer Chair - Adjustable, Swiveling, Ultra-Soft Microfiber - Light Beige, Lumbar Support",
+          "score": 0.4976554214954376,
+          "product_type": "chair",
+          "image_paths": [
+            "3f/3feeda8e.jpg",
+            "17/17730bb5.jpg",
+            "ef/ef4de466.jpg",
+            "f7/f7f3b2b0.jpg",
+            "5f/5f7b30ac.jpg",
+            "0e/0eae8669.jpg"
+          ],
+          "llm_evidence": "We sell Classic Office Desk Computer Chair - Adjustable, Swiveling, Ultra-Soft Microfiber - Light Beige, Lumbar Support. It is important to note that its Product ID is B07L3WRJ6R.. Its brand is AmazonBasics.  This product type may be categorized as a chair product. It weighs 35.16 pounds. Its length is 28.50 inches. Its width is 26.25 inches. Its height is 43.50 inches. Its color may be described as Light Beige. It consists of Microfiber. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. Adjustable executive office chair with ergonomic support\n    2. Ultra-soft 100% microfiber upholstery provides comfort and repels dust, dirt, and stains\n    3. Padded headrest, back, and seat cushions for exceptional lumbar support\n    4. Sturdy construction with heavy-duty five-point base\n    5. Rolling caster wheels and 360 degree swivel capability provide easy maneuverability\n    6. Easily adjust height for the ideal writing or typing position\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color, no oversize cushion"
+        },
+        {
+          "rank": 5,
+          "product_id": "B081H44MHD",
+          "title": "AmazonBasics Classic Puresoft PU-Padded Mid-Back Office Computer Desk Chair with Armrest - Cream",
+          "score": 0.49712899327278137,
+          "product_type": "chair",
+          "image_paths": [
+            "4b/4b4b02c5.jpg",
+            "f3/f313e7d4.jpg",
+            "df/df0f8661.jpg",
+            "50/508bbbe5.jpg",
+            "43/43c5c213.jpg",
+            "61/613a0199.jpg",
+            "8d/8d1240a9.jpg"
+          ],
+          "llm_evidence": "We sell Classic Puresoft PU-Padded Mid-Back Office Computer Desk Chair with Armrest - Cream. It is important to note that its Product ID is B081H44MHD.. Its brand is AmazonBasics.  This product type may be categorized as a chair product. It weighs 28.22 pounds. Its length is 25.75 inches. Its width is 24.25 inches. Its height is 42.25 inches. Its color may be described as Cream, or more simply Beige. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Home Office Furniture\n    3. Home Office Chairs\n    4. Home Office Desk Chairs\nThere are several bullet points associated with this item:\n    1. Comfortable office chair upholstered in black bonded leather\n    2. Padded seat and back for all-day comfort\n    3. Pneumatic seat-height adjustment; dual-wheel casters\n    4. 275-pound maximum weight capacity; assembly instructions included\n    5. Measures 24.02 inches deep by 24.02 inches wide by 34.84 to 38.58 inches high; 1-year limited warranty\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color, no oversize cushion"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": false,
+        "target_product_appropriate": true,
+        "retrieval_quality": 1,
+        "llm_product_decision_correct": false,
+        "llm_response_quality": 1,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": "LLM said dive deeper, and did not get target product from vectorDB"
+      }
+    },
+    {
+      "case_id": "txt_003_orange_hiking_backpack",
+      "query_type": "text_only",
+      "category": "bags",
+      "query": "I am looking for a small orange backpack I could use for hiking or travel",
+      "image_path": null,
+      "target_product_id": "B01AIVT6NM",
+      "target_title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange",
+      "target_product": {
+        "product_id": "B01AIVT6NM",
+        "title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange",
+        "llm_evidence": "We sell Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange. It is important to note that its Product ID is B01AIVT6NM.. Its brand is AmazonBasics.  This product type may be categorized as a backpack product. It weighs 0.35 pounds. Its length is 17.50 inches. Its width is 7.50 inches. Its height is 11.50 inches. Its color may be described as Orange. The categorical groups of this item, going from most general to least general are:\n    1. Outdoor Recreation\n    2. Camping & Hiking\n    3. Backpacks, Bags & Accessories\n    4. Backpacking Packs\n    5. Hiking Daypacks\nThere are several bullet points associated with this item:\n    1. Ultra-light packable daypack with 25-liter capacity and 2-way zipper for secure closure\n    2. Roomy main compartment, 1 front zipper pocket, internal zippered pocket, and 2 mesh side pockets\n    3. Adjustable breathable straps ensure a proper fit and comfortable all-day use\n    4. Can be stuffed into its own zippered pocket for space-saving storage and compact portability\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for an orange packable hiking/travel backpack. Target image id from mini_dict_text_image.json: 91st5RiMpGL.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "small orange backpack hiking travel",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B01AIVT6NM",
+        "chosen_product_title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange",
+        "initial_llm_response": "<B01AIVT6NM>",
+        "final_response": "Well, honey, I've got just the thing for you! Check out this Lightweight Packable Hiking Travel Day Pack Backpack. It's a real peach in a vibrant orange color, perfect for standing out on those trails or bustling through airports. \n\nThis little number is ultra-light and packs a punch with a 25-liter capacity. It's got a roomy main compartment, a front zipper pocket, an internal zippered pocket, and two mesh side pockets. So, you'll have plenty of space to stash all your essentials.\n\nThe adjustable breathable straps will keep you comfy all day long, and when you're done, you can stuff it into its own pocket for easy storage. It's like magic, darling! Perfect for hiking or travel, this backpack is ready to be your trusty sidekick. What do you say?",
+        "timings": {
+          "total_seconds": 4.679119
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07PGMSL4D",
+          "title": "AmazonBasics Small Backpack, Yellow",
+          "score": 0.49620041251182556,
+          "product_type": "backpack",
+          "image_paths": [
+            "d3/d3ebee78.jpg",
+            "3d/3dc68ad6.jpg",
+            "0f/0f45e8d6.jpg",
+            "4f/4f545afa.jpg"
+          ],
+          "llm_evidence": "We sell Small Backpack, Yellow. It is important to note that its Product ID is B07PGMSL4D.. Its brand is AmazonBasics.  This product type may be categorized as a backpack product. It weighs 0.77 pounds. Its length is 14.20 inches. Its width is 5.10 inches. Its height is 8.30 inches. Its color may be described as Yellow. The categorical groups of this item, going from most general to least general are:\n    1. Luggage & Travel Gear\n    2. Backpacks\n    3. Kids' Backpacks\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nThere are several bullet points associated with this item:\n    1. Small backpack for school, travel, and more; ideal for kids ages 3 to 6 years old\n    2. Durable, water-resistant polyester construction resists scratches and abrasions\n    3. Spacious main compartment for bigger items such as books, clothing, etc; interior zip pocket\n    4. Interior name tag for easy identification\n    5. Exterior front pocket and 2 side pockets for smaller items, water bottles, tissues, and more\n    6. YKK zipper closure and adjustable straps for comfort\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 2,
+          "product_id": "B01AIVT6NM",
+          "title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange",
+          "score": 0.44622230529785156,
+          "product_type": "backpack",
+          "image_paths": [
+            "55/5579e12e.jpg",
+            "61/61f7d527.jpg",
+            "d9/d9cbec1f.jpg",
+            "8c/8cabb694.jpg",
+            "0a/0ab2045c.jpg",
+            "c9/c9fd22ac.jpg",
+            "52/52f3a36f.jpg",
+            "5a/5a28d5ab.jpg",
+            "64/64a088cb.jpg"
+          ],
+          "llm_evidence": "We sell Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange. It is important to note that its Product ID is B01AIVT6NM.. Its brand is AmazonBasics.  This product type may be categorized as a backpack product. It weighs 0.35 pounds. Its length is 17.50 inches. Its width is 7.50 inches. Its height is 11.50 inches. Its color may be described as Orange. The categorical groups of this item, going from most general to least general are:\n    1. Outdoor Recreation\n    2. Camping & Hiking\n    3. Backpacks, Bags & Accessories\n    4. Backpacking Packs\n    5. Hiking Daypacks\nThere are several bullet points associated with this item:\n    1. Ultra-light packable daypack with 25-liter capacity and 2-way zipper for secure closure\n    2. Roomy main compartment, 1 front zipper pocket, internal zippered pocket, and 2 mesh side pockets\n    3. Adjustable breathable straps ensure a proper fit and comfortable all-day use\n    4. Can be stuffed into its own zippered pocket for space-saving storage and compact portability\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "target product"
+        },
+        {
+          "rank": 3,
+          "product_id": "B07G94NYBF",
+          "title": "Amazonbasics Classic Backpack with Gel Ink Pens, Classic Notebook (Ruled) and 3-Ring Binder",
+          "score": 0.430555522441864,
+          "product_type": "backpack",
+          "image_paths": [
+            "89/89ed5a6e.jpg"
+          ],
+          "llm_evidence": "We sell Amazonbasics Classic Backpack with Gel Ink Pens, Classic Notebook (Ruled) and 3-Ring Binder. It is important to note that its Product ID is B07G94NYBF.. Its brand is AmazonBasics.  This product type may be categorized as a backpack product. Its color may be described as Black. The categorical groups of this item, going from most general to least general are:\n    1. Luggage & Travel Gear\n    2. Backpacks\n    3. Casual Daypacks\nThere are several bullet points associated with this item:\n    1. Lightweight, durable backpack featuring adjustable padded shoulder straps and convenient side water bottle pockets\n    2. Locker loop at top\n    3. 12-pack of gel ink pens pre-filled with black ink; ideal for everyday general-purpose writing\n    4. Premium quick-dry ink provides smooth, smear-proof results\n    5. Large classic notebook with 240 ruled pages (front and back) for notes, lists, musings, and more\n    6. Archival-quality pages made from acid-free paper—resists damage from light and air\n    7. 3-ring binder with round 1.5-inch rings that hold up to 275 sheets of paper\n    8. Designed for light, everyday use; ideal for organizing projects, presentations, and more\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 4,
+          "product_id": "B01AIVT5M4",
+          "title": "AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Red",
+          "score": 0.4253460764884949,
+          "product_type": "backpack",
+          "image_paths": [
+            "e3/e39ef2aa.jpg",
+            "df/df0446e4.jpg",
+            "e2/e2845610.jpg",
+            "3e/3e18be08.jpg",
+            "6c/6c5e2d14.jpg",
+            "39/3913f496.jpg",
+            "e8/e874117f.jpg",
+            "f1/f1e75409.jpg",
+            "e7/e744e674.jpg"
+          ],
+          "llm_evidence": "We sell Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Red. It is important to note that its Product ID is B01AIVT5M4.. Its brand is AmazonBasics.  This product type may be categorized as a backpack product. It weighs 0.35 pounds. Its length is 17.50 inches. Its width is 7.50 inches. Its height is 11.50 inches. Its color may be described as Red. The categorical groups of this item, going from most general to least general are:\n    1. Outdoor Recreation\n    2. Camping & Hiking\n    3. Backpacks, Bags & Accessories\n    4. Backpacking Packs\n    5. Hiking Daypacks\nThere are several bullet points associated with this item:\n    1. Ultra-light packable daypack with 25-liter capacity and 2-way zipper for secure closure\n    2. Roomy main compartment, 1 front zipper pocket, internal zippered pocket, and 2 mesh side pockets\n    3. Adjustable breathable straps ensure a proper fit and comfortable all-day use\n    4. Can be stuffed into its own zippered pocket for space-saving storage and compact portability\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 5,
+          "product_id": "B07G8ZSM5K",
+          "title": "Amazonbasics Classic Backpack with Gel Ink Pens, Classic Notebook, and 3-Ring Binder",
+          "score": 0.4222395420074463,
+          "product_type": "backpack",
+          "image_paths": [
+            "f7/f7ef538e.jpg"
+          ],
+          "llm_evidence": "We sell Amazonbasics Classic Backpack with Gel Ink Pens, Classic Notebook, and 3-Ring Binder. It is important to note that its Product ID is B07G8ZSM5K.. Its brand is AmazonBasics.  This product type may be categorized as a backpack product. Its color may be described as Royal Blue, or more simply Multi. The categorical groups of this item, going from most general to least general are:\n    1. Luggage & Travel Gear\n    2. Backpacks\n    3. Casual Daypacks\nThere are several bullet points associated with this item:\n    1. Lightweight, durable backpack featuring adjustable padded shoulder straps and convenient side water bottle pockets\n    2. Locker loop at top\n    3. 12-pack of gel ink pens pre-filled with black ink; ideal for everyday general-purpose writing\n    4. Premium quick-dry ink provides smooth, smear-proof results\n    5. Large classic notebook with 240 ruled pages (front and back) for notes, lists, musings, and more\n    6. Archival-quality pages made from acid-free paper—resists damage from light and air\n    7. 3-ring binder with round 1.5-inch rings that hold up to 275 sheets of paper\n    8. Designed for light, everyday use; ideal for organizing projects, presentations, and more\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": true,
+        "target_product_appropriate": true,
+        "retrieval_quality": 2,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "txt_004_light_blue_running_shoes",
+      "query_type": "text_only",
+      "category": "shoes",
+      "query": "Do you have light blue running shoes for women?",
+      "image_path": null,
+      "target_product_id": "B08BVKSRLD",
+      "target_title": "ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001)",
+      "target_product": {
+        "product_id": "B08BVKSRLD",
+        "title": "ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001)",
+        "llm_evidence": "We sell ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001). It is important to note that its Product ID is B08BVKSRLD.. Its brand is ELISE.  This product type may be categorized as a shoes product. It weighs 500.00 grams, which is  equivalent to 1.10 pounds. Its length is 246.00 millimeters, which is equivalent to 9.69 inches. Its width is 74.00 millimeters, which is equivalent to 2.91 inches. Its height is 22.00 millimeters, which is equivalent to 0.87 inches. Its color may be described as Light Blue, or more simply Blue. It consists of Fabric. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shoes\n    3. Athletic\n    4. Running\n    5. Road Running\nThere are several bullet points associated with this item:\n    1. Outer Material: Textile\n    2. Closure Type: Slip On\n    3. Heel type: flats\n    4. Toe Style: Open Toe\n    5. Warranty Type: Manufacturer\n    6. Warranty Description: 45 days\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for light blue women running shoes. Target image id from mini_dict_text_image.json: 81l6ys8620L.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "light blue running shoes women",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B08BVK2X21",
+        "chosen_product_title": "ELISE Women's Light Blue Running Shoes-7 UK (40 EU) (8 US) (ES-S20-002)",
+        "initial_llm_response": "<B08BVK2X21>",
+        "final_response": "Well, honey, I've got just the thing for you! Check out the ELISE Women's Light Blue Running Shoes. They're as stylish as they are comfortable, perfect for hitting the road or just strutting your stuff. These beauties are slip-on, so you can slide right into them and be on your way. Plus, they're light as a feather, weighing in at just 500 grams.\n\nWith a lovely light blue color, they're sure to catch some eyes. And don't worry about a thing, because they come with a 45-day manufacturer warranty. So, what do you say? Ready to step out in style?",
+        "timings": {
+          "total_seconds": 4.453212
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B08BVK2X21",
+          "title": "ELISE Women's Light Blue Running Shoes-7 UK (40 EU) (8 US) (ES-S20-002)",
+          "score": 0.5737704038619995,
+          "product_type": "shoes",
+          "image_paths": [
+            "8c/8c8b9655.jpg",
+            "d4/d4542708.jpg",
+            "23/232a14d2.jpg",
+            "f7/f7148697.jpg",
+            "9e/9ec10e27.jpg",
+            "29/29565228.jpg"
+          ],
+          "llm_evidence": "We sell ELISE Women's Light Blue Running Shoes-7 UK (40 EU) (8 US) (ES-S20-002). It is important to note that its Product ID is B08BVK2X21.. Its brand is ELISE.  This product type may be categorized as a shoes product. It weighs 500.00 grams, which is  equivalent to 1.10 pounds. Its length is 266.00 millimeters, which is equivalent to 10.47 inches. Its width is 85.00 millimeters, which is equivalent to 3.35 inches. Its height is 22.00 millimeters, which is equivalent to 0.87 inches. Its color may be described as Light Blue, or more simply Blue. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shoes\n    3. Athletic\n    4. Running\n    5. Road Running\nThere are several bullet points associated with this item:\n    1. Outer Material: Textile\n    2. Closure Type: Slip On\n    3. Heel type: flats\n    4. Toe Style: Open Toe\n    5. Warranty Type: Manufacturer\n    6. Warranty Description: 45 days\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 2,
+          "product_id": "B08BVKSRLD",
+          "title": "ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001)",
+          "score": 0.569299042224884,
+          "product_type": "shoes",
+          "image_paths": [
+            "cc/ccb74b6f.jpg",
+            "87/8766f911.jpg",
+            "cb/cb38f8ce.jpg",
+            "18/181f21e2.jpg",
+            "c4/c42e62b2.jpg",
+            "54/54b0b8a0.jpg",
+            "cd/cd96629d.jpg",
+            "48/48916d9c.jpg"
+          ],
+          "llm_evidence": "We sell ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001). It is important to note that its Product ID is B08BVKSRLD.. Its brand is ELISE.  This product type may be categorized as a shoes product. It weighs 500.00 grams, which is  equivalent to 1.10 pounds. Its length is 246.00 millimeters, which is equivalent to 9.69 inches. Its width is 74.00 millimeters, which is equivalent to 2.91 inches. Its height is 22.00 millimeters, which is equivalent to 0.87 inches. Its color may be described as Light Blue, or more simply Blue. It consists of Fabric. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shoes\n    3. Athletic\n    4. Running\n    5. Road Running\nThere are several bullet points associated with this item:\n    1. Outer Material: Textile\n    2. Closure Type: Slip On\n    3. Heel type: flats\n    4. Toe Style: Open Toe\n    5. Warranty Type: Manufacturer\n    6. Warranty Description: 45 days\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "target product"
+        },
+        {
+          "rank": 3,
+          "product_id": "B07PHRTW54",
+          "title": "Amazon Brand - 206 Collective Women's Flora, White Cavas, 12 M US",
+          "score": 0.5527002811431885,
+          "product_type": "technical sport shoe",
+          "image_paths": [
+            "69/69787ec4.jpg",
+            "25/25fd8c8e.jpg",
+            "0a/0af9a602.jpg",
+            "ff/ff1ba065.jpg",
+            "25/25cd4444.jpg",
+            "eb/eb99e664.jpg",
+            "45/454aa5cf.jpg",
+            "09/099b5200.jpg"
+          ],
+          "llm_evidence": "We sell 206 Collective Women's Flora, White Cavas, 12 M US. It is important to note that its Product ID is B07PHRTW54.. Its brand is 206 Collective.  This product type may be categorized as a technical sport shoe product. It weighs 11.00 ounces, which is  equivalent to 0.69 pounds. Its color may be described as White Cavas, or more simply White. The fabric type is 100% Canvas. There are several bullet points associated with this item:\n    1. Memory Foam insole\n    2. Classic Styling\n    3. Canvas\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 4,
+          "product_id": "B07PKYWXLJ",
+          "title": "Amazon Brand - 206 Collective Women's Flora, White Cavas, 7 M US",
+          "score": 0.5527002811431885,
+          "product_type": "technical sport shoe",
+          "image_paths": [
+            "69/69787ec4.jpg",
+            "25/25fd8c8e.jpg",
+            "0a/0af9a602.jpg",
+            "ff/ff1ba065.jpg",
+            "25/25cd4444.jpg",
+            "eb/eb99e664.jpg",
+            "45/454aa5cf.jpg",
+            "9a/9ae5c12b.jpg",
+            "09/099b5200.jpg"
+          ],
+          "llm_evidence": "We sell 206 Collective Women's Flora, White Cavas, 7 M US. It is important to note that its Product ID is B07PKYWXLJ.. Its brand is 206 Collective.  This product type may be categorized as a technical sport shoe product. It weighs 11.00 ounces, which is  equivalent to 0.69 pounds. Its color may be described as White Cavas, or more simply White. The fabric type is 100% Canvas. There are several bullet points associated with this item:\n    1. Memory Foam insole\n    2. Classic Styling\n    3. Canvas\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 5,
+          "product_id": "B07PDKPC9T",
+          "title": "Amazon Brand - 206 Collective Women's Flora, White Cavas, 7.5 M US",
+          "score": 0.5527002811431885,
+          "product_type": "technical sport shoe",
+          "image_paths": [
+            "69/69787ec4.jpg",
+            "25/25fd8c8e.jpg",
+            "0a/0af9a602.jpg",
+            "ff/ff1ba065.jpg",
+            "25/25cd4444.jpg",
+            "eb/eb99e664.jpg",
+            "45/454aa5cf.jpg",
+            "9a/9ae5c12b.jpg",
+            "09/099b5200.jpg"
+          ],
+          "llm_evidence": "We sell 206 Collective Women's Flora, White Cavas, 7.5 M US. It is important to note that its Product ID is B07PDKPC9T.. Its brand is 206 Collective.  This product type may be categorized as a technical sport shoe product. It weighs 11.00 ounces, which is  equivalent to 0.69 pounds. Its color may be described as White Cavas, or more simply White. The fabric type is 100% Canvas. There are several bullet points associated with this item:\n    1. Memory Foam insole\n    2. Classic Styling\n    3. Canvas\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": true,
+        "target_product_appropriate": true,
+        "retrieval_quality": 2,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "txt_005_black_ballet_flats",
+      "query_type": "text_only",
+      "category": "shoes",
+      "query": "I want plain black ballet flats, something easy to wear and not too dressy",
+      "image_path": null,
+      "target_product_id": "B082PMY1L2",
+      "target_title": "Amazon Essentials Women's Ballet Flat, Black Knit, 9.5 Wide US",
+      "target_product": {
+        "product_id": "B082PMY1L2",
+        "title": "Amazon Essentials Women's Ballet Flat, Black Knit, 9.5 Wide US",
+        "llm_evidence": "We sell Women's Ballet Flat, Black Knit, 9.5 Wide US. It is important to note that its Product ID is B082PMY1L2.. Its brand is Amazon Essentials.  This product type may be categorized as a shoes product. Its color may be described as Black Knit, or more simply Black. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shoes\n    3. Flats\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shops\nThe fabric type is 100% Polyester. There are several bullet points associated with this item:\n    1. Classic and versatile ballet flat designed for daily wear and superior fit; a staple in every woman’s wardrobe\n    2. Casual silhouette with round toe shape and flattering profile and soft, mesh upper with gently elasticized topline\n    3. Sweat absorbent faux leather sock with natural hand and feel and padded insole with 8mm high quality memory for supreme cushioning and comfort\n    4. Genuine leather counter lining with “Heel-Pillow” comfort technology\n    5. Ultra flexible, lightweight, and durable TR outsole with minimalist heel, and traction grip forepart\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for black knit ballet flats. Target image id from mini_dict_text_image.json: 61CROuWRV2L.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "plain black ballet flats",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B078GYFXRT",
+        "chosen_product_title": "Amazon Brand - 206 Collective Women's Joy Ballet Flat",
+        "initial_llm_response": "<B078GYFXRT>",
+        "final_response": "Well, honey, I've got just the thing for you! Check out the 206 Collective Women's Joy Ballet Flat. It's a classic and stylish choice, perfect for daily wear with its casual silhouette and round toe shape. Made from 100% leather, these black beauties are as comfortable as they are chic, with a soft faux leather upper and a gently elasticized topline for a snug fit. They're just the ticket for keeping things simple yet elegant. What do you think?",
+        "timings": {
+          "total_seconds": 4.447732
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B072V81JKL",
+          "title": "Amazon Brand - The Fix Women's Evelyn Studded Ballet Flat, Black, 7.5 M US",
+          "score": 0.5751714706420898,
+          "product_type": "shoes",
+          "image_paths": [
+            "2f/2f972888.jpg",
+            "12/12235c5e.jpg",
+            "24/2489aef2.jpg",
+            "78/78be6fc6.jpg",
+            "f9/f9d75fc2.jpg",
+            "80/80b252bb.jpg",
+            "b6/b68eb1a9.jpg",
+            "61/61fbf594.jpg"
+          ],
+          "llm_evidence": "We sell The Fix Women's Evelyn Studded Ballet Flat, Black, 7.5 M US. It is important to note that its Product ID is B072V81JKL.. Its brand is The Fix.  This product type may be categorized as a shoes product. Its color may be described as Black Suede, or more simply black. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shoes\n    3. Flats\n    4. Ballet\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shops\nThe fabric type is Suede. The model year of this item is 2017. There are several bullet points associated with this item:\n    1. Metallic studs highlight the vamp to keep this classic ballet flat from becoming understated.\n    2. Grosgrain trim at topline\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "user wanted plain... understated would've been good"
+        },
+        {
+          "rank": 2,
+          "product_id": "B074KQR52B",
+          "title": "Amazon Brand - The Fix Women's Evie Military-Inspired Ankle Strap Pointed-Toe Flat , Black, 7.5 B US",
+          "score": 0.5706309676170349,
+          "product_type": "shoes",
+          "image_paths": [
+            "b7/b710d7f3.jpg",
+            "a2/a2a3250d.jpg",
+            "28/280a74b3.jpg",
+            "b3/b33a2539.jpg",
+            "a6/a66960c2.jpg",
+            "d8/d8f74dc4.jpg",
+            "88/887baacf.jpg",
+            "80/805a31d6.jpg"
+          ],
+          "llm_evidence": "We sell The Fix Women's Evie Military-Inspired Ankle Strap Pointed-Toe Flat , Black, 7.5 B US. It is important to note that its Product ID is B074KQR52B.. Its brand is The Fix.  This product type may be categorized as a shoes product. It weighs 6.60 ounces, which is  equivalent to 0.41 pounds. Its color may be described as Black Satin, or more simply Black. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shoes\n    3. Flats\n    4. Ballet\nThe fabric type is Satin. The model year of this item is 2017. There are several bullet points associated with this item:\n    1. An ankle strap with a military-inspired button closure highlight this flat with pointed toe\n    2. Back zipper for ease of entry\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "pointed toe flat, not ballet flat"
+        },
+        {
+          "rank": 3,
+          "product_id": "B078GYFXRT",
+          "title": "Amazon Brand - 206 Collective Women's Joy Ballet Flat",
+          "score": 0.5689936876296997,
+          "product_type": "shoes",
+          "image_paths": [
+            "61/618aa0f6.jpg",
+            "60/6045e977.jpg",
+            "cc/cc31dc31.jpg",
+            "fc/fcdf5870.jpg",
+            "9e/9eb542a2.jpg",
+            "70/705a2c36.jpg",
+            "09/09f8fd5c.jpg",
+            "e9/e9644e31.jpg"
+          ],
+          "llm_evidence": "We sell 206 Collective Women's Joy Ballet Flat. It is important to note that its Product ID is B078GYFXRT.. Its brand is 206 Collective.  This product type may be categorized as a shoes product. It weighs 3.80 ounces, which is  equivalent to 0.24 pounds. Its color may be described as Black Leather, or more simply Black. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shoes\n    3. Flats\n    4. Ballet\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shops\nThe fabric type is 100% Leather Upper. There are several bullet points associated with this item:\n    1. Classic and stylish ballet flat designed for daily wear and better fit\n    2. Casual silhouette with round toe shape and flattering profile\n    3. Soft, faux leather upper with gently elasticized topline, faux suede microfiber lining for extra comfort and breathability\n    4. 206 Collective: Quality with every step\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": ""
+        },
+        {
+          "rank": 4,
+          "product_id": "B072V82T9W",
+          "title": "Amazon Brand - The Fix Women's Evelyn Studded Ballet Flat, Black Party Glitter, 6 M US",
+          "score": 0.5685770511627197,
+          "product_type": "shoes",
+          "image_paths": [
+            "23/23c09bd4.jpg",
+            "46/461ee357.jpg",
+            "28/281fe608.jpg",
+            "b7/b7b9fd8a.jpg",
+            "1a/1a1d60ce.jpg",
+            "0c/0c1492a7.jpg",
+            "22/22df0af7.jpg",
+            "d7/d7006844.jpg"
+          ],
+          "llm_evidence": "We sell The Fix Women's Evelyn Studded Ballet Flat, Black Party Glitter, 6 M US. It is important to note that its Product ID is B072V82T9W.. Its brand is The Fix.  This product type may be categorized as a shoes product. Its color may be described as Black Party Glitter Textile, or more simply black. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shoes\n    3. Flats\n    4. Ballet\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shops\nThe fabric type is 100% Fabric. The model year of this item is 2017. There are several bullet points associated with this item:\n    1. Metallic studs highlight the vamp to keep this classic ballet flat from becoming understated.\n    2. Grosgrain trim at topline\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "not plain"
+        },
+        {
+          "rank": 5,
+          "product_id": "B01MYFK43P",
+          "title": "Amazon Brand - 206 Collective Women's Madison Suede Ballet Flat",
+          "score": 0.5623874664306641,
+          "product_type": "shoes",
+          "image_paths": [
+            "4d/4dc36e54.jpg"
+          ],
+          "llm_evidence": "We sell 206 Collective Women's Madison Suede Ballet Flat. It is important to note that its Product ID is B01MYFK43P.. Its brand is 206 Collective.  This product type may be categorized as a shoes product. It weighs 4.10 ounces, which is  equivalent to 0.26 pounds. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shoes\n    3. Flats\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shops\nThe fabric type is Suede. There are several bullet points associated with this item:\n    1. Full grain leather\n    2. Elasticized topline\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": ""
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": true,
+        "target_product_appropriate": true,
+        "retrieval_quality": 2,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "txt_006_round_black_mirror",
+      "query_type": "text_only",
+      "category": "home_decor",
+      "query": "I am decorating a room and want a modern round black mirror",
+      "image_path": null,
+      "target_product_id": "B084HV6KDV",
+      "target_title": "Amazon Brand – Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black",
+      "target_product": {
+        "product_id": "B084HV6KDV",
+        "title": "Amazon Brand – Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black",
+        "llm_evidence": "We sell Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black. It is important to note that its Product ID is B084HV6KDV.. Its brand is Rivet.  This product type may be categorized as a home mirror product. Its length is 22.25 inches. Its width is 1.25 inches. Its height is 22.25 inches. Its color may be described as Black. It consists of metal. The finish type of this item is Painted. There are several bullet points associated with this item:\n    1. This beautiful round metal-framed mirror with streamlined flair is a lovely accent piece to have in any home. Spruce up your living space with some functional modern art and enjoy the results.\n    2. 22.25\" diameter x 1.25\"D\n    3. Embellished with hand-painted accents to produce a modern effect\n    4. Can be used as a standard mirror or an accent piece\n    5. This elegant work of modern craftsmanship is 100% handmade and hand painted.\n    6. Avoid moisture and wipe clean with a soft, dry cloth. Hardware not included.\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for a modern round black mirror. Target image id from mini_dict_text_image.json: 715euK792gL.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "modern round black mirror",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B084HTZ8PW",
+        "chosen_product_title": "Amazon Brand - Rivet Modern Round Hanging Mirror with Shelf, 18\" Diameter, Black",
+        "initial_llm_response": "<B084HTZ8PW>",
+        "final_response": "Well, honey, I've got just the thing to add a touch of modern elegance to your room. How about the Rivet Modern Round Hanging Mirror with Shelf? It's got a sleek black metal frame and a handy little shelf for some extra functionality. At 18 inches in diameter, it's just the right size to make a statement without overpowering your space.\n\nThis mirror is not just a pretty face; it's handmade and hand-painted, bringing a bit of craftsmanship into your home. Perfect for a bedroom, hallway, or living room, it'll reflect your good taste beautifully. Just remember to keep it dry and give it a gentle wipe with a soft cloth to keep it looking its best. What do you think, darling?",
+        "timings": {
+          "total_seconds": 5.027117
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B084HTZ8PW",
+          "title": "Amazon Brand - Rivet Modern Round Hanging Mirror with Shelf, 18\" Diameter, Black",
+          "score": 0.6067764759063721,
+          "product_type": "home mirror",
+          "image_paths": [
+            "68/6871ae1b.jpg",
+            "3e/3e934213.jpg",
+            "dd/ddd0089f.jpg",
+            "7a/7a631d51.jpg",
+            "99/99943894.jpg",
+            "a1/a188ca3f.jpg"
+          ],
+          "llm_evidence": "We sell Rivet Modern Round Hanging Mirror with Shelf, 18\" Diameter, Black. It is important to note that its Product ID is B084HTZ8PW.. Its brand is Rivet.  This product type may be categorized as a home mirror product. It weighs 8.05 pounds. Its length is 18.00 inches. Its width is 5.25 inches. Its height is 18.00 inches. Its color may be described as Black. It consists of metal and glass. The finish type of this item is Painted. There are several bullet points associated with this item:\n    1. This simple metal-framed handmade circular mirror with modern flair is a beautiful accent piece to have in any home. With a shelf for functionality and a sleek modern design, it will be a perfect addition to any bedroom, hallway, or living room.\n    2. 18\" diameter x 5.25\"D\n    3. Mirrored glass with a black metal frame\n    4. Especially charming as a home-accent piece\n    5. This elegant work of modern craftsmanship is 100% handmade and hand painted.\n    6. Avoid moisture and wipe clean with a soft, dry cloth. Hardware not included.\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "not target, but equivalent"
+        },
+        {
+          "rank": 2,
+          "product_id": "B084HV6KDL",
+          "title": "Amazon Brand – Rivet Modern Geometric Framed Hanging Mirror, 23.75\"H, Black",
+          "score": 0.6040958166122437,
+          "product_type": "home mirror",
+          "image_paths": [
+            "18/187a60f7.jpg",
+            "ef/ef8be930.jpg",
+            "31/314f6d2c.jpg",
+            "41/41b7f505.jpg",
+            "05/05f9d5e0.jpg",
+            "58/589e97af.jpg"
+          ],
+          "llm_evidence": "We sell Rivet Modern Geometric Framed Hanging Mirror, 23.75\"H, Black. It is important to note that its Product ID is B084HV6KDL.. Its brand is Rivet.  This product type may be categorized as a home mirror product. Its length is 20.00 inches. Its width is 2.00 inches. Its height is 23.75 inches. Its color may be described as Black. It consists of metal and glass. The finish type of this item is Painted. There are several bullet points associated with this item:\n    1. This beautiful geometric mirror is a wonderfully modern take on a timeless classic. Perfect in any room of your house, it will be an instant eye-catcher and will bring the desired pizzazz to any living space.\n    2. 23.75\"H x 20\"W x 2\"D\n    3. Made of hand-painted metal and glass\n    4. Can be used as a standard mirror or an accent piece\n    5. This beautiful work of craftsmanship is the perfect marriage of functionality and grace.\n    6. Avoid moisture and wipe clean with a soft, dry cloth. Hardware not included.\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "not target, but equivalent"
+        },
+        {
+          "rank": 3,
+          "product_id": "B084HV6KDV",
+          "title": "Amazon Brand – Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black",
+          "score": 0.6031256318092346,
+          "product_type": "home mirror",
+          "image_paths": [
+            "9a/9aac3613.jpg",
+            "ed/edb528c3.jpg",
+            "65/65401ce8.jpg",
+            "6e/6e06e770.jpg",
+            "e1/e17e6969.jpg",
+            "9d/9d350d8e.jpg"
+          ],
+          "llm_evidence": "We sell Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black. It is important to note that its Product ID is B084HV6KDV.. Its brand is Rivet.  This product type may be categorized as a home mirror product. Its length is 22.25 inches. Its width is 1.25 inches. Its height is 22.25 inches. Its color may be described as Black. It consists of metal. The finish type of this item is Painted. There are several bullet points associated with this item:\n    1. This beautiful round metal-framed mirror with streamlined flair is a lovely accent piece to have in any home. Spruce up your living space with some functional modern art and enjoy the results.\n    2. 22.25\" diameter x 1.25\"D\n    3. Embellished with hand-painted accents to produce a modern effect\n    4. Can be used as a standard mirror or an accent piece\n    5. This elegant work of modern craftsmanship is 100% handmade and hand painted.\n    6. Avoid moisture and wipe clean with a soft, dry cloth. Hardware not included.\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "target product"
+        },
+        {
+          "rank": 4,
+          "product_id": "B073WGSN2W",
+          "title": "Amazon Brand – Stone & Beam Industrial Square Floating Metal Wall Mirror, 12 Inch Height, Black",
+          "score": 0.6027626395225525,
+          "product_type": "home mirror",
+          "image_paths": [
+            "be/bece77a1.jpg",
+            "26/26c7955b.jpg",
+            "22/22e279ab.jpg",
+            "7e/7ebf22b8.jpg",
+            "1a/1a65b6ee.jpg",
+            "ed/edc41e3d.jpg",
+            "20/20a81bbd.jpg",
+            "b0/b0bd5dd3.jpg"
+          ],
+          "llm_evidence": "We sell Stone & Beam Industrial Square Floating Metal Wall Mirror, 12 Inch Height, Black. It is important to note that its Product ID is B073WGSN2W.. Its brand is Stone & Beam.  This product type may be categorized as a home mirror product. It weighs 3.08 pounds. Its length is 12.00 inches. Its width is 4.00 inches. Its height is 12.00 inches. Its color may be described as Glass, or more simply Black. It consists of iron and glass. The finish type of this item is black. This item's shape may be described as 'round'. There are several bullet points associated with this item:\n    1. With round glass appearing to float in a four-sided black iron frame, this industrial mirror will turn heads. It's also super functional and sized to be easily displayed on a bureau top, bookcase shelf, or mounted on a wall.\n    2. Industrial design with black iron frame\n    3. Glass, iron frame with black finish\n    4. 12\"W x 4\"D x 12\"H\n    5. Avoid moisture. Wipes clean with soft, dry cloth. Hanging hardware not included.\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "not target, but equivalent"
+        },
+        {
+          "rank": 5,
+          "product_id": "B073WHB43V",
+          "title": "Amazon Brand – Rivet Modern Metal Floral Pattern Round Hanging Wall Mirror, 30.5 Inch Height, Black",
+          "score": 0.5915855169296265,
+          "product_type": "home mirror",
+          "image_paths": [
+            "b4/b42944cb.jpg",
+            "39/397f2e7f.jpg",
+            "d5/d5148049.jpg",
+            "f3/f31a3c4f.jpg",
+            "96/96a0aa5d.jpg",
+            "2c/2c4e13cb.jpg"
+          ],
+          "llm_evidence": "We sell Rivet Modern Metal Floral Pattern Round Hanging Wall Mirror, 30.5 Inch Height, Black. It is important to note that its Product ID is B073WHB43V.. Its brand is Rivet.  This product type may be categorized as a home mirror product. It weighs 6.12 pounds. Its length is 30.50 inches. Its width is 1.00 inches. Its height is 30.50 inches. Its color may be described as Glass. It consists of iron and metal and glass. This item's shape may be described as 'Round'. There are several bullet points associated with this item:\n    1. Swooping metal curves suggest patterns of flowers and leaves. The black metal finish, accented with gold tips, allows this mirror to blend with classic and modern styles. It will add a graceful touch to any mantel, or in a bedroom or hallway.\n    2. Modern shapes with classic gold accents\n    3. Glass, iron frame with black and gold finish\n    4. 30.5\"W x 1\"D x 30.5\"H\n    5. Avoid moisture. Wipes clean with soft, dry cloth. Hanging hardware not included.\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "not target, but equivalent"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": true,
+        "target_product_appropriate": true,
+        "retrieval_quality": 2,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "txt_007_marble_gold_coffee_table",
+      "query_type": "text_only",
+      "category": "living_room_furniture",
+      "query": "Can you show me a coffee table with a marble look and gold accents?",
+      "image_path": null,
+      "target_product_id": "B07DBFQV23",
+      "target_title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold",
+      "target_product": {
+        "product_id": "B07DBFQV23",
+        "title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold",
+        "llm_evidence": "We sell Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold. It is important to note that its Product ID is B07DBFQV23.. Its brand is Ravenna Home.  This product type may be categorized as a table product. It weighs 23.10 pounds. Its length is 22.80 inches. Its width is 47.20 inches. Its height is 15.70 inches. Its color may be described as Marble. It consists of Plywood/ Gold Painted Metal Frame. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Living Room Furniture\n    3. Tables\n    4. Coffee Tables\nThere are several bullet points associated with this item:\n    1. Marbled grain laminate on plywood; gold painted metal frame\n    2. An eye-catching coffee table ready to display books and décor or to hold snack trays\n    3. Gold and marble finish add glamour to a sleek modern piece\n    4. 15-30 minutes assembly required\n    5. Free returns for 30 days. 1-year warranty.\n    6. 23.6\"L x 47.2\"W x 15.7\"H\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for a marble-and-gold coffee table. Target image id from mini_dict_text_image.json: 71oaXxgAYvL.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "marble look coffee table gold accents",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B07DBFQV23",
+        "chosen_product_title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold",
+        "initial_llm_response": "<B07DBFQV23>",
+        "final_response": "Well, honey, I've got just the thing to add a touch of glamour to your living room. Take a look at the Ravenna Home Parker Coffee Table. It's got that marble look you're after, paired with gold accents that'll make your space shine like a star. \n\nThis beauty features a marbled grain laminate on plywood with a gold-painted metal frame, making it both stylish and sturdy. It's perfect for displaying your favorite books or holding a tray of snacks while you entertain. Plus, it's got that sleek modern vibe that'll have everyone talking.\n\nAssembly is a breeze, taking just 15-30 minutes, and if you change your mind, there are free returns for 30 days and a 1-year warranty. So, what do you say? Ready to add a little sparkle to your space?",
+        "timings": {
+          "total_seconds": 4.648059
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07DBF5J5P",
+          "title": "Amazon Brand – Ravenna Home Parker Round Shelf Storage Coffee Table, 31.5\"W, Faux Marble/Gold/Glass",
+          "score": 0.5015857219696045,
+          "product_type": "table",
+          "image_paths": [
+            "ab/ab7bd5bb.jpg",
+            "b4/b49765ba.jpg",
+            "5c/5c785d0f.jpg",
+            "5a/5a5585b5.jpg",
+            "68/68db7b2c.jpg",
+            "ad/ad046806.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Parker Round Shelf Storage Coffee Table, 31.5\"W, Faux Marble/Gold/Glass. It is important to note that its Product ID is B07DBF5J5P.. Its brand is Ravenna Home.  This product type may be categorized as a table product. It weighs 27.70 pounds. Its length is 31.50 inches. Its width is 31.50 inches. Its height is 15.70 inches. Its color may be described as Marble. It consists of Plywood; Tempered glass; Metal frame. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Living Room Furniture\n    3. Tables\n    4. Coffee Tables\nThis item's shape may be described as 'Round'. There are several bullet points associated with this item:\n    1. Marbled grain laminate on plywood; tempered glass; gold painted metal frame\n    2. A high-style piece ready to provide display and storage space; stain and scratch resistant\n    3. Glass, marble and gold finishes add glamour to a sleek modern piece\n    4. 15-30 minutes assembly required\n    5. Free returns for 30 days. 1-year warranty.\n    6. 31.5\"L x 31.5\"W x 15.7\"H\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "not target, but equivalent"
+        },
+        {
+          "rank": 2,
+          "product_id": "B07DBFQV23",
+          "title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold",
+          "score": 0.49079638719558716,
+          "product_type": "table",
+          "image_paths": [
+            "bc/bc220405.jpg",
+            "50/501410f7.jpg",
+            "48/48b0cdd5.jpg",
+            "ec/ec053aaf.jpg",
+            "5c/5c3d7a1d.jpg",
+            "68/68db7b2c.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold. It is important to note that its Product ID is B07DBFQV23.. Its brand is Ravenna Home.  This product type may be categorized as a table product. It weighs 23.10 pounds. Its length is 22.80 inches. Its width is 47.20 inches. Its height is 15.70 inches. Its color may be described as Marble. It consists of Plywood/ Gold Painted Metal Frame. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Living Room Furniture\n    3. Tables\n    4. Coffee Tables\nThere are several bullet points associated with this item:\n    1. Marbled grain laminate on plywood; gold painted metal frame\n    2. An eye-catching coffee table ready to display books and décor or to hold snack trays\n    3. Gold and marble finish add glamour to a sleek modern piece\n    4. 15-30 minutes assembly required\n    5. Free returns for 30 days. 1-year warranty.\n    6. 23.6\"L x 47.2\"W x 15.7\"H\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "target product"
+        },
+        {
+          "rank": 3,
+          "product_id": "B07DBDZ3T2",
+          "title": "Amazon Brand – Ravenna Home Parker Shelf Storage End Table, 23.6\"W, Marble/Glass/Gold",
+          "score": 0.46637609601020813,
+          "product_type": "table",
+          "image_paths": [
+            "4b/4b1819fe.jpg",
+            "9d/9dc1ca5f.jpg",
+            "94/94646da6.jpg",
+            "9d/9d54038d.jpg",
+            "68/68db7b2c.jpg",
+            "4e/4edc643a.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Parker Shelf Storage End Table, 23.6\"W, Marble/Glass/Gold. It is important to note that its Product ID is B07DBDZ3T2.. Its brand is Ravenna Home.  This product type may be categorized as a table product. It weighs 11158.00 grams, which is  equivalent to 24.60 pounds. Its length is 23.60 inches. Its width is 23.60 inches. Its height is 15.70 inches. Its color may be described as Marble. It consists of Metal and Glass. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Living Room Furniture\n    3. Tables\n    4. End Tables\nThis item's shape may be described as 'Rectangle'. There are several bullet points associated with this item:\n    1. Marbled grain laminate on plywood; tempered glass; gold-painted metal frame\n    2. A high-style piece ready to provide display and storage space; stain and scratch resistant\n    3. Marble treatment and gold add glamour to a sleek modern piece\n    4. 15-30 minutes assembly required\n    5. Free returns for 30 days. 1-year warranty.\n    6. 23.6\"L x 23.6\"W x 15.7\"H\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "end table not coffee table"
+        },
+        {
+          "rank": 4,
+          "product_id": "B07DBDR1DM",
+          "title": "Amazon Brand – Ravenna Home Parker Round Shelf Storage Coffee Table, 31.5\"W, Glass and Gold",
+          "score": 0.45734792947769165,
+          "product_type": "table",
+          "image_paths": [
+            "2e/2e5f7436.jpg",
+            "2b/2b94466b.jpg",
+            "f8/f85f937f.jpg",
+            "f5/f5801c08.jpg",
+            "5c/5c0ebc3e.jpg",
+            "ce/ce5921e2.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Parker Round Shelf Storage Coffee Table, 31.5\"W, Glass and Gold. It is important to note that its Product ID is B07DBDR1DM.. Its brand is Ravenna Home.  This product type may be categorized as a table product. It weighs 38.50 pounds. Its length is 31.50 inches. Its width is 31.50 inches. Its height is 15.70 inches. Its color may be described as Glass. It consists of Glass. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Living Room Furniture\n    3. Tables\n    4. Coffee Tables\nThis item's shape may be described as 'Round'. There are several bullet points associated with this item:\n    1. Top and lower shelf are tempered glass; gold painted frame\n    2. Glass and gold add glamour to a sleek modern piece\n    3. 15-30 minutes assembly required\n    4. Free returns for 30 days. 1-year warranty.\n    5. 31.5\"L x 31.5\"W x 15.7\"H\n    6. A high style piece ready to provide display and storage space; stain and scratch resistant\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "no marble"
+        },
+        {
+          "rank": 5,
+          "product_id": "B07DBDMN5F",
+          "title": "Amazon Brand – Ravenna Home Parker Coffee Table, 47.2\"W, Glass &amp; Gold",
+          "score": 0.4520111680030823,
+          "product_type": "table",
+          "image_paths": [
+            "30/3056bb59.jpg",
+            "f5/f5801c08.jpg",
+            "cb/cba3ba1a.jpg",
+            "d4/d4eccf85.jpg",
+            "7e/7e32915d.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Parker Coffee Table, 47.2\"W, Glass &amp; Gold. It is important to note that its Product ID is B07DBDMN5F.. Its brand is Ravenna Home.  This product type may be categorized as a table product. It weighs 37.40 pounds. Its length is 23.60 inches. Its width is 47.20 inches. Its height is 15.70 inches. Its color may be described as Glass. It consists of Metal and Glass. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Living Room Furniture\n    3. Tables\n    4. Coffee Tables\nThere are several bullet points associated with this item:\n    1. Tempered glass; gold painted metal frame\n    2. A high-style piece ready to provide display and storage space; stain and scratch resistant\n    3. Glass and gold add glamour to a sleek modern piece\n    4. 15-30 minutes assembly required\n    5. Free returns for 30 days. 1-year warranty.\n    6. 23.6\"L x 47.2\"W x 15.7\"H\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "no marble"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": true,
+        "target_product_appropriate": true,
+        "retrieval_quality": 2,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "txt_008_black_cream_geometric_rug",
+      "query_type": "text_only",
+      "category": "rugs",
+      "query": "I need a black and cream area rug with a geometric pattern",
+      "image_path": null,
+      "target_product_id": "B07QJLYXGY",
+      "target_title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream",
+      "target_product": {
+        "product_id": "B07QJLYXGY",
+        "title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream",
+        "llm_evidence": "We sell Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream. It is important to note that its Product ID is B07QJLYXGY.. Its brand is Rivet.  This product type may be categorized as a rug product. It weighs 15.80 pounds. Its length is 48.00 inches. Its width is 72.00 inches. Its height is 0.30 inches. Its color may be described as Black/Cream. It consists of Cotton. This item has a pattern that can be characterized as 'Geometric'. This item's shape may be described as 'Rectangular'. There are several bullet points associated with this item:\n    1. This rug’s bold repeating geometric pattern is in chic colors of black and cream, ensuring that it will blend with both contemporary and classic decors. A wool-and-cotton blend creates a semiplush feel perfect for any space that needs an accent or a touch of color.\n    2. 4'W x 6'L\n    3. 80% wool, 20% cotton\n    4. Handtufted with a geometric pattern\n    5. The medium 0.3\" pile suits any indoor space.\n    6. Pair with rug pad (sold separately)\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for a black and cream geometric rug. Target image id from mini_dict_text_image.json: A1lm5KoOVmL.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "black cream geometric area rug",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B07QJLYXGY",
+        "chosen_product_title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream",
+        "initial_llm_response": "<B07QJLYXGY>",
+        "final_response": "Well, honey, I've got just the thing for you! Check out the Rivet Contemporary Handtufted Cotton-and-Wool Area Rug. It's got that black and cream color scheme you're after, with a bold geometric feathered pattern that'll add a touch of flair to any room. At 4' x 6', it's just the right size to make a statement without overwhelming your space.\n\nMade from a cozy blend of 80% wool and 20% cotton, this rug has a semiplush feel that'll make your feet happy. And with a medium 0.3\" pile, it's perfect for any indoor space that needs a little accent or a splash of style. Just remember, darling, to pair it with a rug pad for the best results. What do you think?",
+        "timings": {
+          "total_seconds": 3.559312
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07P22CXGL",
+          "title": "Ravenna Home Forsyth Rug, 5'W X 7'6\"L, Geometric Medallion Design",
+          "score": 0.56583571434021,
+          "product_type": "rug",
+          "image_paths": [
+            "a0/a0a83e62.jpg",
+            "02/023136eb.jpg",
+            "66/6610ca90.jpg",
+            "2d/2dfdaf26.jpg",
+            "35/351655c2.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Forsyth Rug, 5'W X 7'6\"L, Geometric Medallion Design. It is important to note that its Product ID is B07P22CXGL.. Its brand is Ravenna Home.  This product type may be categorized as a rug product. It weighs 11.00 pounds. Its length is 90.00 inches. Its width is 60.00 inches. Its height is 0.25 inches. Its color may be described as Dark Blue. It consists of polyester. This item's shape may be described as 'Rectangular'. There are several bullet points associated with this item:\n    1. 5'W X 7'6\"L\n    2. 100% microfiber polyester\n    3. Power-loomed low .25\" pile; suits any indoor space\n    4. The low .25\" pile makes this transitional rug ideal for high traffic areas.\n    5. Pair with a rug pad (sold separately)\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 2,
+          "product_id": "B07QB8K1B3",
+          "title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Rug Runner with Geometric Feathered Pattern, 2'6\" x 8', Black and Cream",
+          "score": 0.5609155893325806,
+          "product_type": "rug",
+          "image_paths": [
+            "ad/ada823ce.jpg",
+            "89/8956e076.jpg",
+            "1d/1d3e1e8c.jpg",
+            "cd/cd212007.jpg",
+            "b7/b7242137.jpg",
+            "86/86101a3c.jpg"
+          ],
+          "llm_evidence": "We sell Rivet Contemporary Handtufted Cotton-and-Wool Rug Runner with Geometric Feathered Pattern, 2'6\" x 8', Black and Cream. It is important to note that its Product ID is B07QB8K1B3.. Its brand is Rivet.  This product type may be categorized as a rug product. It weighs 13.20 pounds. Its length is 30.00 inches. Its width is 96.00 inches. Its height is 0.30 inches. Its color may be described as Black/Cream. It consists of Cotton. This item has a pattern that can be characterized as 'Geometric'. This item's shape may be described as 'Runner'. There are several bullet points associated with this item:\n    1. This rug’s bold repeating geometric pattern is in chic colors of black and cream, ensuring that it will blend with both contemporary and classic decors. A wool-and-cotton blend creates a semiplush feel perfect for any space that needs an accent or a touch of color.\n    2. 2'6\"W x 8'L\n    3. 80% wool, 20% cotton\n    4. Handtufted with a geometric pattern\n    5. The medium 0.3\" pile suits any indoor space.\n    6. Pair with rug pad (sold separately)\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "Is runner, not area rug"
+        },
+        {
+          "rank": 3,
+          "product_id": "B07NXTKC72",
+          "title": "Ravenna Home Arabesque Rug, 5'W x 7'6\"L, Interlocking Circles Design",
+          "score": 0.5564402341842651,
+          "product_type": "rug",
+          "image_paths": [
+            "b6/b6e56e34.jpg",
+            "b1/b125eed6.jpg",
+            "40/401ae62a.jpg",
+            "74/74c582c1.jpg",
+            "81/81ce7a26.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Arabesque Rug, 5'W x 7'6\"L, Interlocking Circles Design. It is important to note that its Product ID is B07NXTKC72.. Its brand is Ravenna Home.  This product type may be categorized as a rug product. It weighs 11.00 pounds. Its length is 90.00 inches. Its width is 60.00 inches. Its height is 0.25 inches. Its color may be described as Grey. It consists of Polyester. This item has a pattern that can be characterized as 'interlocking circles'. This item's shape may be described as 'Rectangular'. There are several bullet points associated with this item:\n    1. 5'W x 7'6\"L\n    2. 100% microfiber polyester\n    3. Power-loomed low .25\" pile; suits any indoor space\n    4. The low .25\" pile makes this transitional rug ideal for high traffic areas.\n    5. Pair with a rug pad (sold separately)\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 4,
+          "product_id": "B07QJLYXGY",
+          "title": "Amazon Brand – Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream",
+          "score": 0.55535888671875,
+          "product_type": "rug",
+          "image_paths": [
+            "42/4265f2a0.jpg",
+            "ff/ffe67ae7.jpg",
+            "6a/6a4ab9dc.jpg",
+            "13/13d0d48d.jpg",
+            "78/78afccfd.jpg"
+          ],
+          "llm_evidence": "We sell Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream. It is important to note that its Product ID is B07QJLYXGY.. Its brand is Rivet.  This product type may be categorized as a rug product. It weighs 15.80 pounds. Its length is 48.00 inches. Its width is 72.00 inches. Its height is 0.30 inches. Its color may be described as Black/Cream. It consists of Cotton. This item has a pattern that can be characterized as 'Geometric'. This item's shape may be described as 'Rectangular'. There are several bullet points associated with this item:\n    1. This rug’s bold repeating geometric pattern is in chic colors of black and cream, ensuring that it will blend with both contemporary and classic decors. A wool-and-cotton blend creates a semiplush feel perfect for any space that needs an accent or a touch of color.\n    2. 4'W x 6'L\n    3. 80% wool, 20% cotton\n    4. Handtufted with a geometric pattern\n    5. The medium 0.3\" pile suits any indoor space.\n    6. Pair with rug pad (sold separately)\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "target product"
+        },
+        {
+          "rank": 5,
+          "product_id": "B07M7NV8CJ",
+          "title": "Ravenna Home Baron Rug, 5'W x 7'6\"L, Fine Lattice Design",
+          "score": 0.5481331944465637,
+          "product_type": "rug",
+          "image_paths": [
+            "a9/a9a1e855.jpg",
+            "c3/c3284705.jpg",
+            "83/833d0500.jpg",
+            "31/31e4a60d.jpg",
+            "78/78183a1f.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Baron Rug, 5'W x 7'6\"L, Fine Lattice Design. It is important to note that its Product ID is B07M7NV8CJ.. Its brand is Ravenna Home.  This product type may be categorized as a rug product. It weighs 11.00 pounds. Its length is 90.00 inches. Its width is 60.00 inches. Its height is 0.25 inches. It consists of Polyester. There are several bullet points associated with this item:\n    1. 5'W x 7'6\"L\n    2. 100% microfiber polyester\n    3. Power-loomed low .25\" pile; suits any indoor space\n    4. The low .25\" pile makes this transitional rug ideal for high traffic areas.\n    5. Pair with a rug pad (sold separately)\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "no color specified"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": true,
+        "target_product_appropriate": true,
+        "retrieval_quality": 1,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "txt_009_light_blue_table_lamp",
+      "query_type": "text_only",
+      "category": "lighting",
+      "query": "I am looking for a table lamp with a light blue shade and a mid-century feel",
+      "image_path": null,
+      "target_product_id": "B07DWHQPCQ",
+      "target_title": "Amazon Brand – Ravenna Home Mid Century Modern White Ceramic Table Lamp With LED Light Bulb - 21 Inches, Light Blue Linen Shade",
+      "target_product": {
+        "product_id": "B07DWHQPCQ",
+        "title": "Amazon Brand – Ravenna Home Mid Century Modern White Ceramic Table Lamp With LED Light Bulb - 21 Inches, Light Blue Linen Shade",
+        "llm_evidence": "We sell Ravenna Home Mid Century Modern White Ceramic Table Lamp With LED Light Bulb - 21 Inches, Light Blue Linen Shade. It is important to note that its Product ID is B07DWHQPCQ.. Its brand is Ravenna Home.  This product type may be categorized as a lamp product. Its length is 12.88 inches. Its width is 13.00 inches. Its height is 14.38 inches. Its color may be described as Light Blue Shade. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Table Lamps\nThe finish type of this item is Brushed. There are several bullet points associated with this item:\n    1. Narrow base with wide squared shade is an eye-catching accent to mid-century and modern décor\n    2. White textured ceramic table lamp topped by a pastel blue linen shade, brushed nickel hardware\n    3. LED bulb included\n    4. Dimensions: 11.00\"W x 11.00\"D x 21.00\"H\n    5. Assemble in 15 minutes or less\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for a light-blue-shade table lamp. Target image id from mini_dict_text_image.json: 41tjn6cXWyL.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "mid-century table lamp light blue shade",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B07ML7J59B",
+        "chosen_product_title": "Amazon Brand – Ravenna Home Table Lamp with a Drum Shade, Bulb Included, 19.75\"H, Pastel Blue",
+        "initial_llm_response": "<B07ML7J59B>",
+        "final_response": "Well, honey, I've got just the thing to light up your life! Check out the Ravenna Home Table Lamp with a Drum Shade. It's got that mid-century charm you're after, with a smooth ceramic base in a high-gloss pastel blue. The brushed-nickel accents add a touch of elegance, and the off-white linen shade gives it a classic look.\n\nStanding at 19.75 inches tall, it's just the right size to make a statement without overpowering your space. Plus, it comes with a 60-watt equivalent LED bulb, so you'll be ready to shine in no time. And don't worry, sugar, it's easy to assemble in 15 minutes or less. Perfect for indoor use, this lamp will cast a lovely ambient glow in any room. What do you think?",
+        "timings": {
+          "total_seconds": 3.503315
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07ML7J59B",
+          "title": "Amazon Brand – Ravenna Home Table Lamp with a Drum Shade, Bulb Included, 19.75\"H, Pastel Blue",
+          "score": 0.4704568386077881,
+          "product_type": "lamp",
+          "image_paths": [
+            "43/43c008e7.jpg",
+            "a0/a06c7ab2.jpg",
+            "27/27f667aa.jpg",
+            "81/81220deb.jpg",
+            "21/21596e09.jpg",
+            "eb/eb1ce40b.jpg",
+            "aa/aac3ca77.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Table Lamp with a Drum Shade, Bulb Included, 19.75\"H, Pastel Blue. It is important to note that its Product ID is B07ML7J59B.. Its brand is Ravenna Home.  This product type may be categorized as a lamp product. Its length is 9.75 inches. Its width is 9.75 inches. Its height is 15.25 inches. Its color may be described as Pastel Blue. It consists of ceramic. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Table Lamps\nThe finish type of this item is Brushed. This item's shape may be described as 'drum'. There are several bullet points associated with this item:\n    1. 9\"W x 9\"D x 19.75\"H\n    2. Smooth ceramic with a high-gloss pastel-blue glaze; brushed-nickel accents; off-white linen shade\n    3. The drum shade casts an ambient glow.\n    4. 1 60-watt equivalent LED bulb included\n    5. Assemble in 15 minutes or less\n    6. For indoor use only\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 2,
+          "product_id": "B073751DML",
+          "title": "Amazon Brand – Stone & Beam Round Ceramic Table Lamp With Light Bulb and White Shade - 11 x 11 x 20 Inches, Cyan Blue",
+          "score": 0.46427416801452637,
+          "product_type": "lamp",
+          "image_paths": [
+            "0c/0ce590f1.jpg",
+            "9b/9bc1dfb5.jpg",
+            "1a/1a8a540a.jpg",
+            "a8/a85994bd.jpg",
+            "9f/9f449af6.jpg",
+            "19/19682d74.jpg"
+          ],
+          "llm_evidence": "We sell Stone & Beam Round Ceramic Table Lamp With Light Bulb and White Shade - 11 x 11 x 20 Inches, Cyan Blue. It is important to note that its Product ID is B073751DML.. Its brand is Stone & Beam.  This product type may be categorized as a lamp product. It weighs 6.00 pounds. Its length is 11.00 inches. Its width is 11.00 inches. Its height is 20.00 inches. Its color may be described as Cyan Blue. It consists of Ceramic+Metal+Fabric. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Table Lamps\nThe finish type of this item is Cyan Blue. This item's shape may be described as 'Table Lamp'. There are several bullet points associated with this item:\n    1. The curves and smoothness of this beautiful lamp will add a graceful touch to any room. With a linen shade, it combines modern with classic in a way that will easily blend with your existing style\n    2. Ceramic and polished nickel base, metal hardware, white fabric shade, light bulb included\n    3. Modern design with classic touches make this lamp blend with any room\n    4. 20\"H x 11\"W x 11\"D\n    5. Simple assembly\n    6. For indoor use only\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 3,
+          "product_id": "B07MF1RKM3",
+          "title": "Amazon Brand – Stone & Beam Textured Ceramic Table Lamp, Bulb Included, 16.75\"H, Blue",
+          "score": 0.461823433637619,
+          "product_type": "lamp",
+          "image_paths": [
+            "f6/f6ddf948.jpg",
+            "78/7831b137.jpg",
+            "ca/ca276f52.jpg",
+            "5f/5f7f0a88.jpg",
+            "05/05f04f51.jpg",
+            "ce/cea44259.jpg",
+            "a4/a47a6051.jpg"
+          ],
+          "llm_evidence": "We sell Stone & Beam Textured Ceramic Table Lamp, Bulb Included, 16.75\"H, Blue. It is important to note that its Product ID is B07MF1RKM3.. Its brand is Stone & Beam.  This product type may be categorized as a lamp product. Its length is 9.25 inches. Its width is 9.25 inches. Its height is 14.00 inches. Its color may be described as Blue. It consists of ceramic. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Table Lamps\nThe finish type of this item is Brushed. This item's shape may be described as 'drum'. There are several bullet points associated with this item:\n    1. The base of this lovely lamp has a shape reminiscent of an old-fashioned milk can, but the reactive tonal-blue glaze is decidedly modern, creating a subtle pattern that will be slightly different on every lamp. The off-white linen drum shade diffuses light for a soft glow\n    2. 8.5\"W x 8.5\"D x 16.75\"H\n    3. Textured ceramic table lamp with a tonal blue reactive glaze; brushed-nickel accents; off-white linen drum shade\n    4. Assemble in 15 minutes or less\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 4,
+          "product_id": "B07MBFF1C9",
+          "title": "Amazon Brand – Ravenna Home Glass Table Lamp, Bulb Included, 16.5\"H, Pastel Turquoise",
+          "score": 0.4614911377429962,
+          "product_type": "lamp",
+          "image_paths": [
+            "28/28449bfc.jpg",
+            "6f/6f5039c6.jpg",
+            "a1/a170e8a8.jpg",
+            "7b/7b7ee963.jpg",
+            "3c/3cb6d415.jpg",
+            "b6/b63a3493.jpg",
+            "94/9445275a.jpg"
+          ],
+          "llm_evidence": "We sell Ravenna Home Glass Table Lamp, Bulb Included, 16.5\"H, Pastel Turquoise. It is important to note that its Product ID is B07MBFF1C9.. Its brand is Ravenna Home.  This product type may be categorized as a lamp product. Its length is 8.75 inches. Its width is 8.75 inches. Its height is 14.00 inches. Its color may be described as Pastel Turquoise. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Table Lamps\nThe finish type of this item is Brushed. This item's shape may be described as 'drum'. There are several bullet points associated with this item:\n    1. 8\"W x 8\"D x 16.5\"H\n    2. Table lamp in transparent pastel-turquoise glass and brushed-nickel accents. Off-white linen drum shade casts an ambient glow\n    3. Traditional design makes this the perfect accent lamp to blend with a variety of decor and styles\n    4. (1) 60-watt equivalent LED bulb included\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 5,
+          "product_id": "B07GNNPB38",
+          "title": "Amazon Brand – Stone & Beam Ceramic Bedside Table Lamp With Light Bulb And White Shade, 20\"H, Slate Blue",
+          "score": 0.46003225445747375,
+          "product_type": "lamp",
+          "image_paths": [
+            "11/1138a8c1.jpg",
+            "d8/d8043ee4.jpg",
+            "d4/d455ddf7.jpg",
+            "55/558c834e.jpg",
+            "a7/a7a49c6a.jpg",
+            "2d/2dedd082.jpg"
+          ],
+          "llm_evidence": "We sell Stone & Beam Ceramic Bedside Table Lamp With Light Bulb And White Shade, 20\"H, Slate Blue. It is important to note that its Product ID is B07GNNPB38.. Its brand is Stone & Beam.  This product type may be categorized as a lamp product. Its length is 11.00 inches. Its width is 11.00 inches. Its height is 20.00 inches. Its color may be described as Slate Blue. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Table Lamps\nThe finish type of this item is Polished. There are several bullet points associated with this item:\n    1. The curves and smoothness of this beautiful lamp will add a graceful touch to any room. With a linen shade, it combines modern with classic in a way that will easily blend with your existing style\n    2. Ceramic and polished nickel base, metal hardware, white fabric shade, light bulb included\n    3. Modern design with classic touches make this lamp blend with any room\n    4. 20\"H x 11\"W x 11\"D\n    5. Simple assembly\n    6. For indoor use only\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": false,
+        "target_product_appropriate": true,
+        "retrieval_quality": 1,
+        "llm_product_decision_correct": false,
+        "llm_response_quality": 1,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": "user asked for blue shade, but all selections were white shade and (mainly) blue base"
+      }
+    },
+    {
+      "case_id": "txt_010_red_bluetooth_speaker",
+      "query_type": "text_only",
+      "category": "electronics",
+      "query": "Do you have a small red Bluetooth speaker?",
+      "image_path": null,
+      "target_product_id": "B00LLJ58ME",
+      "target_title": "AmazonBasics Micro Bluetooth Speaker - Red",
+      "target_product": {
+        "product_id": "B00LLJ58ME",
+        "title": "AmazonBasics Micro Bluetooth Speaker - Red",
+        "llm_evidence": "We sell Micro Bluetooth Speaker - Red. It is important to note that its Product ID is B00LLJ58ME.. Its brand is AmazonBasics.  This product type may be categorized as a speakers product. Its length is 3.35 inches. Its width is 3.35 inches. Its height is 1.22 inches. Its color may be described as Red. The categorical groups of this item, going from most general to least general are:\n    1. Portable Audio & Video\n    2. MP3 & MP4 Player Accessories\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Portable Audio & Video\n    2. Portable Speakers & Docks\n    3. Portable Bluetooth Speakers\nThere are several bullet points associated with this item:\n    1. Petite, lightweight speakers for maximum portability\n    2. Contains one internal 3W speaker\n    3. Connects to any Bluetooth-enabled device from up to 30 feet (10 meters) away or by using or 3.5mm stereo cable (not included)\n    4. Up to 10 hours of wireless play on a single charge when listening to music\n    5. Comes with a Micro USB to USB charging cable and carrying pouch. Dimensions: 3.3\" (diameter) x 1.2\" (height)\n"
+      },
+      "expected_available": true,
+      "requires_image": true,
+      "case_notes": "Matched modality comparison case for a red micro Bluetooth speaker. Target image id from mini_dict_text_image.json: 81+IL0ZonRL.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "small red Bluetooth speaker",
+        "embedding_mode": "text",
+        "decision": "recommend",
+        "chosen_product_id": "B00JZVPJD8",
+        "chosen_product_title": "AmazonBasics Mini Bluetooth Speaker - Red",
+        "initial_llm_response": "<B00JZVPJD8>",
+        "final_response": "Well, honey, I've got just the thing for you! How about the Mini Bluetooth Speaker in a ravishing red? It's from AmazonBasics, and it's as portable as a little black dress—perfect for taking your tunes wherever you go. \n\nThis little number packs a punch with a 3W speaker and even lets you take hands-free calls. You can connect it to any Bluetooth-enabled device from up to 30 feet away, or use a 3.5mm stereo cable if you prefer. And don't worry about running out of juice too soon; it gives you up to 10 hours of wireless play on a single charge.\n\nIt comes with a Micro USB to USB charging cable and a carrying pouch, so you're all set for a night on the town or a cozy evening in. What do you say, darling? Does this sound like the perfect match for your musical needs?",
+        "timings": {
+          "total_seconds": 4.924553
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B00JZVPJD8",
+          "title": "AmazonBasics Mini Bluetooth Speaker - Red",
+          "score": 0.5288769006729126,
+          "product_type": "portable audio",
+          "image_paths": [
+            "c6/c66a0651.jpg",
+            "8d/8d81e05a.jpg",
+            "51/5127c4f1.jpg",
+            "e2/e23a4de1.jpg",
+            "1a/1a34a60a.jpg",
+            "71/71a4f89a.jpg",
+            "8e/8eb29bd1.jpg",
+            "59/5948e55e.jpg"
+          ],
+          "llm_evidence": "We sell Mini Bluetooth Speaker - Red. It is important to note that its Product ID is B00JZVPJD8.. Its brand is AmazonBasics.  This product type may be categorized as a portable audio product. It weighs 9.30 ounces, which is  equivalent to 0.58 pounds. Its length is 3.30 inches. Its width is 1.80 inches. Its height is 2.60 inches. Its color may be described as Red. There are several bullet points associated with this item:\n    1. Portable design to listen to your music wherever you are\n    2. Contains one internal 3W speaker and built-in microphone for hands-free calls\n    3. Connects to any Bluetooth-enabled device from up to 30 feet (10 meters) away or by using or 3.5mm stereo cable (not included)\n    4. Up to 10 hours of wireless play on a single charge when listening to music or making calls\n    5. Comes with a Micro USB to USB charging cable and carrying pouch. Speaker Dimensions: 3.3 x 1.7 x 2.6 inches (LxWxH)\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "not target, but equivalent"
+        },
+        {
+          "rank": 2,
+          "product_id": "B00LLJ58ME",
+          "title": "AmazonBasics Micro Bluetooth Speaker - Red",
+          "score": 0.5142093300819397,
+          "product_type": "speakers",
+          "image_paths": [
+            "4d/4db2bcc4.jpg",
+            "a2/a2fb5f05.jpg",
+            "75/7531ca7e.jpg",
+            "80/80f79a68.jpg",
+            "40/408ff3cc.jpg",
+            "c7/c7571a0f.jpg",
+            "ac/ac6d1d04.jpg",
+            "9e/9eac132e.jpg"
+          ],
+          "llm_evidence": "We sell Micro Bluetooth Speaker - Red. It is important to note that its Product ID is B00LLJ58ME.. Its brand is AmazonBasics.  This product type may be categorized as a speakers product. Its length is 3.35 inches. Its width is 3.35 inches. Its height is 1.22 inches. Its color may be described as Red. The categorical groups of this item, going from most general to least general are:\n    1. Portable Audio & Video\n    2. MP3 & MP4 Player Accessories\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Portable Audio & Video\n    2. Portable Speakers & Docks\n    3. Portable Bluetooth Speakers\nThere are several bullet points associated with this item:\n    1. Petite, lightweight speakers for maximum portability\n    2. Contains one internal 3W speaker\n    3. Connects to any Bluetooth-enabled device from up to 30 feet (10 meters) away or by using or 3.5mm stereo cable (not included)\n    4. Up to 10 hours of wireless play on a single charge when listening to music\n    5. Comes with a Micro USB to USB charging cable and carrying pouch. Dimensions: 3.3\" (diameter) x 1.2\" (height)\n",
+          "retrieval_relevance": 2,
+          "retrieval_notes": "target product"
+        },
+        {
+          "rank": 3,
+          "product_id": "B078H6565T",
+          "title": "Bose SoundLink Micro Waterproof Bluetooth speaker (Bright Orange) with AmazonBasics Case (Black)",
+          "score": 0.480358749628067,
+          "product_type": "speakers",
+          "image_paths": [
+            "be/be91e9e7.jpg",
+            "77/77810c94.jpg",
+            "eb/eb431dd0.jpg",
+            "a2/a2659b6e.jpg",
+            "ca/ca07d386.jpg",
+            "b3/b32291da.jpg",
+            "d1/d1839452.jpg"
+          ],
+          "llm_evidence": "We sell Bose SoundLink Micro Waterproof Bluetooth speaker (Bright Orange) with  Case (Black). It is important to note that its Product ID is B078H6565T.. Its brand is AmazonBasics.  This product type may be categorized as a speakers product. Its length is 3.90 inches. Its width is 3.90 inches. Its height is 3.90 inches. Its color may be described as Bright Orange. The categorical groups of this item, going from most general to least general are:\n    1. Portable Audio & Video\n    2. MP3 & MP4 Player Accessories\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Portable Audio & Video\n    2. Portable Speakers & Docks\n    3. Portable Bluetooth Speakers\nThere are several bullet points associated with this item:\n    1. Crisp, balanced sound and unmatched bass for a Bluetooth speaker its size, plays loud & clear outdoors—for beach days or camping trips.\n    2. Waterproof speaker from the Inside out (Ipx7 rating), with soft, rugged exterior that resists dents, cracks and scratches\n    3. Protective leather case customized for Bose SoundLink Micro Bluetooth Speaker (not included)\n    4. Built-in kickstand for ideal speaker positioning; clear icons coordinate with your speaker’s controls for effortless functionality\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 4,
+          "product_id": "B078GYRXHM",
+          "title": "Bose SoundLink Micro Waterproof Bluetooth speaker (Bright Orange) with AmazonBasics Case (Orange)",
+          "score": 0.4773077666759491,
+          "product_type": "speakers",
+          "image_paths": [
+            "f0/f06dda53.jpg",
+            "3f/3ff02970.jpg",
+            "9e/9e7f8b98.jpg",
+            "77/77810c94.jpg",
+            "1b/1baadaa7.jpg",
+            "83/8370fd66.jpg",
+            "b3/b32291da.jpg"
+          ],
+          "llm_evidence": "We sell Bose SoundLink Micro Waterproof Bluetooth speaker (Bright Orange) with  Case (Orange). It is important to note that its Product ID is B078GYRXHM.. Its brand is AmazonBasics.  This product type may be categorized as a speakers product. Its length is 1.40 inches. Its width is 3.80 inches. Its height is 3.80 inches. Its color may be described as Orange. The categorical groups of this item, going from most general to least general are:\n    1. Portable Audio & Video\n    2. MP3 & MP4 Player Accessories\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Portable Audio & Video\n    2. Portable Speakers & Docks\n    3. Portable Bluetooth Speakers\nThere are several bullet points associated with this item:\n    1. Crisp, balanced sound and unmatched bass for a Bluetooth speaker its size, plays loud & clear outdoors—for beach days or camping trips.\n    2. Waterproof speaker from the Inside out (Ipx7 rating), with soft, rugged exterior that resists dents, cracks and scratches\n    3. Protective leather case customized for Bose SoundLink Micro Bluetooth Speaker (not included)\n    4. Built-in kickstand for ideal speaker positioning; clear icons coordinate with your speaker’s controls for effortless functionality\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        },
+        {
+          "rank": 5,
+          "product_id": "B07BLDWLS2",
+          "title": "AmazonBasics Portable Wireless Bluetooth Speaker - Black (Renewed)",
+          "score": 0.47374284267425537,
+          "product_type": "speakers",
+          "image_paths": [
+            "ec/ec6c6f78.jpg",
+            "0d/0d9e73ff.jpg",
+            "8c/8c61da8b.jpg",
+            "7d/7d099abb.jpg",
+            "3b/3b513e75.jpg",
+            "56/56ef9fd2.jpg"
+          ],
+          "llm_evidence": "We sell Portable Wireless Bluetooth Speaker - Black (Renewed). It is important to note that its Product ID is B07BLDWLS2.. Its brand is AmazonBasics.  This product type may be categorized as a speakers product. It weighs 225.00 grams, which is  equivalent to 0.50 pounds. Its length is 6.30 inches. Its width is 1.50 inches. Its height is 2.60 inches. Its color may be described as Black. The categorical groups of this item, going from most general to least general are:\n    1. Portable Audio & Video\n    2. MP3 & MP4 Player Accessories\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Portable Audio & Video\n    2. Portable Speakers & Docks\n    3. Portable Bluetooth Speakers\nThere are several bullet points associated with this item:\n    1. This Certified Refurbished product is tested and certified to look and work like new. The refurbishing process includes functionality testing, basic cleaning, inspection, and repackaging. The product ships with all relevant accessories, a minimum 90-day warranty, and may arrive in a generic box. Only select sellers who maintain a high performance bar may offer Certified Refurbished products on Amazon.com\n    2. Portable Bluetooth speaker with 33-foot wireless range for streaming music, podcasts, and more from your compatible Bluetooth-enabled device\n    3. 2 internal full range 2.5-watt speakers for high-quality sound; provides rich bass without distortion, even at highest volume\n    4. 3.5mm aux in jack for connecting non-Bluetooth audio devices (AUX cable not included)\n    5. Rechargeable battery allows for up to 8 hours of playtime on a full charge; small and lightweight for take-anywhere convenience\n",
+          "retrieval_relevance": 1,
+          "retrieval_notes": "wrong color"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": true,
+        "target_product_appropriate": true,
+        "retrieval_quality": 2,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": false,
+        "human_notes": ""
+      }
+    },
+    {
+      "case_id": "txt_011_gaming_laptop",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "I'm looking for a gaming laptop, something with a real graphics card",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "target_product": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Missing-product case. Catalog has laptop accessories and electronics accessories, but no actual gaming laptop with dedicated GPU. Use an external/non-catalog image of a gaming laptop for image-based variants. Missing object label: gaming laptop with dedicated graphics card.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "gaming laptop with dedicated graphics card",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it seems we're having a bit of a dry spell finding the right gaming laptop for you. I apologize for the inconvenience. We're not quite hitting the jackpot with our current selection. But don't you worry, we'll keep looking for something that suits your gaming needs. In the meantime, is there anything else I can help you with? Maybe a cooling pad or a snazzy keyboard to go with that future laptop?",
+        "timings": {
+          "total_seconds": 4.247858
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B004HYFOZQ",
+          "title": "AmazonBasics Single-fan Laptop Cooling Stand (up to 17\"/43cm)",
+          "score": 0.46367043256759644,
+          "product_type": "computer cooling device",
+          "image_paths": [
+            "da/dae0b177.jpg",
+            "6d/6d3b205d.jpg",
+            "0d/0dd1de86.jpg",
+            "0e/0e493ffd.jpg",
+            "52/52cae6c8.jpg"
+          ],
+          "llm_evidence": "We sell Single-fan Laptop Cooling Stand (up to 17\"/43cm). It is important to note that its Product ID is B004HYFOZQ.. Its brand is AmazonBasics.  This product type may be categorized as a computer cooling device product. It weighs 1.23 pounds. Its length is 16.93 inches. Its width is 13.39 inches. Its height is 0.50 inches. Its color may be described as Black, or more simply black. The categorical groups of this item, going from most general to least general are:\n    1. Computers & Accessories\n    2. Laptop Accessories\n    3. Cooling Pads & External Fans\n    4. Cooling Pads\nThere are several bullet points associated with this item:\n    1. Sigal Fan which up to load 17\"/43cm laptop\n    2. Ships in Certified Frustration-Free Packaging\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 2,
+          "product_id": "B003M0NT1M",
+          "title": "AmazonBasics USB 2.0 Portable External DVD Optical Drive",
+          "score": 0.45540252327919006,
+          "product_type": "computer drive or storage",
+          "image_paths": [
+            "a5/a54436d3.jpg",
+            "cb/cb77a00f.jpg",
+            "e9/e9fc3ab1.jpg",
+            "b7/b7741827.jpg",
+            "db/dbbef1f3.jpg",
+            "87/87c49812.jpg"
+          ],
+          "llm_evidence": "We sell USB 2.0 Portable External DVD Optical Drive. It is important to note that its Product ID is B003M0NT1M.. Its brand is AmazonBasics.  This product type may be categorized as a computer drive or storage product. It weighs 0.68 pounds. Its length is 5.76 inches. Its width is 5.51 inches. Its height is 0.75 inches. Its color may be described as Black, or more simply black. The categorical groups of this item, going from most general to least general are:\n    1. Computers & Accessories\n    2. Computer Components\n    3. External Components\n    4. Optical Drives\n    5. CD & DVD Drives\nThe model year of this item is 2013. There are several bullet points associated with this item:\n    1. Full 8X DVD functionality in an ultra slim tray load design\n    2. USB powered; Single Layer Drive\n    3. Cyberlink Software included\n    4. Requirements for Windows: Windows: Microsoft Windows 2000 / Windows XP / Windows Vista/ Windows 7/ Windows 8\n    5. Requirement for Mac: Mac OS 10.X or higher, Mac model supports USB2.0 Mass Storage Class\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 3,
+          "product_id": "B00LU7B8X0",
+          "title": "AmazonBasics 17.3-Inch HP Laptop Case Bag, Black, 1-Pack",
+          "score": 0.4449414610862732,
+          "product_type": "handbag",
+          "image_paths": [
+            "f1/f18d61a9.jpg",
+            "f2/f297bc97.jpg",
+            "7b/7bae5ac0.jpg",
+            "99/993e5a7c.jpg",
+            "c0/c0d70e81.jpg",
+            "02/02a804e3.jpg",
+            "38/38fd23cf.jpg",
+            "42/42f6ae36.jpg",
+            "91/916d7f56.jpg"
+          ],
+          "llm_evidence": "We sell 17.3-Inch HP Laptop Case Bag, Black, 1-Pack. It is important to note that its Product ID is B00LU7B8X0.. Its brand is AmazonBasics.  This product type may be categorized as a handbag product. It weighs 1.10 pounds. Its length is 17.10 inches. Its width is 12.60 inches. Its height is 2.80 inches. Its color may be described as Black. The categorical groups of this item, going from most general to least general are:\n    1. Computers & Accessories\n    2. Laptop Accessories\n    3. Bags, Cases & Sleeves\n    4. Messenger & Shoulder Bags\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Curated_Group_3\n    2. Curated_277\nThe model year of this item is 2014. There are several bullet points associated with this item:\n    1. Slim, compact case is perfect for carrying laptops up to 17.3-inches without the unnecessary bulk\n    2. Accessory storage pockets for portable mouse, iPod, cell phone and pens\n    3. Includes padded shoulder strap\n    4. Internal Dimensions: 16.5\" x 2.3\" x 12.6\" (LxWxH)\n    5. External Dimensions: 17.5\" x 2.9\" x 13.5\" (LxWxH)\n    6. Slim, compact case is perfect for carrying laptops up to 17.3-inches without the unnecessary bulk\n    7. Accessory storage pockets for portable mouse, iPod, cell phone and pens\n    8. Includes padded shoulder strap\n    9. Internal Dimensions: 16.5 x 2.3 x 12.6-Inch\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 4,
+          "product_id": "B08HKSWD64",
+          "title": "AmazonBasics Gaming Keyboard (Renewed)",
+          "score": 0.44424375891685486,
+          "product_type": "keyboards",
+          "image_paths": [
+            "48/48a2b323.jpg",
+            "98/98b3b112.jpg",
+            "ca/caf9f0a7.jpg",
+            "2c/2c80960d.jpg"
+          ],
+          "llm_evidence": "We sell Gaming Keyboard (Renewed). It is important to note that its Product ID is B08HKSWD64.. Its brand is AmazonBasics.  This product type may be categorized as a keyboards product. Its length is 19.75 inches. Its width is 7.70 inches. Its height is 1.53 inches. Its color may be described as Black. The categorical groups of this item, going from most general to least general are:\n    1. Accessories\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. PC\n    2. Accessories\n    3. Gaming Keyboards\nThere are several bullet points associated with this item:\n    1. AmazonBasics Gaming Keyboard; built-to-last keys—switch life of 10-million life cycles; Windows lock switch for Game/Desktop mode (disables Windows/Context Menu keys)\n    2. Program custom macros to execute complex commands with AmazonBasics gaming software; includes 5 dedicated keys (G1 to G5) and 3 mode keys (M1 to M3) for up to 15 different macros\n    3. Anti-ghosting keys allow you to press 19 keys at once to execute complex moves with precision; one-touch media controls for quick access to play, pause, mute, and skip song\n    4. Customize keyboard lighting from a spectrum of 16.8 million colors; easily switch across 3 color profiles for increased visibility; software included (CD or download) for customizing light effects\n    5. Compatible with Windows 7, 8, and 10; backed by an AmazonBasics limited one-year warranty\n    6. Software is available for download below (refer to the Product description section)\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 5,
+          "product_id": "B0044BBPGE",
+          "title": "AmazonBasics Dual-Fan Laptop Cooling Pad (Up to 17 / 43cm)",
+          "score": 0.4440135359764099,
+          "product_type": "computer add on",
+          "image_paths": [
+            "3f/3f5bf5da.jpg",
+            "7f/7fa6735f.jpg",
+            "a3/a3e82d59.jpg",
+            "95/9541610e.jpg",
+            "5c/5c905d66.jpg",
+            "35/35a984e3.jpg"
+          ],
+          "llm_evidence": "We sell Dual-Fan Laptop Cooling Pad (Up to 17 / 43cm). It is important to note that its Product ID is B0044BBPGE.. Its brand is AmazonBasics.  This product type may be categorized as a computer add on product. It weighs 3.04 pounds. Its length is 13.80 inches. Its width is 11.40 inches. Its height is 1.70 inches. Its color may be described as Black. The categorical groups of this item, going from most general to least general are:\n    1. Computers & Accessories\n    2. Laptop Accessories\n    3. Cooling Pads & External Fans\n    4. Cooling Pads\nThere are several bullet points associated with this item:\n    1. Ships in Certified Frustration-Free Packaging\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": false,
+        "target_product_appropriate": true,
+        "retrieval_quality": 0,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": "right item not available"
+      }
+    },
+    {
+      "case_id": "txt_012_road_bike",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "Can you help me find a road bike for commuting and weekend rides?",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "target_product": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Missing-product case. Catalog has some bike-themed decor/accessories but no actual road bike. Use an external/non-catalog image of a road bike for image-based variants. Missing object label: road bike for commuting and weekend rides.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "road bike for commuting and weekend rides",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it seems like we're a bit off track with finding a road bike for you right now. I apologize for the mix-up. We're not quite hitting the mark with our current selection. But don't you worry, we'll keep looking to find something that suits your commuting and weekend ride needs. Is there anything else I can help you with in the meantime?",
+        "timings": {
+          "total_seconds": 3.128909
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B08919ZX9C",
+          "title": "AmazonBasics 20\" Abs Luggage",
+          "score": 0.4352337121963501,
+          "product_type": "suitcase",
+          "image_paths": [
+            "35/3595924e.jpg"
+          ],
+          "llm_evidence": "We sell 20\" Abs Luggage. It is important to note that its Product ID is B08919ZX9C.. Its brand is AmazonBasics.  This product type may be categorized as a suitcase product. The categorical groups of this item, going from most general to least general are:\n    1. Luggage & Travel Gear\n    2. Luggage\n    3. Carry-Ons\nThere are several bullet points associated with this item:\n    1. 20-inch hardside spinner check-in luggage for weekend getaways or as an international carry-on\n    2. Exterior dimensions (including wheels): 15 x 9.8 x 21.3 inches; Interior dimensions: 13.7 x 9.8 x 18.4 inches; interior capacity: 41.0 liters; Weight: 6.7 pounds\n    3. Protective hard shell with scratch-resistant finish; made of extra-thick ABS for enhanced strength and durability\n    4. Fully lined interior with divider; 150D-polyester interior organizer with 3 zippered pockets for conveniently storing smaller items\n    5. Expandable for up to 15% additional packing capacity; solid, strong zippers; telescoping handle for comfortable maneuvering; securely mounted short handle\n    6. 4 double spinner wheels ensure smooth-rolling mobility in any direction\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 2,
+          "product_id": "B07FP4XZP2",
+          "title": "AmazonBasics Hudson",
+          "score": 0.4335564970970154,
+          "product_type": "suitcase",
+          "image_paths": [
+            "86/86d56c14.jpg"
+          ],
+          "llm_evidence": "We sell Hudson. It is important to note that its Product ID is B07FP4XZP2.. Its brand is AmazonBasics.  This product type may be categorized as a suitcase product. The categorical groups of this item, going from most general to least general are:\n    1. Luggage & Travel Gear\n    2. Luggage\n    3. Carry-Ons\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 3,
+          "product_id": "B07ZWB3G2S",
+          "title": "find. Men's Gotham Moccasin, Blue Light Blue, US:5",
+          "score": 0.4258101284503937,
+          "product_type": "shoes",
+          "image_paths": [
+            "5f/5f06c47f.jpg",
+            "d7/d74b57cf.jpg",
+            "4f/4f6c747a.jpg",
+            "8e/8e7b6160.jpg",
+            "26/2692002e.jpg"
+          ],
+          "llm_evidence": "We sell Men's Gotham Moccasin, Blue Light Blue, US:5. It is important to note that its Product ID is B07ZWB3G2S..  This product type may be categorized as a shoes product. Its color may be described as Blue Light Blue, or more simply Blue. The categorical groups of this item, going from most general to least general are:\n    1. Men\n    2. Shoes\n    3. Oxfords\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nThe model year of this item is 2020. ",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 4,
+          "product_id": "B07MQ8KLWJ",
+          "title": "365 Everyday Value, Raspberry Beret Trail Mix, 14 oz",
+          "score": 0.42278987169265747,
+          "product_type": "pantry",
+          "image_paths": [
+            "ad/ad9ee4e6.jpg",
+            "d4/d442aa0c.jpg",
+            "3a/3ae80c0c.jpg",
+            "3e/3e39ec19.jpg",
+            "65/650d7c45.jpg",
+            "cb/cb1930e3.jpg"
+          ],
+          "llm_evidence": "We sell 365 Everyday Value, Raspberry Beret Trail Mix, 14 oz. It is important to note that its Product ID is B07MQ8KLWJ.. Its brand is 365 Everyday Value.  This product type may be categorized as a pantry product. There are several bullet points associated with this item:\n    1. Brought to you by Whole Foods Market.  Our standards are what set us apart, and our quality is what keeps us stocking pantries, fridges and freezers with the best natural and organic 365 Everyday Value products every day.\n    2. Roasted & salted peanuts mixed with roasted almonds, dark chocolate chips & sweet raspberries.\n    3. Resealable bag for freshness.\n    4. Low Sodium.\n    5. Certified GMO-Free, Certified Kosher, Certified Vegetarian.\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 5,
+          "product_id": "B088GK1GYC",
+          "title": "365 Everyday Value, Electrolyte Enhanced Water, 50.7 fl oz Casepack",
+          "score": 0.4179014563560486,
+          "product_type": "grocery",
+          "image_paths": [
+            "72/72f3b980.jpg"
+          ],
+          "llm_evidence": "We sell 365 Everyday Value, Electrolyte Enhanced Water, 50.7 fl oz Casepack. It is important to note that its Product ID is B088GK1GYC.. Its brand is 365 by Whole Foods Market.  This product type may be categorized as a grocery product. There are several bullet points associated with this item:\n    1. Brought to you by Whole Foods Market.  The packaging for this product has a fresh new look. During this transition, you may get the original packaging or the new packaging in your order, but the product and quality is staying exactly the same. Enjoy!\n    2. Deionized water with added electrolytes for optimum hydration\n    3. It's clear, simple, zero calorie refreshment\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": false,
+        "target_product_appropriate": true,
+        "retrieval_quality": 0,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": "right item not available"
+      }
+    },
+    {
+      "case_id": "txt_013_bike_helmet",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "I need a bike helmet for riding around the city",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "target_product": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Missing-product case. Catalog has hats/caps and motorcycle-adjacent accessories, but no clear bicycle helmet. Use an external/non-catalog image of a bike helmet for image-based variants. Missing object label: bike helmet for city riding.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "bike helmet city riding",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it seems like we're having a bit of a hard time finding the right bike helmet for you at the moment. I apologize for the inconvenience. But don't you worry, we'll keep looking until we find something that suits your needs. In the meantime, is there anything else I can help you with? Maybe something else you're looking to add to your shopping list?",
+        "timings": {
+          "total_seconds": 2.801726
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B079J7QX7H",
+          "title": "Starter Men's STAR-FIT Flat Brim Cap, Amazon Exclusive, Black/Vapor Grey, Small/Medium",
+          "score": 0.41993963718414307,
+          "product_type": "hat",
+          "image_paths": [
+            "10/10945ae7.jpg",
+            "a1/a19b6fd2.jpg",
+            "4c/4c6c16f6.jpg"
+          ],
+          "llm_evidence": "We sell Starter Men's STAR-FIT Flat Brim Cap, Amazon Exclusive, Black/Vapor Grey, Small/Medium. It is important to note that its Product ID is B079J7QX7H.. Its brand is Starter.  This product type may be categorized as a hat product. Its color may be described as Black/Vapor Grey, or more simply Black. The categorical groups of this item, going from most general to least general are:\n    1. Men\n    2. Accessories\n    3. Hats & Caps\n    4. Baseball Caps\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nThe fabric type is 100% Cotton. There are several bullet points associated with this item:\n    1. Starter hangtag doubles as a sticker!\n    2. Complete your look with this flat-brim fitted STAR-FIT baseball hat, featuring a 3D embroidered logo on the front and back and an interior band to hold the hat comfortably in place.\n    3. Six-panel crown construction, flat brim\n    4. 3D embroidery\n    5. Amazon Exclusive, Men's Activewear\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 2,
+          "product_id": "B079QB83WG",
+          "title": "Starter Men's Fitted Cap with Wicking and Built-in Headband, Amazon Exclusive, Vapor Grey, Small/Medium",
+          "score": 0.4085734188556671,
+          "product_type": "hat",
+          "image_paths": [
+            "0f/0fdeb607.jpg",
+            "3d/3d9790b8.jpg",
+            "f1/f12e2b82.jpg"
+          ],
+          "llm_evidence": "We sell Starter Men's Fitted Cap with Wicking and Built-in Headband, Amazon Exclusive, Vapor Grey, Small/Medium. It is important to note that its Product ID is B079QB83WG.. Its brand is Starter.  This product type may be categorized as a hat product. Its color may be described as Vapor Grey, or more simply Grey. The categorical groups of this item, going from most general to least general are:\n    1. Men\n    2. Accessories\n    3. Hats & Caps\n    4. Baseball Caps\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nThe fabric type is 100% Polyester. There are several bullet points associated with this item:\n    1. Starter hangtag doubles as a sticker!\n    2. This lightweight 6-panel performance hat keeps the sun out of your eyes with its curved visor and the sweat off of your face with its wicking sweatband. This fitted cap wicks away moisture to keep you cool and dry during your workout or run, and a comfortable sweat-free fit with its STAR-FIT headband.\n    3. DRI-STAR technology wicks away moisture to keep you cool and dry during your run or workout\n    4. Rubberized logo on front\n    5. Active-inspired mesh fabric for breathability\n    6. Amazon Exclusive, Men's Activewear\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 3,
+          "product_id": "B079JC76N5",
+          "title": "Starter Men's Snap-Back Flat Brim Cap, Amazon Exclusive, White with Black, One Size",
+          "score": 0.40749865770339966,
+          "product_type": "hat",
+          "image_paths": [
+            "90/90f5da39.jpg",
+            "b4/b4750554.jpg",
+            "8d/8d432c06.jpg"
+          ],
+          "llm_evidence": "We sell Starter Men's Snap-Back Flat Brim Cap, Amazon Exclusive, White with Black, One Size. It is important to note that its Product ID is B079JC76N5.. Its brand is Starter.  This product type may be categorized as a hat product. Its color may be described as White With Black, or more simply White. The categorical groups of this item, going from most general to least general are:\n    1. Men\n    2. Accessories\n    3. Hats & Caps\n    4. Baseball Caps\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nThe fabric type is 100% Cotton. There are several bullet points associated with this item:\n    1. Starter hangtag doubles as a sticker!\n    2. Complete your look with this flat-brim snapback baseball hat, featuring a 3D embroidered logo on the front and an adjustable closure for a perfect fit.\n    3. Six-panel crown construction, flat brim\n    4. Adjustable snap-back closure\n    5. 3D embroidery\n    6. Amazon Exclusive, Men's Activewear\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 4,
+          "product_id": "B079J8PB47",
+          "title": "Starter Men's Lightweight Performance Running Cap, Amazon Exclusive, White, One Size",
+          "score": 0.4059908390045166,
+          "product_type": "hat",
+          "image_paths": [
+            "15/15dee539.jpg",
+            "ce/ce778cdf.jpg",
+            "76/7606b4b3.jpg"
+          ],
+          "llm_evidence": "We sell Starter Men's Lightweight Performance Running Cap, Amazon Exclusive, White, One Size. It is important to note that its Product ID is B079J8PB47.. Its brand is Starter.  This product type may be categorized as a hat product. Its color may be described as White. The categorical groups of this item, going from most general to least general are:\n    1. Men\n    2. Accessories\n    3. Hats & Caps\n    4. Baseball Caps\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nThe fabric type is 100% Polyester. There are several bullet points associated with this item:\n    1. Starter hangtag doubles as a sticker!\n    2. This lightweight 6-panel running hat keeps the sun out of your eyes with its curved visor and the sweat off of your face with its wicking sweatband. This cap wicks away moisture to keep you cool and dry during your workout or run, and has an adjustable velcro closure for fast on-and-off.\n    3. DRI-STAR technology wicks away moisture to keep you cool and dry during your run or workout\n    4. Stay-put velcro closure for fast adjustability\n    5. 3D embroidered STARTER logo\n    6. Amazon Exclusive, Men's Activewear\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 5,
+          "product_id": "B079JKKBM9",
+          "title": "Starter Men's Lightweight Performance Running Cap, Amazon Exclusive, Bronze Green, One Size",
+          "score": 0.4017426669597626,
+          "product_type": "hat",
+          "image_paths": [
+            "2e/2e1fd7bf.jpg",
+            "29/2919d0ab.jpg",
+            "71/71bae565.jpg"
+          ],
+          "llm_evidence": "We sell Starter Men's Lightweight Performance Running Cap, Amazon Exclusive, Bronze Green, One Size. It is important to note that its Product ID is B079JKKBM9.. Its brand is Starter.  This product type may be categorized as a hat product. Its color may be described as Bronze Green, or more simply Green. The categorical groups of this item, going from most general to least general are:\n    1. Men\n    2. Accessories\n    3. Hats & Caps\n    4. Baseball Caps\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Men\n    2. Shops\nThe fabric type is 100% Polyester. There are several bullet points associated with this item:\n    1. Starter hangtag doubles as a sticker!\n    2. This lightweight 6-panel running hat keeps the sun out of your eyes with its curved visor and the sweat off of your face with its wicking sweatband. This cap wicks away moisture to keep you cool and dry during your workout or run, and has an adjustable velcro closure for fast on-and-off.\n    3. DRI-STAR technology wicks away moisture to keep you cool and dry during your run or workout\n    4. Stay-put velcro closure for fast adjustability\n    5. 3D embroidered STARTER logo\n    6. Amazon Exclusive, Men's Activewear\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": false,
+        "target_product_appropriate": true,
+        "retrieval_quality": 0,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": "right item not available"
+      }
+    },
+    {
+      "case_id": "txt_014_robot_vacuum",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "Do you have a robot vacuum that works well on hardwood floors?",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "target_product": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Missing-product case. Catalog has conventional vacuums and vacuum accessories, but no robot vacuum. Use an external/non-catalog image of a robot vacuum for image-based variants. Missing object label: robot vacuum for hardwood floors.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "robot vacuum for hardwood floors",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it looks like we're having a bit of a hard time finding a robot vacuum for those lovely hardwood floors of yours. I apologize for the inconvenience. Is there anything else I can help you with, or perhaps another type of product you're interested in? Let's see if we can find something that tickles your fancy.",
+        "timings": {
+          "total_seconds": 3.402395
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07FGJ369K",
+          "title": "AmazonBasics Replacement LG LT600P Refrigerator Water Filter Cartridge",
+          "score": 0.5179774761199951,
+          "product_type": "major home appliances",
+          "image_paths": [
+            "86/86d56c14.jpg"
+          ],
+          "llm_evidence": "We sell Replacement LG LT600P Refrigerator Water Filter Cartridge. It is important to note that its Product ID is B07FGJ369K.. Its brand is AmazonBasics.  This product type may be categorized as a major home appliances product. ",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 2,
+          "product_id": "B07YPV9F3L",
+          "title": "AmazonBasics Cylinder Bagless Vacuum Cleaner",
+          "score": 0.5179087519645691,
+          "product_type": "vacuum cleaner",
+          "image_paths": [
+            "35/3595924e.jpg"
+          ],
+          "llm_evidence": "We sell Cylinder Bagless Vacuum Cleaner. It is important to note that its Product ID is B07YPV9F3L.. Its brand is AmazonBasics.  This product type may be categorized as a vacuum cleaner product. The categorical groups of this item, going from most general to least general are:\n    1. Vacuums & Floor Care\n    2. Vacuums\n    3. Canister Vacuums\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 3,
+          "product_id": "B07DPY3NXD",
+          "title": "AmazonBasics Replacement LG LT500P Refrigerator Water Filter - Advanced Filtration",
+          "score": 0.5178555250167847,
+          "product_type": "major home appliances",
+          "image_paths": [
+            "44/44ce7122.jpg"
+          ],
+          "llm_evidence": "We sell Replacement LG LT500P Refrigerator Water Filter - Advanced Filtration. It is important to note that its Product ID is B07DPY3NXD.. Its brand is AmazonBasics.  This product type may be categorized as a major home appliances product. ",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 4,
+          "product_id": "B07B43XFCK",
+          "title": "AmazonBasics A21 Vacuum Dust Bags with Odour control for AEG",
+          "score": 0.5150260329246521,
+          "product_type": "kitchen",
+          "image_paths": [
+            "86/86d56c14.jpg"
+          ],
+          "llm_evidence": "We sell A21 Vacuum Dust Bags with Odour control for AEG. It is important to note that its Product ID is B07B43XFCK.. Its brand is AmazonBasics.  This product type may be categorized as a kitchen product. The categorical groups of this item, going from most general to least general are:\n    1. Vacuums & Floor Care\n    2. Vacuum Parts & Accessories\n    3. Bags\n    4. Canister Bags\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 5,
+          "product_id": "B072FBY7L4",
+          "title": "AmazonBasics Cylinder Bagless Vacuum Cleaner, 2.5 L, 700 W",
+          "score": 0.5081941485404968,
+          "product_type": "vacuum cleaner",
+          "image_paths": [
+            "32/32a2c677.jpg",
+            "79/79475ae2.jpg",
+            "4a/4a436f66.jpg",
+            "5d/5d874019.jpg",
+            "8e/8efb75d8.jpg",
+            "67/67d05e0d.jpg",
+            "8c/8c37b3a5.jpg"
+          ],
+          "llm_evidence": "We sell Cylinder Bagless Vacuum Cleaner, 2.5 L, 700 W. It is important to note that its Product ID is B072FBY7L4.. Its brand is AmazonBasics.  This product type may be categorized as a vacuum cleaner product. It weighs 13.23 pounds. Its length is 17.83 inches. Its width is 12.99 inches. Its height is 10.79 inches. The categorical groups of this item, going from most general to least general are:\n    1. Vacuums & Floor Care\n    2. Vacuums\n    3. Canister Vacuums\nThere are several bullet points associated with this item:\n    1. 700-watt cyclonic cylinder bagless vacuum cleaner; AAA performance in terms of energy efficiency and cleaning performance; 23.4 kWh usage per year\n    2. Triple action nozzle thoroughly absorbs coarse and fine dirt\n    3. Washable HEPA 12 filter captures more than 99.5% of all particles for cleaner air output\n    4. 2.5 L capacity; compact and light; easy to carry thanks to integrated handle; 5m cord length; 1.5m adjustable hose\n    5. Exceptionally quiet (78 decibels); rewindable cord; accessories include crevice tool and upholstery nozzle\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": false,
+        "target_product_appropriate": true,
+        "retrieval_quality": 0,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": "right item not available"
+      }
+    },
+    {
+      "case_id": "txt_015_snow_blower",
+      "query_type": "text_only",
+      "category": "missing_product",
+      "query": "Do you have a snow blower for clearing a driveway?",
+      "image_path": null,
+      "target_product_id": null,
+      "target_title": null,
+      "target_product": null,
+      "expected_available": false,
+      "requires_image": false,
+      "case_notes": "Missing-product case. Catalog has outdoor tools and a snow-thrower cover, but no actual snow blower. Use an external/non-catalog image of a snow blower for image-based variants. Missing object label: snow blower for clearing a driveway.",
+      "system_output": {
+        "search_performed": true,
+        "llm_search_query": "snow blower for driveway",
+        "embedding_mode": "text",
+        "decision": "wrong_track",
+        "chosen_product_id": null,
+        "chosen_product_title": null,
+        "initial_llm_response": "<WRONG TRACK>",
+        "final_response": "Well, sugar, it seems like we're having a bit of a snowstorm in our search results, and I can't find a snow blower for you right now. I apologize for the inconvenience. Is there anything else I can help you with, or perhaps another type of product you're interested in?",
+        "timings": {
+          "total_seconds": 3.442955
+        }
+      },
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "B07XBQV8R8",
+          "title": "AmazonBasics Electric Pressure Washer, 1600PSI",
+          "score": 0.5106307864189148,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "35/3595924e.jpg"
+          ],
+          "llm_evidence": "We sell Electric Pressure Washer, 1600PSI. It is important to note that its Product ID is B07XBQV8R8.. Its brand is AmazonBasics.  This product type may be categorized as a outdoor living product. It weighs 13.45 pounds. Its length is 11.35 inches. Its width is 9.78 inches. Its height is 19.22 inches. The categorical groups of this item, going from most general to least general are:\n    1. Outdoor Power Tools\n    2. Pressure Washers\nThere are several bullet points associated with this item:\n    1. Electric pressure washer for light-duty applications like cleaning cars, windows, patios, driveways, and more\n    2. 1400-watt motor delivers up to 1600 PSI for ultimate cleaning power, quickly and efficiently removing dust, dirt, and grime from surfaces\n    3. Easy to set up and use; pistol grip with trigger spray bar provides ultimate control and efficiency\n    4. Upright design with a small footprint for compact storage; sleek red and black exterior\n    5. Axle mounting wheel ensures smooth-rolling maneuverability; backed by an AmazonBasics 1-year limited warranty\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 2,
+          "product_id": "B019NTE5YU",
+          "title": "AmazonBasics Classic Accessories 52-158-141101-11 Atrium Two Stage Snow Thrower Cover",
+          "score": 0.4897927939891815,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "9d/9d579621.jpg",
+            "f0/f0df31da.jpg",
+            "58/5833603b.jpg",
+            "a1/a1af05f4.jpg",
+            "1e/1e76d210.jpg"
+          ],
+          "llm_evidence": "We sell Classic Accessories 52-158-141101-11 Atrium Two Stage Snow Thrower Cover. It is important to note that its Product ID is B019NTE5YU.. Its brand is AmazonBasics.  This product type may be categorized as a outdoor living product. It weighs 0.62 kilograms, which is  equivalent to 1.36 pounds. Its length is 47.00 inches. Its width is 32.00 inches. Its height is 37.00 inches. It consists of Fabric. The categorical groups of this item, going from most general to least general are:\n    1. Outdoor Power Tools\n    2. Replacement Parts & Accessories\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Snow Removal\n    2. Snow Blower Accessories\nThe fabric type is Polyester. There are several bullet points associated with this item:\n    1. Fits two-stage snow throwers up to 30 inches wide x 37 inches high.\n    2. Protects machines from weather, dust/dirt and sun damage.\n    3. Durable woven polyester fabric with a waterproof laminated backing.\n    4. Weather-resistant brass grommets and included cord lock help secure cover.\n    5. Storage bag included.\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 3,
+          "product_id": "B000MCL45G",
+          "title": "Strathwood 3-Piece Nozzle Set",
+          "score": 0.478486031293869,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "df/dfe8f9e0.jpg",
+            "00/002ef517.jpg",
+            "af/afde375b.jpg",
+            "92/927d2e9e.jpg"
+          ],
+          "llm_evidence": "We sell Strathwood 3-Piece Nozzle Set. It is important to note that its Product ID is B000MCL45G.. Its brand is Strathwood by Amazon.com.  This product type may be categorized as a outdoor living product.  This product type may be described with this phrase: 'This deluxe 3-piece water nozzle set includes three of the most popular sizes for your garden. Constructed of long lasting light weight zinc and brass connections and tips, they will give you years of service. Includes mutli-pattern sprayer, spray gun, and spray wand.'Its length is 18.12 inches. Its width is 9.06 inches. Its height is 2.92 inches. There are several bullet points associated with this item:\n    1. Set of 3 nozzles includes adjustable brass tip, spray gun, and spray wand\n    2. Constructed of lightweight zinc with lockable triggers\n    3. Adjustable flow and multi-patterned sprays make for a versatile nozzle set\n    4. Set features three of the most popular nozzle designs\n    5. Spray nozzles measure 6 inches; spray wand, 18 inches\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 4,
+          "product_id": "B089DNQD48",
+          "title": "AmazonBasics Garden Tool Collection - Plastic 3 Arm Rotatory Sprinkler (Renewed)",
+          "score": 0.4739014208316803,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "1f/1f182a60.jpg",
+            "e3/e35393c4.jpg",
+            "44/447c38f3.jpg",
+            "47/4771ce04.jpg",
+            "bd/bdb741d0.jpg"
+          ],
+          "llm_evidence": "We sell Garden Tool Collection - Plastic 3 Arm Rotatory Sprinkler (Renewed). It is important to note that its Product ID is B089DNQD48.. Its brand is AmazonBasics.  This product type may be categorized as a outdoor living product. Its length is 9.84 inches. Its width is 8.66 inches. Its height is 3.74 inches. The categorical groups of this item, going from most general to least general are:\n    1. Gardening & Lawn Care\n    2. Watering Equipment\n    3. Sprinklers\nThere are several bullet points associated with this item:\n    1. Plastic 3-arm rotary sprinkler for lawn and garden\n    2. Dual-color base provides easy visibility and stability\n    3. Disperses water evenly with a radius of 19.5 feet\n    4. Coverage range of up to 1216 feet\n    5. Two hose attachments for connecting more than one sprinkler\n    6. Durable plastic construction\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        },
+        {
+          "rank": 5,
+          "product_id": "B0812CGP9F",
+          "title": "AmazonBasics Garden Tool Collection - Heavy Duty Water Hose with Brass Coupling 50ft, 5/8'', 500psi",
+          "score": 0.47330451011657715,
+          "product_type": "outdoor living",
+          "image_paths": [
+            "ca/caebdb6d.jpg",
+            "fb/fbd44a56.jpg",
+            "d3/d38d5311.jpg",
+            "c9/c91fb1cd.jpg",
+            "cf/cf499a11.jpg"
+          ],
+          "llm_evidence": "We sell Garden Tool Collection - Heavy Duty Water Hose with Brass Coupling 50ft, 5/8'', 500psi. It is important to note that its Product ID is B0812CGP9F.. Its brand is AmazonBasics.  This product type may be categorized as a outdoor living product. It weighs 7.89 pounds. Its length is 984.25 inches. Its width is 0.74 inches. Its height is 0.74 inches. The categorical groups of this item, going from most general to least general are:\n    1. Gardening & Lawn Care\n    2. Watering Equipment\nThere are several bullet points associated with this item:\n    1. 5/8 inch heavy-duty water hose for outdoor use\n    2. Water lawn and garden, clean outdoor surfaces, vehicles, and more\n    3. Triple layer PVC drinking water standard tube; improved kink-resistance and flexibility with easier coiling and high abrasion resistance\n    4. Aluminum female coupling and brass male coupling resists rust and connects easily to water source and accessories\n    5. Can withstand 500psi\n    6. Length: 50 feet; Diameter: 22.2mm\n",
+          "retrieval_relevance": 0,
+          "retrieval_notes": "wrong item"
+        }
+      ],
+      "human_eval": {
+        "target_or_equivalent_retrieved": false,
+        "target_product_appropriate": true,
+        "retrieval_quality": 0,
+        "llm_product_decision_correct": true,
+        "llm_response_quality": 2,
+        "llm_response_grounded": true,
+        "unsupported_claims": [],
+        "contradicted_claims": [],
+        "should_have_refused_or_said_no_match": true,
+        "human_notes": "right item not available"
+      }
+    }
+  ]
+}

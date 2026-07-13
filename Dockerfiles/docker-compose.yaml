@@ -76,6 +76,10 @@ services:
     # to 0.0.0.0 so Docker's port forwarding can reach it.
     ports:
       - "127.0.0.1:${GRADIO_PORT:-7860}:7860"
+      # The image-case reviewer uses its own Gradio port so it can run without
+      # conflicting with the main ShopTalk UI. The reviewer launcher binds to
+      # 0.0.0.0 automatically when it is run inside this container.
+      - "127.0.0.1:${IMAGE_REVIEWER_PORT:-7861}:7861"
 
     # Environment files are read relative to this Compose file's directory.
     # Keep Docker/Compose defaults in .env-public and private app secrets such
