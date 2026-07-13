@@ -78,16 +78,24 @@ class ImageCaseReviewerApp:
             case_summary = gr.Markdown(initial_values[1])
             progress_summary = gr.Markdown(initial_values[2])
 
-            # Review is expected to proceed mostly in sequence, so the UI
-            # keeps navigation deliberately simple.  Progress shows both the
-            # current position and how many cases already have image paths.
+            # Previous/Next support the normal sequential workflow.  The
+            # slider provides a quick way to jump directly to any case while
+            # remaining synchronized with button-based navigation.
             with gr.Row():
                 previous_button = gr.Button("← Previous")
+                case_slider = gr.Slider(
+                    minimum=1,
+                    maximum=len(self.records),
+                    step=1,
+                    value=initial_values[3],
+                    label="Go to case",
+                    interactive=True,
+                )
                 next_button = gr.Button("Next →")
 
             user_query = gr.Textbox(
                 label="Original user query",
-                value=initial_values[3],
+                value=initial_values[4],
                 lines=3,
                 interactive=False,
             )
@@ -98,7 +106,7 @@ class ImageCaseReviewerApp:
             with gr.Row():
                 search_text = gr.Textbox(
                     label="Web image search",
-                    value=initial_values[4],
+                    value=initial_values[5],
                     scale=5,
                 )
                 search_button = gr.Button("Search", variant="primary", scale=1)
@@ -135,6 +143,7 @@ class ImageCaseReviewerApp:
                 index_state,
                 case_summary,
                 progress_summary,
+                case_slider,
                 user_query,
                 search_text,
                 gallery,
@@ -153,6 +162,12 @@ class ImageCaseReviewerApp:
             next_button.click(
                 fn=lambda index: self._move_case(index, 1),
                 inputs=index_state,
+                outputs=case_outputs,
+            )
+
+            case_slider.release(
+                fn=self._jump_to_case,
+                inputs=case_slider,
                 outputs=case_outputs,
             )
 
@@ -212,6 +227,7 @@ class ImageCaseReviewerApp:
             index,
             self._case_markdown(record, index),
             self._progress_markdown(index),
+            index + 1,  # slider uses human-friendly one-based case numbers
             query,
             query,
             [],       # gallery
@@ -222,22 +238,33 @@ class ImageCaseReviewerApp:
         )
 
     def _first_incomplete_index(self) -> int:
-        """Return the first case that still lacks a saved image path.
+        """Return the first case not yet saved by this reviewer.
 
-        The working JSONL is loaded during application construction, so this
-        method naturally resumes an interrupted review at the next unfinished
-        case.  When every case is complete, index 0 is returned so the UI can
-        still open normally.
+        The source evaluation cases may already contain non-empty
+        ``image_path`` values.  Those paths describe the intended evaluation
+        inputs; they do not prove that this reviewer has processed the case.
+
+        The provenance manifest is therefore the authoritative record of
+        reviewer-completed cases.  Each successful save adds one entry keyed
+        by ``case_id``.  On restart, the first case without such an entry is
+        selected.  If every case has provenance, index 0 is returned so the UI
+        still opens in a valid review state.
         """
+        completed_case_ids = self._completed_case_ids()
+
         for index, record in enumerate(self.records):
-            image_path = record.get("image_path")
-            if not isinstance(image_path, str) or not image_path.strip():
+            if record["case_id"] not in completed_case_ids:
                 return index
 
         return 0
 
     def _move_case(self, index: int, amount: int) -> tuple[Any, ...]:
+        """Move relative to the current zero-based case index."""
         return self._case_values(index + amount)
+
+    def _jump_to_case(self, case_number: int | float) -> tuple[Any, ...]:
+        """Load the one-based case number selected with the slider."""
+        return self._case_values(int(case_number) - 1)
 
     def _perform_search(self, query: str) -> tuple[Any, ...]:
         """Run one configured image search and populate the gallery."""
@@ -327,6 +354,32 @@ class ImageCaseReviewerApp:
             status,
         )
 
+    def _load_provenance(self) -> dict[str, Any]:
+        """Load and validate the reviewer provenance manifest.
+
+        The manifest is the authoritative record of cases completed through
+        this UI.  Keeping that status separate from ``image_path`` matters
+        because source evaluation files may already contain planned or
+        placeholder image paths before review begins.
+        """
+        path = self.config.provenance_file
+        if not path.exists():
+            return {}
+
+        try:
+            provenance = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid provenance JSON: {path}") from exc
+
+        if not isinstance(provenance, dict):
+            raise ValueError("The provenance file must contain a JSON object.")
+
+        return provenance
+
+    def _completed_case_ids(self) -> set[str]:
+        """Return case IDs with successful reviewer provenance entries."""
+        return set(self._load_provenance())
+
     def _update_provenance(
         self,
         record: dict[str, Any],
@@ -335,16 +388,7 @@ class ImageCaseReviewerApp:
     ) -> None:
         """Store source details outside the evaluator's strict JSONL schema."""
         path = self.config.provenance_file
-
-        if path.exists():
-            try:
-                provenance = json.loads(path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError as exc:
-                raise ValueError(f"Invalid provenance JSON: {path}") from exc
-            if not isinstance(provenance, dict):
-                raise ValueError("The provenance file must contain a JSON object.")
-        else:
-            provenance = {}
+        provenance = self._load_provenance()
 
         provenance[record["case_id"]] = {
             "image_path": saved.project_relative_path,
@@ -365,17 +409,12 @@ class ImageCaseReviewerApp:
     def _progress_markdown(self, index: int) -> str:
         """Render current-position and completion information.
 
-        A case counts as completed when its working-record ``image_path`` is a
-        non-empty string.  This is intentionally derived from the JSONL state
-        rather than tracked separately, so restarting the reviewer preserves
-        accurate progress automatically.
+        A case counts as completed when it has an entry in the provenance
+        manifest.  ``image_path`` cannot be used for this purpose because the
+        source evaluation file may already contain placeholder or planned
+        image paths for every case.
         """
-        completed = sum(
-            1
-            for record in self.records
-            if isinstance(record.get("image_path"), str)
-            and record["image_path"].strip()
-        )
+        completed = len(self._completed_case_ids())
         return (
             f"**Progress:** {completed} of {len(self.records)} completed "
             f"• Current case: {index + 1} of {len(self.records)}"

@@ -25,5 +25,383 @@
     "width": 1600,
     "height": 1600,
     "format": "JPEG"
+  },
+  "text_image_004": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_004.jpg",
+    "image_url": "https://i.etsystatic.com/9115921/r/il/aa088d/3947449444/il_300x300.3947449444_d1dt.jpg",
+    "source_url": "https://www.etsy.com/listing/1578053058/blue-abstract-painting-original",
+    "search_result_title": "Blue Abstract Painting, Original Monochrome Art, Small Canvas Artwork ...",
+    "width": 300,
+    "height": 300,
+    "format": "JPEG"
+  },
+  "text_image_005": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_005.jpg",
+    "image_url": "https://i5.walmartimages.com/seo/The-Supreme-Dorm-Essentials-Value-Pack-Keaton-34-Piece-College-Bedding-Twin-XL-Set-Bonus-Mattress-Topper-Pillows-Storage-100-Cotton-Towel-Sets-More-D_f425df8a-0de3-4317-8e8e-02733ec590ed.4b192f7b17d7899dd67e7f288a022e41.jpeg",
+    "source_url": "https://www.walmart.com/ip/The-Supreme-Dorm-Essentials-Value-Pack-Keaton-34-Piece-College-Bedding-Twin-XL-Set-Bonus-Mattress-Topper-Pillows-Storage-100-Cotton-Towel-Sets-More-D/874909736",
+    "search_result_title": "Dawn's Supreme Dorm Essentials Bundle with Fluffy Comforter, Keaton ...",
+    "width": 3000,
+    "height": 3000,
+    "format": "JPEG"
+  },
+  "text_image_006": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_006.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/81WEW5fK9AL.jpg",
+    "source_url": "https://www.amazon.com/Amazon-Basics-Non-Slip-Clothes-Hangers/dp/B01MAZ6ZPN",
+    "search_result_title": "Amazon.com: Amazon Basics Slim Velvet, Non-Slip Suit Clothes Hangers ...",
+    "width": 2560,
+    "height": 2560,
+    "format": "JPEG"
+  },
+  "text_image_007": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_007.jpg",
+    "image_url": "https://www.fields.ie/dw/image/v2/BFNQ_PRD/on/demandware.static/-/Sites-ang_master-catalog/default/dw9b10ad20/hi-res/sterling-silver-princess-cut-cubic-zirconia-ring-06-01-1-0347-img1.jpg?sw=1000&sh=1000&sm=fit",
+    "source_url": "https://www.fields.ie/sterling-silver-princess-cut-cubic-zirconia-ring/06-01-1-0347.html",
+    "search_result_title": "Sterling Silver Princess Cut Cubic Zirconia Ring",
+    "width": 1000,
+    "height": 1000,
+    "format": "JPEG"
+  },
+  "text_image_008": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_008.jpg",
+    "image_url": "https://ak1.ostkcdn.com/images/products/is/images/direct/83be8c95d7a17883136c1e03f61ead09d674dd6d/19\"-Inndustrial-And-Industrial-Metal-Round-End-Table.jpg",
+    "source_url": "https://www.bedbathandbeyond.com/Home-Garden/19-Inndustrial-And-Industrial-Metal-Round-End-Table/39672884/product.html",
+    "search_result_title": "19\" Inndustrial And Industrial Metal Round End Table - Bed Bath ...",
+    "width": 320,
+    "height": 320,
+    "format": "JPEG"
+  },
+  "text_image_009": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_009.jpg",
+    "image_url": "https://protectabed.com.au/cdn/shop/files/435338206.jpg?v=1709682947&width=1346",
+    "source_url": "https://protectabed.com.au/products/allerzip-fully-encased-waterproof-mattress-protector",
+    "search_result_title": "Allerzip® Fully Encased Waterproof Mattress Protector",
+    "width": 1346,
+    "height": 1346,
+    "format": "JPEG"
+  },
+  "text_image_010": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_010.jpg",
+    "image_url": "https://i5.walmartimages.com/seo/Samsung-DA29-00020B-Water-Filter-Replacement-Compatible-Samsung-DA29-00020B-1-DA29-00020B-Haf-Cin-Exp-RF4267HARS-RF28HMEDBSR-RF28HFEDBSR-Models-3-Pac_e9f67155-d3cc-4fb0-b302-1887e021245d.d34e83137d5b6eaf7981aa59c644ccc4.jpeg?odnHeight=573&odnWidth=573&odnBg=FFFFFF",
+    "source_url": "https://www.walmart.com/ip/Samsung-DA29-00020B-Water-Filter-Replacement-Compatible-Samsung-DA29-00020B-1-DA29-00020B-Haf-Cin-Exp-RF4267HARS-RF28HMEDBSR-RF28HFEDBSR-Models-3-Pac/352871338",
+    "search_result_title": "Samsung DA29-00020B Water Filter Replacement. Compatible with Samsung ...",
+    "width": 573,
+    "height": 573,
+    "format": "JPEG"
+  },
+  "text_image_011": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_011.jpg",
+    "image_url": "https://i.pinimg.com/736x/a2/94/85/a2948581c8bc44468557fba128d17ace--mellow-yellow-headboards.jpg",
+    "source_url": "https://www.pinterest.com/pin/mellow-yellow--284289795197862320/",
+    "search_result_title": "mellow yellow | Queen headboard, Furniture, Headboard",
+    "width": 300,
+    "height": 375,
+    "format": "JPEG"
+  },
+  "text_image_012": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_012.jpg",
+    "image_url": "https://a.1stdibscdn.com/navarra-solid-walnut-writing-desk-made-in-italy-for-sale-picture-6/f_49571/f_227136121614372265736/fdsdfsdsgd_master.jpg",
+    "source_url": "https://www.1stdibs.com/furniture/tables/desks-writing-tables/walnut-writing-desk-drawers-made-italy/id-f_22713612/",
+    "search_result_title": "Walnut Writing Desk with Drawers, Made in Italy For Sale at 1stDibs ...",
+    "width": 900,
+    "height": 900,
+    "format": "JPEG"
+  },
+  "text_image_013": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_013.jpg",
+    "image_url": "https://images-na.ssl-images-amazon.com/images/I/81MUpFlme8L.jpg",
+    "source_url": "https://www.nellisauction.com/p/22-Inch-Black-Round-Circle-Mirror-for-Wall-Modern-Bathroom/68612301",
+    "search_result_title": "22 Inch Black Round Circle Mirror for Wall,Modern Bathroom Mirrors with ...",
+    "width": 2000,
+    "height": 2000,
+    "format": "JPEG"
+  },
+  "text_image_014": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_014.jpg",
+    "image_url": "https://i5.walmartimages.com/asr/a923c1d5-2b30-441d-98bf-9c09154908bc_2.f04d7ef2c471ee6ab1742b0dd93f7b9e.jpeg",
+    "source_url": "https://www.walmart.com/ip/Pure-Balance-Chicken-Rice-Flavor-Dry-Dog-Food-for-Puppy-5-lb-Bag/917119247",
+    "search_result_title": "Pure Balance Chicken & Rice Flavor Dry Dog Food for Puppy, 5 lb. Bag ...",
+    "width": 3317,
+    "height": 3317,
+    "format": "JPEG"
+  },
+  "text_image_015": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_015.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/71gj9uGan5L._AC_SL1500_.jpg",
+    "source_url": "https://www.amazon.com/AmazonBasics-Desktop-Condenser-Microphone-Tripod/dp/B08HMLKVWH",
+    "search_result_title": "Amazon.com: Amazon Basics Desktop Mini Condenser Microphone with Tripod ...",
+    "width": 1150,
+    "height": 1500,
+    "format": "JPEG"
+  },
+  "text_image_016": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_016.jpg",
+    "image_url": "https://i.pinimg.com/736x/5f/3e/bb/5f3ebbf509c8be47569751b586ac67aa.jpg",
+    "source_url": "https://www.pinterest.com/pin/furniture-finds--162270392813468837/",
+    "search_result_title": "A storage bench to hide all of your extra shoes, blankets and other ...",
+    "width": 736,
+    "height": 736,
+    "format": "JPEG"
+  },
+  "text_image_017": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_017.png",
+    "image_url": "https://i.pinimg.com/originals/e9/61/17/e96117387ae7b1c7450b8974cc4f1131.png",
+    "source_url": "https://www.pinterest.com/pin/10-liquid-alternatives-to-water-for-gourmet-rice-recipes-in-2025--242842604902221499/",
+    "search_result_title": "10 Liquid Alternatives to Water for Gourmet Rice Recipes 🌿 in 2025 ...",
+    "width": 1000,
+    "height": 1500,
+    "format": "PNG"
+  },
+  "text_image_018": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_018.jpg",
+    "image_url": "https://modone.com/eng_pl_Mens-winter-shoes-trappers-beige-T314-14145_7.jpg",
+    "source_url": "https://modone.com/product-eng-14145-Mens-winter-shoes-trappers-beige-T314.html",
+    "search_result_title": "Men's winter shoes trappers - beige T314 | MODONE wholesale - Clothing ...",
+    "width": 1200,
+    "height": 1600,
+    "format": "JPEG"
+  },
+  "text_image_019": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_019.jpg",
+    "image_url": "https://i5.walmartimages.com/seo/Farmhouse-Light-Blue-Floral-Area-Rug-Bedroom-5x7-Ft-Linen-Boho-Paisley-Flower-Rustic-Super-Soft-fuzzy-Throw-Rug-Non-Slip-Fluffy-Plush-Indoor-Floor-Ca_b746ddd3-ac14-4647-afdf-af8abb68bf8e.e4001fe4ba52d215c367f4fef73c0b85.jpeg",
+    "source_url": "https://www.walmart.com/ip/Farmhouse-Light-Blue-Floral-Area-Rug-Bedroom-5x7-Ft-Linen-Boho-Paisley-Flower-Rustic-Super-Soft-fuzzy-Throw-Rug-Non-Slip-Fluffy-Plush-Indoor-Floor-Ca/17835970083",
+    "search_result_title": "Farmhouse Light Blue Floral Area Rug for Bedroom 5x7 Ft Linen Boho ...",
+    "width": 1350,
+    "height": 1800,
+    "format": "JPEG"
+  },
+  "text_image_020": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_020.jpg",
+    "image_url": "https://images.thdstatic.com/productImages/3e4a2773-ed48-42a7-84d7-2f211ad5907b/svn/american-standard-toilet-paper-holders-64_600.jpg",
+    "source_url": "https://www.homedepot.com/p/sets/American-Standard-Townsend-Polished-Chrome-Bath-Hardware-Set-Toilet-Paper-Holder-Robe-Hook-Towel-Ring-24-in-Double-Towel-Bar/341711408",
+    "search_result_title": "American Standard Townsend Polished Chrome Bath Hardware Set: Toilet ...",
+    "width": 600,
+    "height": 600,
+    "format": "JPEG"
+  },
+  "text_image_021": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_021.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/91I5GVI69HL._AC_SL1500_.jpg",
+    "source_url": "https://www.amazon.com/Lexicon-Genuine-Leather-Cushions-Upholstered/dp/B0DQ7Y78PW",
+    "search_result_title": "Amazon.com: Lexicon Modern Accent Chair, Luxury Genuine Leather Match ...",
+    "width": 1500,
+    "height": 1500,
+    "format": "JPEG"
+  },
+  "text_image_022": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_022.jpg",
+    "image_url": "https://i5.walmartimages.com/seo/Full-Bed-Frame-Legahome-Full-Size-Gray-Upholstered-Bed-with-Headboard-Fabric-Upholstered-Platform-Bed-Frame-No-Box-Spring-Needed-Gray_288ea6fb-18b3-4a44-a7a7-c7817dc01465.c791fa650f1a5a0cd3400a090f6bc7ae.jpeg",
+    "source_url": "https://www.walmart.com/ip/HSUNNS-Upholstered-Platform-Bed-Queen-Size-Bed-Faux-Leather-Headboard-Full-Wooden-Slats-Frame-Modern-Bedroom-Furniture-Holds-Up-800lbs-Beige/608384643",
+    "search_result_title": "Full Bed Frame, Legahome Full Size Gray Upholstered Bed with Headboard ...",
+    "width": 2000,
+    "height": 2000,
+    "format": "JPEG"
+  },
+  "text_image_023": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_023.jpg",
+    "image_url": "https://www.chairoffice.co.uk/media/21182/3.jpg",
+    "source_url": "https://www.chairoffice.co.uk/resolute-folding-arm-mesh-chair/182bcfc8-9026-426b-b357-58d7286e4627/",
+    "search_result_title": "Resolute Grey Ergonomic Mesh Office Chair With Folding Arms",
+    "width": 599,
+    "height": 900,
+    "format": "JPEG"
+  },
+  "text_image_024": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_024.jpg",
+    "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2025/05/07/681b99c5c71ba1265e35f94c/m_681b99cfdbd8f019b777eaac.jpg",
+    "source_url": "https://poshmark.com/listing/Brown-HighTop-Kids-Shoes-681b99c5c71ba1265e35f94c",
+    "search_result_title": "Cat & Jack | Shoes | Brown Hightop Kids Shoes | Poshmark",
+    "width": 580,
+    "height": 580,
+    "format": "JPEG"
+  },
+  "text_image_025": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_025.jpg",
+    "image_url": "https://i.etsystatic.com/35326688/r/il/9a8a45/4732694920/il_1080xN.4732694920_c3j9.jpg",
+    "source_url": "https://www.etsy.com/listing/1441413827/80ct-emerald-cut-cz-diamond-925-sterling",
+    "search_result_title": "8.0CT Emerald Cut CZ Diamond 925 Sterling Silver Ring for Women ...",
+    "width": 1080,
+    "height": 1080,
+    "format": "JPEG"
+  },
+  "text_image_026": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_026.jpg",
+    "image_url": "https://storage.googleapis.com/images-prs-prd-c7e7986.prs.prd.v8.commerce.mi9cloud.com/product-images/zoom/00014100071877_1",
+    "source_url": "https://www.gourmetgarage.com/product/pepperidge-farm-hamburger-buns-soft-white-id-00014100071877",
+    "search_result_title": "Pepperidge Farm Bakery Classics Soft White Hamburger Buns, 8 count, 14. ...",
+    "width": 1500,
+    "height": 1500,
+    "format": "JPEG"
+  },
+  "text_image_027": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_027.jpg",
+    "image_url": "https://img.joomcdn.net/da85171f1a7abd3bb5556424fe74f12dacb98fe5_original.jpeg",
+    "source_url": "https://www.joom.com/en/products/62ba73ec3aa3a401c08d50e9",
+    "search_result_title": "Outdoor Breathable Comfort Slip On Plus Size Open Shoes Casual Men ...",
+    "width": 800,
+    "height": 800,
+    "format": "JPEG"
+  },
+  "text_image_028": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_028.jpg",
+    "image_url": "https://i5.walmartimages.com/seo/Table-Stand-Microphone-Clamp_388825df-aedc-424c-8a8a-9e0783ad2111_1.0f0017f96908f455da64d39820c6ca76.jpeg",
+    "source_url": "https://www.walmart.com/ip/Table-Stand-Microphone-Clamp/24679292",
+    "search_result_title": "Table/Stand Microphone Clamp - Walmart.com",
+    "width": 1000,
+    "height": 1000,
+    "format": "JPEG"
+  },
+  "text_image_029": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_029.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/817H6fVEIDL._AC_SX679_.jpg",
+    "source_url": "https://www.amazon.com/Softa-Stools-Counter-Cushion-Footstool/dp/B0FKMRCK5K",
+    "search_result_title": "Amazon.com: Softa Bar Stools 1 Set of 2, Counter Height Bar Stools ...",
+    "width": 679,
+    "height": 679,
+    "format": "JPEG"
+  },
+  "text_image_030": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_030.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/61I80+OxylL.jpg",
+    "source_url": "https://www.amazon.ca/HAHZT-Bathroom-Vanity-Light-Fixtures/dp/B0CSXYDGM4",
+    "search_result_title": "HAHZT Bathroom Vanity Light Fixtures: 3-Light Mid Century Modern ...",
+    "width": 1600,
+    "height": 1600,
+    "format": "JPEG"
+  },
+  "text_image_031": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_031.jpg",
+    "image_url": "https://images-na.ssl-images-amazon.com/images/I/71cAP2aCjbL.jpg",
+    "source_url": "https://fado.vn/us/amazon/pelican-river-gorge-130x-tandem-kayak-sit-on-top-recreational-2-person-kayak-13-ft-B07VT14RN1.html",
+    "search_result_title": "Mua River Gorge 130X Tandem Kayak - Sit-on-Top - Recreational 2 Person ...",
+    "width": 2560,
+    "height": 1485,
+    "format": "JPEG"
+  },
+  "text_image_032": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_032.jpg",
+    "image_url": "https://i5.walmartimages.com/seo/SLANIGIRO-Adult-Bike-Helmet-with-Light-Commuter-Bicycle-Road-Cycling-Helmet-with-Replacement-Pads-for-Men-Women_b70667ba-75e4-4f73-81b6-f078877360ee.47b72c3f41e9c511f3fc6832eda5d08c.jpeg",
+    "source_url": "https://www.walmart.com/ip/SLANIGIRO-Adult-Bike-Helmet-with-Light-Commuter-Bicycle-Road-Cycling-Helmet-with-Replacement-Pads-for-Men-Women/737731491",
+    "search_result_title": "SLANIGIRO Adult Bike Helmet, Lightweight and Breathable, USB Light ...",
+    "width": 1500,
+    "height": 1500,
+    "format": "JPEG"
+  },
+  "text_image_033": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_033.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/71urhra8B2L._AC_.jpg",
+    "source_url": "https://www.amazon.com/Monitor-Tracker-Messages-Waterproof-Battery/dp/B0D6KDQ888",
+    "search_result_title": "Amazon.com: Smart Watch [GPS, Alexa Built-in], 24/7 Heart Rate Monitor ...",
+    "width": 1545,
+    "height": 1600,
+    "format": "JPEG"
+  },
+  "text_image_034": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_034.jpg",
+    "image_url": "https://www.dronetrest.com/uploads/db5290/original/2X/8/8b6f776394ef68f1dbc71c60775f6f40270dc4dd.jpeg",
+    "source_url": "https://storage.googleapis.com/dopsjhysfryace/drone-camera-gimbal.html",
+    "search_result_title": "Drone Camera Gimbal at Scott Cahill blog",
+    "width": 1500,
+    "height": 1000,
+    "format": "JPEG"
+  },
+  "text_image_035": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_035.jpg",
+    "image_url": "https://i5.walmartimages.com/seo/Kuroiy-Outdoor-Heavy-Duty-Snow-Shovel-Ergonomic-Handle-Wide-Plastic-Blade-Aluminum-Wear-Strip-Detachable-Easy-Storage-Efficient-Driveway-Sidewalk-Cle_ebd527fc-f229-41ce-9285-c4202d7cdd25.50802209cf61c73592e41a4efcdb004b.jpeg",
+    "source_url": "https://www.walmart.com/ip/Kuroiy-Outdoor-Heavy-Duty-Snow-Shovel-Ergonomic-Handle-Wide-Plastic-Blade-Aluminum-Wear-Strip-Detachable-Easy-Storage-Efficient-Driveway-Sidewalk-Cle/6007275086",
+    "search_result_title": "Kuroiy Outdoor Heavy Duty Snow Shovel | Ergonomic Handle | Wide Plastic ...",
+    "width": 1600,
+    "height": 1600,
+    "format": "JPEG"
+  },
+  "text_image_036": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_036.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/812bXMU6FDL.jpg",
+    "source_url": "https://www.amazon.com/Peg-Perego-Primo-Viaggio-4-35/dp/B0D36397K1",
+    "search_result_title": "Amazon.com : Peg Perego Primo Viaggio 4-35 K - Rear Facing Infant Car ...",
+    "width": 2560,
+    "height": 2560,
+    "format": "JPEG"
+  },
+  "text_image_037": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_037.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/71+FxYinVUL._AC_SL1500_.jpg",
+    "source_url": "https://www.theartscrafts.com/sewing-machines/what-is-a-computerized-sewing-machine/",
+    "search_result_title": "What Is A Computerized Sewing Machine And Why You Need One? Price Range ...",
+    "width": 1500,
+    "height": 1258,
+    "format": "JPEG"
+  },
+  "text_image_038": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_038.jpg",
+    "image_url": "https://shuttlepresskit.com/wp-content/uploads/2026/01/Best-Refractor-Telescopes-Under-300-2026-450x500.jpeg",
+    "source_url": "https://shuttlepresskit.com/best-refractor-telescopes-under-300/",
+    "search_result_title": "10 Best Refractor Telescopes Under $300 in 2026 - Reviews",
+    "width": 450,
+    "height": 500,
+    "format": "JPEG"
+  },
+  "text_image_039": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_039.jpg",
+    "image_url": "http://ienyrid.co.uk/cdn/shop/articles/s_2024_5.jpg?v=1735552104",
+    "source_url": "https://ienyrid.co.uk/blogs/news/top-electric-scooters-for-commuting-enhance-your-daily-commute",
+    "search_result_title": "Top Electric Scooters for Commuting: Enhance Your Daily Commute ...",
+    "width": 1200,
+    "height": 628,
+    "format": "JPEG"
+  },
+  "text_image_040": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_040.jpg",
+    "image_url": "https://usercontent.one/wp/www.thebeginnersurfer.com/wp-content/uploads/2023/01/WaveBandit-9_0_EasyRider1_1296x.webp?media=1692298182",
+    "source_url": "https://www.thebeginnersurfer.com/best-surfboards-for-beginners/",
+    "search_result_title": "The best surfboards for beginners in 2025",
+    "width": 1000,
+    "height": 1000,
+    "format": "JPEG"
+  },
+  "text_image_041": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_041.jpg",
+    "image_url": "https://electricninjas.com/wp-content/uploads/2023/05/4_backup-generator-manual-640w.jpg",
+    "source_url": "https://electricninjas.com/portable-generator-emergency-readiness/",
+    "search_result_title": "How Portable Generators Enhance Your Emergency Readiness Plan",
+    "width": 440,
+    "height": 320,
+    "format": "JPEG"
+  },
+  "text_image_042": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_042.jpg",
+    "image_url": "https://i5.walmartimages.com/seo/BAOKALER-Cordless-Leaf-Blower-160MPH-20V-Handheld-Electric-Leaf-Blowers-with-2-Battery-Lightweight-Battery-Powered-Leaf-Blower_44b71ee8-67c5-490a-8754-2708d02e4e86.392cdb41031d9eaab6ca26f168a6ae01.jpeg",
+    "source_url": "https://business.walmart.com/ip/BAOKALER-Cordless-Leaf-Blower-160MPH-20V-Handheld-Electric-Leaf-Blowers-with-2-Battery-Lightweight-Battery-Powered-Leaf-Blower/13828308350",
+    "search_result_title": "BAOKALER Cordless Leaf Blower, 160MPH 20V Handheld Electric Leaf ...",
+    "width": 1600,
+    "height": 1600,
+    "format": "JPEG"
+  },
+  "text_image_043": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_043.jpg",
+    "image_url": "https://m.media-amazon.com/images/I/71gosld826L._AC_SL1500_.jpg",
+    "source_url": "https://www.amazon.com/AODSK-Weighted-Beginner-keyboard-S-200U/dp/B0C273VF1W",
+    "search_result_title": "Amazon.com: AODSK Digital Piano 88 Key Weighted keyboard Piano with ...",
+    "width": 1500,
+    "height": 1477,
+    "format": "JPEG"
+  },
+  "text_image_044": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_044.jpg",
+    "image_url": "https://images.thdstatic.com/productImages/79d7c36c-968a-4319-bee5-738c8d4353e7/svn/silver-simzlife-countertop-ice-makers-zx-im-18s-s-hd-64_1000.jpg",
+    "source_url": "https://www.homedepot.com/p/SIMZLIFE-9-in-26-5lb-24H-Bullet-Ice-Countertop-Portable-Ice-Maker-in-Silver-9-Cubes-6Mins-Auto-Cleaning-with-Basket-and-Scoop-ZX-IM-18S-S-HD/333535581",
+    "search_result_title": "SIMZLIFE 9 in. 26.5lb./24H Bullet Ice Countertop Portable Ice Maker in ...",
+    "width": 1000,
+    "height": 1000,
+    "format": "JPEG"
+  },
+  "text_image_045": {
+    "image_path": "server/evals/retrieval_llm_response/query_images/text_image_045.jpg",
+    "image_url": "https://samisteel.in/wp-content/uploads/2024/12/71UNmWJ7zL-1024x1024.jpg",
+    "source_url": "https://samisteel.in/mini-welding-machine/",
+    "search_result_title": "Mini Welding Machine: Perfect Choice for DIY Enthusiasts and ...",
+    "width": 1024,
+    "height": 1024,
+    "format": "JPEG"
   }
 }
