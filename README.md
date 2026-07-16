@@ -95,7 +95,6 @@ server/
   gradio_app.py                            Main Gradio application
   gradio_images.py                         Image display helpers for Gradio
   shoptalk_paths.py                        Project-relative path constants
-  templates/template.html                  Legacy Flask template kept in repo
 
 server/recommender_core/
   config.py                                Runtime config dataclasses and INI loading
@@ -520,4 +519,3 @@ Older versions of this project used a Flask server entry point. The current app 
 server/gradio_app.py
 ```
 
-`server/templates/template.html` is still present, but the active demo path is Gradio.
