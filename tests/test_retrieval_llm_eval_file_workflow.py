@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from server.evals.retrieval_llm_response.retrieval_llm_eval import (
+    build_metrics_payload,
     default_scored_output_path,
     latest_reviewed_judgment_path,
     load_eval_args,
@@ -136,11 +137,39 @@ def test_scored_report_name_identifies_reviewed_input(tmp_path: Path) -> None:
     judgment = tmp_path / "reviewed" / "sample_004_reviewed.json"
 
     first = default_scored_output_path(tmp_path / "scored", judgment)
-    first.touch()
+    first.with_suffix(".json").touch()
     second = default_scored_output_path(tmp_path / "scored", judgment)
 
     assert first.name == "sample_004_reviewed_scored_001.txt"
     assert second.name == "sample_004_reviewed_scored_002.txt"
+
+
+def test_metrics_payload_contains_text_report_data() -> None:
+    payload = {
+        "metadata": {
+            "cases_path": "cases.jsonl",
+            "created_at": "2026-07-17T12:00:00",
+            "model_name": "gpt-4o",
+            "temperature": 0.0,
+        },
+        "cases": [{}, {}],
+    }
+
+    report = build_metrics_payload(
+        payload=payload,
+        judgment_path=Path("reviewed.json"),
+        warnings=["case_001: unjudged"],
+        retrieval_metrics={"strict_hit_at_5": 0.5},
+        llm_metrics={"grounded_response_rate_all": 1.0},
+        failures=["case_002: failed"],
+    )
+
+    assert report["judgments"] == "reviewed.json"
+    assert report["run_metadata"]["total_cases"] == 2
+    assert report["judgment_completeness"]["unjudged_fields_or_products"] == 1
+    assert report["retrieval_metrics"]["strict_hit_at_5"] == 0.5
+    assert report["llm_response_metrics"]["grounded_response_rate_all"] == 1.0
+    assert report["failure_summary"] == ["case_002: failed"]
 
 
 def test_parse_args_accepts_positional_config_path(tmp_path):

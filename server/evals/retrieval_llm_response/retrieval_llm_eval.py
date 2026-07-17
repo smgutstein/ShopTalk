@@ -931,15 +931,12 @@ def default_scored_output_path(output_dir: Path, judgment_path: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     base_name = f"{judgment_path.stem}_scored"
-    first_candidate = output_dir / f"{base_name}_001.txt"
-    if not first_candidate.exists():
-        return first_candidate
-
-    index = 2
+    index = 1
     while True:
-        candidate = output_dir / f"{base_name}_{index:03d}.txt"
-        if not candidate.exists():
-            return candidate
+        text_candidate = output_dir / f"{base_name}_{index:03d}.txt"
+        json_candidate = text_candidate.with_suffix(".json")
+        if not text_candidate.exists() and not json_candidate.exists():
+            return text_candidate
         index += 1
 
 
@@ -1260,6 +1257,39 @@ def format_metric(value: Any) -> str:
     return str(value)
 
 
+def build_metrics_payload(
+    *,
+    payload: dict[str, Any],
+    judgment_path: Path,
+    warnings: list[str],
+    retrieval_metrics: dict[str, Any],
+    llm_metrics: dict[str, Any],
+    failures: list[str],
+) -> dict[str, Any]:
+    """Build the machine-readable companion to the text metrics report."""
+    metadata = payload.get("metadata", {})
+    cases = payload.get("cases", [])
+
+    return {
+        "report_type": "shoptalk_retrieval_llm_eval_metrics",
+        "judgments": str(judgment_path),
+        "run_metadata": {
+            "cases_path": metadata.get("cases_path"),
+            "created_at": metadata.get("created_at"),
+            "model": metadata.get("model_name"),
+            "temperature": metadata.get("temperature"),
+            "total_cases": len(cases),
+        },
+        "judgment_completeness": {
+            "unjudged_fields_or_products": len(warnings),
+            "warnings": warnings,
+        },
+        "retrieval_metrics": retrieval_metrics,
+        "llm_response_metrics": llm_metrics,
+        "failure_summary": failures,
+    }
+
+
 def write_metrics_report(
     *,
     payload: dict[str, Any],
@@ -1472,9 +1502,22 @@ def score_main(
         llm_metrics=llm_metrics,
         failures=failures,
     )
+    json_output_path = output_path.with_suffix(".json")
+    write_json(
+        build_metrics_payload(
+            payload=payload,
+            judgment_path=args.judgments,
+            warnings=warnings,
+            retrieval_metrics=retrieval_metrics,
+            llm_metrics=llm_metrics,
+            failures=failures,
+        ),
+        json_output_path,
+    )
 
     print(f"Scored judgment file: {args.judgments}")
-    print(f"Wrote retrieval/LLM metrics report to {output_path}")
+    print(f"Wrote retrieval/LLM text metrics report to {output_path}")
+    print(f"Wrote retrieval/LLM JSON metrics report to {json_output_path}")
     return 0
 
 
