@@ -51,6 +51,9 @@ except ImportError:  # Supports running from inside server/: python -m evals.ret
 # configuration beside the eval modules unless the INI file says otherwise.
 DEFAULT_CASES_PATH = Path(__file__).with_name("cases") / "eval_cases_retrieval_llm.jsonl"
 DEFAULT_RESULTS_DIR = Path(__file__).with_name("results")
+DEFAULT_GENERATED_DIR = Path(__file__).with_name("generated")
+DEFAULT_REVIEWED_DIR = Path(__file__).with_name("reviewed")
+DEFAULT_SCORED_DIR = Path(__file__).with_name("scored")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_judgments"
 DEFAULT_SCORE_OUTPUT_PREFIX = "retrieval_llm_metrics"
 DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
@@ -228,7 +231,10 @@ def load_eval_args(config_path: Path) -> argparse.Namespace:
         cases=Path(parser.get("eval", "cases", fallback=str(DEFAULT_CASES_PATH))),
         limit=_optional_limit(parser),
         output=_auto_path(parser, "eval", "output"),
-        output_dir=Path(parser.get("eval", "output_dir", fallback=str(DEFAULT_RESULTS_DIR))),
+        output_dir=Path(parser.get("eval", "output_dir", fallback=str(DEFAULT_GENERATED_DIR))),
+        reviewed_output_dir=Path(
+            parser.get("eval", "reviewed_output_dir", fallback=str(DEFAULT_REVIEWED_DIR))
+        ),
         output_prefix=parser.get(
             "eval",
             "output_prefix",
@@ -397,6 +403,31 @@ def next_numbered_output_path(output_dir: Path, *, prefix: str, suffix: str) -> 
         if not candidate.exists():
             return candidate
         index += 1
+
+
+def next_linked_judgment_paths(
+    generated_dir: Path,
+    reviewed_dir: Path,
+    *,
+    prefix: str,
+) -> tuple[Path, Path]:
+    """Return matching unused generated/reviewed paths for one eval run."""
+    generated_dir.mkdir(parents=True, exist_ok=True)
+    reviewed_dir.mkdir(parents=True, exist_ok=True)
+
+    index = 1
+    while True:
+        run_name = f"{prefix}_{index:03d}"
+        generated = generated_dir / f"{run_name}.json"
+        reviewed = reviewed_dir / f"{run_name}_reviewed.json"
+        if not generated.exists() and not reviewed.exists():
+            return generated, reviewed
+        index += 1
+
+
+def reviewed_path_for_generated(generated_path: Path, reviewed_dir: Path) -> Path:
+    """Derive the editable reviewed-copy path from a generated filename."""
+    return reviewed_dir / f"{generated_path.stem}_reviewed{generated_path.suffix}"
 
 
 def build_recommender_from_args(args: argparse.Namespace) -> ShopTalkRecommender:
@@ -759,19 +790,46 @@ def write_json(payload: dict[str, Any], output_path: Path) -> None:
 # Scoring helpers
 # ---------------------------------------------------------------------------
 
-def _required_path(
-    parser: configparser.ConfigParser,
-    section: str,
-    option: str,
-) -> Path:
-    """Return a required path, rejecting the documentation sentinel."""
-    value = _config_value(parser, section, option, fallback="required")
-    if value.lower() == "required":
-        raise ValueError(
-            f"[{section}] {option} is still set to 'required'. "
-            "Set it to the reviewed judgment JSON file before scoring."
+def latest_reviewed_judgment_path(reviewed_dir: Path, *, prefix: str) -> Path:
+    """Return the highest-numbered reviewed judgment file for ``prefix``.
+
+    Generated and reviewed files share the same run number. Selecting the newest
+    reviewed copy removes the need to paste a newly generated filename into the
+    INI before every scoring run.
+    """
+    if not reviewed_dir.exists():
+        raise FileNotFoundError(f"Reviewed judgment directory not found: {reviewed_dir}")
+
+    matches: list[tuple[int, Path]] = []
+    marker = f"{prefix}_"
+    suffix = "_reviewed.json"
+    for candidate in reviewed_dir.iterdir():
+        name = candidate.name
+        if not candidate.is_file() or not name.startswith(marker) or not name.endswith(suffix):
+            continue
+        number_text = name[len(marker) : -len(suffix)]
+        if number_text.isdigit():
+            matches.append((int(number_text), candidate))
+
+    if not matches:
+        raise FileNotFoundError(
+            f"No reviewed judgment files matching {prefix}_NNN_reviewed.json "
+            f"were found in {reviewed_dir}"
         )
-    return Path(value)
+    return max(matches, key=lambda item: item[0])[1]
+
+
+def configured_judgment_path(parser: configparser.ConfigParser) -> Path:
+    """Return an explicit reviewed file or automatically select the newest one."""
+    value = _config_value(parser, "score", "judgments", fallback="auto")
+    if value.lower() != "auto":
+        return Path(value)
+
+    reviewed_dir = Path(
+        parser.get("eval", "reviewed_output_dir", fallback=str(DEFAULT_REVIEWED_DIR))
+    )
+    prefix = parser.get("eval", "output_prefix", fallback=DEFAULT_OUTPUT_PREFIX)
+    return latest_reviewed_judgment_path(reviewed_dir, prefix=prefix)
 
 
 def _auto_path(
@@ -805,9 +863,9 @@ def load_score_args(config_path: Path) -> argparse.Namespace:
     # Keep the old argparse-like shape internally while moving user-facing
     # configuration into the shared eval INI file.
     return argparse.Namespace(
-        judgments=_required_path(parser, "score", "judgments"),
+        judgments=configured_judgment_path(parser),
         output=_auto_path(parser, "score", "output"),
-        output_dir=Path(parser.get("score", "output_dir", fallback=str(DEFAULT_RESULTS_DIR))),
+        output_dir=Path(parser.get("score", "output_dir", fallback=str(DEFAULT_SCORED_DIR))),
         output_prefix=parser.get(
             "score",
             "output_prefix",
@@ -1278,15 +1336,27 @@ def generate_main(config_path: Path = DEFAULT_EVAL_CONFIG_PATH) -> int:
   
     args = load_eval_args(config_path)
     cases = load_jsonl_cases(args.cases, limit=args.limit)
-    output_path = args.output or next_numbered_output_path(
-        args.output_dir,
-        prefix=args.output_prefix,
-        suffix=".json",
-    )
+    if args.output is None:
+        output_path, reviewed_output_path = next_linked_judgment_paths(
+            args.output_dir,
+            args.reviewed_output_dir,
+            prefix=args.output_prefix,
+        )
+    else:
+        output_path = args.output
+        reviewed_output_path = reviewed_path_for_generated(
+            output_path,
+            args.reviewed_output_dir,
+        )
+        if reviewed_output_path.exists():
+            raise FileExistsError(
+                f"Reviewed judgment copy already exists: {reviewed_output_path}"
+            )
 
     if args.progress:
         print(f"Loaded {len(cases)} retrieval/LLM eval case(s) from {args.cases}", flush=True)
-        print(f"Judgment output will be written to {output_path}", flush=True)
+        print(f"Generated judgment output will be written to {output_path}", flush=True)
+        print(f"Editable reviewed copy will be written to {reviewed_output_path}", flush=True)
         print(
             "Run pacing: "
             f"sleep_seconds_between_cases={args.sleep_seconds_between_cases}, "
@@ -1350,8 +1420,10 @@ def generate_main(config_path: Path = DEFAULT_EVAL_CONFIG_PATH) -> int:
         judgment_cases=judgment_cases,
     )
     write_json(payload, output_path)
+    write_json(payload, reviewed_output_path)
 
-    print(f"Wrote retrieval/LLM judgment file to {output_path}")
+    print(f"Wrote generated retrieval/LLM judgment file to {output_path}")
+    print(f"Wrote editable reviewed copy to {reviewed_output_path}")
     return 0
 
 
@@ -1406,8 +1478,61 @@ def score_main(
     return 0
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse the unified retrieval/LLM eval command line."""
+def _add_config_arguments(subparser: argparse.ArgumentParser) -> None:
+    """Add positional and backward-compatible optional config arguments.
+
+    The preferred interface is a single positional INI path::
+
+        retrieval_llm_eval.py generate path/to/eval.ini
+
+    ``-c/--config`` remains available so existing commands do not break. Both
+    forms are optional because the historical default INI is still supported.
+    Resolution and conflict checking happen after parsing in
+    :func:`_resolve_config_path`.
+    """
+    subparser.add_argument(
+        "config_path",
+        nargs="?",
+        type=Path,
+        help=(
+            "Path to the retrieval/LLM evaluation INI file. "
+            f"Default: {DEFAULT_EVAL_CONFIG_PATH}"
+        ),
+    )
+    subparser.add_argument(
+        "-c",
+        "--config",
+        dest="config_option",
+        type=Path,
+        help="Backward-compatible alternative to the positional INI path.",
+    )
+
+
+def _resolve_config_path(
+    parser: argparse.ArgumentParser,
+    args: argparse.Namespace,
+) -> Path:
+    """Resolve the selected INI path and reject contradictory arguments.
+
+    Accepting both spellings is useful during migration, but silently choosing
+    one when both differ would make runs hard to reproduce. The parser therefore
+    reports an error for conflicting paths while allowing the same path to be
+    supplied redundantly.
+    """
+    positional = args.config_path
+    optional = args.config_option
+
+    if positional is not None and optional is not None and positional != optional:
+        parser.error(
+            "configuration file specified twice with different paths; "
+            "use either positional CONFIG or -c/--config"
+        )
+
+    return positional or optional or DEFAULT_EVAL_CONFIG_PATH
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse the unified retrieval/LLM evaluation command line."""
     parser = argparse.ArgumentParser(
         description="Generate or score ShopTalk retrieval/LLM judgment files."
     )
@@ -1417,25 +1542,13 @@ def parse_args() -> argparse.Namespace:
         "generate",
         help="Run preset cases and write a hand-editable judgment JSON file.",
     )
-    generate_parser.add_argument(
-        "-c",
-        "--config",
-        type=Path,
-        default=DEFAULT_EVAL_CONFIG_PATH,
-        help=f"Path to retrieval/LLM eval INI file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
-    )
+    _add_config_arguments(generate_parser)
 
     score_parser = subparsers.add_parser(
         "score",
         help="Score a hand-edited retrieval/LLM judgment JSON file.",
     )
-    score_parser.add_argument(
-        "-c",
-        "--config",
-        type=Path,
-        default=DEFAULT_EVAL_CONFIG_PATH,
-        help=f"Path to retrieval/LLM eval INI file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
-    )
+    _add_config_arguments(score_parser)
     score_parser.add_argument(
         "--allow-unjudged",
         action="store_true",
@@ -1445,7 +1558,9 @@ def parse_args() -> argparse.Namespace:
         ),
     )
 
-    return parser.parse_args()
+    args = parser.parse_args(argv)
+    args.config = _resolve_config_path(parser, args)
+    return args
 
 
 def main() -> int:

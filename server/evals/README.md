@@ -30,9 +30,11 @@ judgment files and metrics reports.
 - `retrieval_llm_eval.py` is the unified generate/score implementation.
 - `retrieval_llm_eval.ini` is the normal config for this eval.
 - `cases/` contains hand-authored JSONL cases.
-- `results/` contains generated judgment/metrics files.
-- `reviewed/` is reserved for manually reviewed judgment files, which are more
-  valuable than unreviewed generated outputs.
+- `generated/` contains immutable numbered judgment files produced by eval runs.
+- `reviewed/` receives matching editable copies for human judgment.
+- `scored/` contains metrics reports whose names identify the reviewed input.
+- `[score] judgments = auto` selects the newest reviewed copy matching the
+  configured evaluation prefix, so filenames do not need to be copied into the INI.
 
 ## Compatibility wrappers
 
