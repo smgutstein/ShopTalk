@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 # With judgments=auto, the Python workflow finds the newest reviewed file whose
-# prefix matches the selected evaluation config and writes its report to scored/.
+# prefix matches the selected evaluation config and writes its report to results/.
 # Any arguments supplied here (normally positional CONFIG and optionally
 # --allow-unjudged) are passed through unchanged.
 python -m server.evals.retrieval_llm_eval score "$@"

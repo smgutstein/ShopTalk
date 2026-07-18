@@ -8,9 +8,10 @@ The project's main purpose is to compare retrieval strategies: a shared multimod
 
 ## Core Questions
 
-1. Does a shared multimodal text/image representation space produce better product retrieval than separate unimodal representation spaces?
-2. Can a weighted hybrid approach produce retrieval results that better match a user's preferences and constraints?
-3. Can retrieval improve by dynamically selecting the representation space based on whether the user's input is text-only, image-only, or text-plus-image?
+1. When using a joint text-image representaional space for a RAG-style product recommendation chatbot, how much does adding images to a request aid in accurate suggestions for a user?
+2. Does a shared multimodal text/image representation space produce better product retrieval than separate unimodal representation spaces?
+3. Can a weighted hybrid approach produce retrieval results that better match a user's preferences and constraints?
+
 
 ## Current Project Status
 
@@ -35,6 +36,7 @@ The project's main purpose is to compare retrieval strategies: a shared multimod
   - search-decision evaluation: should the assistant search now, ask a clarifying question, or continue without search?
   - product-decision evaluation: given retrieved products, should the assistant recommend a product or ask for more information?
 - Numbered human-readable eval result files, so repeated eval runs do not overwrite previous results.
+- Completed an initial 45-case comparison of text-only and text-plus-image requests using the current shared ImageBind vector store.
 
 ### Still Planned / In Progress
 
@@ -43,13 +45,11 @@ The project's main purpose is to compare retrieval strategies: a shared multimod
 - Compare the current shared ImageBind representation approach against separate text and image representation spaces.
 - Add more direct examples and screenshots of the Gradio app in use.
 - Add a smaller smoke-test dataset or documented fixture path so reviewers can run a minimal demo without reconstructing the full product artifact set.
-- Strengthen end-to-end testing around the full Gradio/recommender path. Current tests deliberately avoid heavy ImageBind inference.
-- Continue modest architectural cleanup where it clarifies the demo, but avoid over-engineering this as if it were a production service.
-- Improve retrieval/recommendation metrics. The current evals mostly target LLM control decisions, not retrieval quality.
+- Answer 2nd & 3rd core questions
 
 ## Architecture Overview
 
-At a high level, ShopTalk has two phases.
+At a high level, ShopTalk has two components.
 
 ### Offline / Artifact Generation
 
@@ -284,7 +284,7 @@ ShopTalk expects Amazon Berkeley Objects-style images and metadata.
 
 ### 1. Download images and metadata
 
-Download `abo-images-small.tar` from the Amazon Berkeley Objects dataset.
+Download [`abo-images-small.tar`](https://amazon-berkeley-objects.s3.amazonaws.com/archives/abo-images-small.tar) from the Amazon Berkeley Objects dataset.
 
 Extract it and move the contents of:
 
