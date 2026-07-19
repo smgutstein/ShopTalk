@@ -36,13 +36,15 @@ judgment files and metrics reports.
 - `[score] judgments = auto` selects the newest reviewed copy matching the
   configured evaluation prefix, so filenames do not need to be copied into the INI.
 
-## Compatibility wrappers
+## Entry points
 
-The old module paths remain as thin wrappers:
+The root-level shell scripts provide convenient entry points for the two
+policy evaluations:
 
-- `server.evals.eval_search_decision`
-- `server.evals.eval_llm_decision`
-- `server.evals.retrieval_llm_eval`
+- `run_eval_search_decision.sh` runs
+  `server.evals.search_decision.eval_search_decision`.
+- `run_eval_product_response_decision.sh` runs
+  `server.evals.product_response_decision.eval_product_response_decision`.
 
-Those wrappers keep existing shell scripts and old notes working while the real
-implementations live in the structured subdirectories.
+`server.evals.retrieval_llm_eval` remains the entry point for the retrieval and
+response evaluation workflow.

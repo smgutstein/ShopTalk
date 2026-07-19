@@ -113,10 +113,14 @@ server/recommender_core/
   vector_query.py                          Query-vector combination/search helpers
 
 server/evals/
-  eval_search_decision.py                  Eval for pre-retrieval search decisions
-  eval_llm_decision.py                     Eval for post-retrieval product decisions
-  eval_cases_search_decision.jsonl         Search-decision test cases
-  eval_cases_llm_decision.jsonl            Product-decision test cases
+  search_decision/
+    eval_search_decision.py                Eval for pre-retrieval search decisions
+    cases/eval_cases_search_decision.jsonl Search-decision test cases
+
+  product_response_decision/
+    eval_product_response_decision.py      Eval for post-retrieval product decisions
+    cases/eval_cases_product_response_decision.jsonl
+                                           Product-decision test cases
 
 tests/                                     Unit tests and lightweight behavior tests
 
@@ -130,7 +134,7 @@ Dockerfiles/                               Docker development environment
 
 run_ShopTalk_gradio.sh                     Root-level launcher for Gradio app
 run_eval_search_decision.sh                Root-level launcher for search-decision eval
-run_eval_llm_decision.sh                   Root-level launcher for product-decision eval
+run_eval_product_response_decision.sh       Root-level launcher for product-decision eval
 
 shoptalk_config.ini                        App/eval LLM model settings
 .env.example                              Template for local OpenAI API key
@@ -456,7 +460,7 @@ server/evals/eval_results/
 ### Product-decision eval
 
 ```bash
-./run_eval_llm_decision.sh
+./run_eval_product_response_decision.sh
 ```
 
 This evaluates the post-retrieval LLM decision: recommend a retrieved product or ask for more information.
@@ -464,9 +468,9 @@ This evaluates the post-retrieval LLM decision: recommend a retrieved product or
 Useful options:
 
 ```bash
-./run_eval_llm_decision.sh --help
-./run_eval_llm_decision.sh --limit 10
-./run_eval_llm_decision.sh --model gpt-4o --temperature 0.0
+./run_eval_product_response_decision.sh --help
+./run_eval_product_response_decision.sh --limit 10
+./run_eval_product_response_decision.sh --model gpt-4o --temperature 0.0
 ```
 
 Results are also written to numbered text files under:

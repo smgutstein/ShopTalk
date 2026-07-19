@@ -3,4 +3,4 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-python -m server.evals.eval_search_decision "$@"
+python -m server.evals.search_decision.eval_search_decision "$@"
