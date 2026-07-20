@@ -6,7 +6,7 @@ This repository implements a RAG-style product recommendation chatbot. It retrie
 
 ## Core Questions
 
-1. When using a joint text-image representaional space for a RAG-style product recommendation chatbot, does adding images to a request aid in accurate suggestions for a user?
+1. When using a joint text-image representaional space for a RAG-style product recommendation chatbot, does adding images to a request help produce accurate suggestions for a user?
 2. Does a shared multimodal text/image representation space produce better product retrieval than separate unimodal representation spaces?
 3. Can a weighted hybrid approach produce retrieval results that better match a user's preferences and constraints?
 
@@ -21,8 +21,7 @@ This repository implements a RAG-style product recommendation chatbot. It retrie
 - FAISS artifact generation for serving-time vector search.
 - Optional NumPy artifact generation for inspection and debugging.
 - Gradio application with:
-  - text query input,
-  - optional image upload,
+  - pure text query input, pure image query input, or both
   - product recommendation display,
   - top retrieved product gallery,
   - diagnostics panel.
@@ -37,9 +36,9 @@ This repository implements a RAG-style product recommendation chatbot. It retrie
 
 ### Still Planned / In Progress
 
-- Compare the current shared ImageBind representation approach against separate text and image representation spaces.
 - Add a smaller smoke-test dataset or documented fixture path so reviewers can run a minimal demo without reconstructing the full product artifact set.
 - Answer 2nd & 3rd core questions
+  - Compare the current shared ImageBind representation approach against separate text and image representation spaces.
 
 ## Architecture Overview
 
@@ -179,7 +178,7 @@ These are local artifacts, not source files.
 There are two supported ways to create the ShopTalk development environment:
 
 1. **Docker**, which is the preferred path for most development and review because it packages the Torch/ImageBind/FAISS stack in a repeatable container.
-2. **Conda**, which is useful when you want direct local control of the Python environment or need to debug outside the container.
+2. **Conda**, which is useful when you want direct local control of the Python environment.
 
 The project has a few heavy dependencies. ImageBind and FAISS are the two most likely sources of environment friction, which is why the Docker path is listed first.
 
