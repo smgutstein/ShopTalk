@@ -456,15 +456,19 @@ The Gradio UI supports text-only queries, image-only queries, and combined text-
 
 ## Run Tests
 
-From the project root:
+In order to verify technical correctness of code, there is a series of lightweight unit and behavior tests in the `tests` dir. They are intended to catch errors in helpers, configuration, parsing, diagnostics, vector-store loading, image-path handling, and UI helper logic without requiring a full ImageBind embedding run.
 
 ```bash
 python -m pytest -q
 ```
 
-The tests are mostly lightweight unit and behavior tests. They are intended to catch regressions in helpers, configuration, parsing, diagnostics, vector-store loading, image-path handling, and UI helper logic without requiring a full ImageBind embedding run.
 
 ## Run Evaluation Scripts
+
+There are several decisions that go into any product recommendation. The chatbot must decide:
+1. Whether to query the RAG database or depend solely on existing conversational context
+2. Whether to make a recommendation based upon what has been found within the vector DB & conversational context, query the user for more information, or decide that the user's request cannot be fulfilled.
+3. What product to recommend
 
 The eval scripts require an OpenAI API key and use the eval model settings from `shoptalk_config.ini` unless overridden.
 
@@ -510,7 +514,8 @@ Useful options:
 Results are also written to numbered text files under:
 
 ```text
-server/evals/eval_results/
+server/evals/search_decision/results/
+server/evals/product_response_decision/results/
 ```
 
 ## Notes for Reviewers
