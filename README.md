@@ -198,13 +198,13 @@ With no argument, `shoptalk_shell.sh` builds and starts the Compose service if n
 Common Docker helper commands:
 
 ```bash
-./shoptalk_shell.sh shell      # start if needed, then open an interactive shell
-./shoptalk_shell.sh start      # build/start the container in the background
-./shoptalk_shell.sh status     # show Compose service status
-./shoptalk_shell.sh logs       # follow container logs
-./shoptalk_shell.sh stop       # stop the container but keep it available
-./shoptalk_shell.sh down       # stop and remove the Compose container/network
-./shoptalk_shell.sh restart    # recreate the container
+.Dockerfiles/shoptalk_shell.sh shell      # start if needed, then open an interactive shell
+.Dockerfiles/shoptalk_shell.sh start      # build/start the container in the background
+.Dockerfiles/shoptalk_shell.sh status     # show Compose service status
+.Dockerfiles/shoptalk_shell.sh logs       # follow container logs
+.Dockerfiles/shoptalk_shell.sh stop       # stop the container but keep it available
+.Dockerfiles/shoptalk_shell.sh down       # stop and remove the Compose container/network
+.Dockerfiles/shoptalk_shell.sh restart    # recreate the container
 ```
 
 <!--
@@ -407,7 +407,7 @@ product_blurbs = EDA/product_blurbs/combined_blurb_dict.json
 images_csv = images.csv
 
 [server]
-server_name = 0.0.0.0
+server_name = auto
 server_port = 7860
 
 [evals]
@@ -415,8 +415,8 @@ model_name = gpt-4o
 temperature = 0.0
 ```
 
-Use `server_name = 0.0.0.0` for Docker port forwarding. For local-only conda
-use, set it to `127.0.0.1`.
+`server_name = auto` binds to `0.0.0.0` inside Docker and `127.0.0.1`
+outside Docker. Set an explicit address to override auto-detection.
 
 
 ## Run the Gradio App
@@ -424,13 +424,13 @@ use, set it to `127.0.0.1`.
 After the image files, `images.csv`, product blurbs, vector DB artifacts, and `.env` file are in place, run:
 
 ```bash
-./run_ShopTalk_gradio.sh
+./run_ShopTalk_gradio.sh shoptalk_config.ini
 ```
 
 Equivalent module command:
 
 ```bash
-python -m server.gradio_app
+python -m server.gradio_app shoptalk_config.ini
 ```
 
 Common runtime options:
@@ -446,16 +446,10 @@ Examples:
 ```bash
 
 # Enable debug output
-./run_ShopTalk_gradio.sh --debug
+./run_ShopTalk_gradio.sh shoptalk_config.ini --debug
 
-# Use a specific LLM model
-./run_ShopTalk_gradio.sh --model gpt-4o --temperature 0.1
-
-# Choose a specific assistant personality by index
-./run_ShopTalk_gradio.sh --personality 0
-
-# Create a public Gradio share link
-./run_ShopTalk_gradio.sh --share
+# Force CPU usage
+./run_ShopTalk_gradio.sh shoptalk_config.ini --cpu
 ```
 
 The Gradio UI supports text-only queries, image-only queries, and combined text-plus-image queries.

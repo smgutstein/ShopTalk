@@ -130,3 +130,27 @@ def test_recommender_config_uses_ini_settings_and_cli_runtime_overrides(tmp_path
     assert config.top_k == 7
     assert str(config.blurbs_path) == "tests/fixtures/product_blurbs.json"
     assert str(config.images_csv_path) == "tests/fixtures/images.csv"
+
+
+def test_resolve_server_name_auto_uses_localhost_outside_docker(monkeypatch):
+    from server.recommender_core import config as config_module
+
+    monkeypatch.setattr(config_module, "running_in_docker", lambda: False)
+
+    assert config_module.resolve_server_name("auto") == "127.0.0.1"
+
+
+def test_resolve_server_name_auto_binds_all_interfaces_in_docker(monkeypatch):
+    from server.recommender_core import config as config_module
+
+    monkeypatch.setattr(config_module, "running_in_docker", lambda: True)
+
+    assert config_module.resolve_server_name("AUTO") == "0.0.0.0"
+
+
+def test_resolve_server_name_preserves_explicit_address(monkeypatch):
+    from server.recommender_core import config as config_module
+
+    monkeypatch.setattr(config_module, "running_in_docker", lambda: True)
+
+    assert config_module.resolve_server_name(" 127.0.0.1 ") == "127.0.0.1"

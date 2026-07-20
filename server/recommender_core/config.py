@@ -23,8 +23,21 @@ DEFAULT_APP_LLM_MODEL = "gpt-4o"
 DEFAULT_APP_LLM_TEMPERATURE = 0.1
 DEFAULT_EVAL_LLM_MODEL = "gpt-4o"
 DEFAULT_EVAL_LLM_TEMPERATURE = 0.0
-DEFAULT_SERVER_NAME = "127.0.0.1"
+DEFAULT_SERVER_NAME = "auto"
 DEFAULT_SERVER_PORT = 7860
+
+
+def running_in_docker() -> bool:
+    """Return whether ShopTalk is running inside a Docker container."""
+    return Path("/.dockerenv").exists()
+
+
+def resolve_server_name(configured_name: str) -> str:
+    """Resolve ``server_name = auto`` for local or Docker execution."""
+    normalized_name = configured_name.strip()
+    if normalized_name.lower() == "auto":
+        return "0.0.0.0" if running_in_docker() else "127.0.0.1"
+    return normalized_name
 
 
 @dataclass(frozen=True)

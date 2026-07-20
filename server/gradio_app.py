@@ -12,7 +12,11 @@ from .gradio_images import (
     chosen_product_image_paths,
     top_product_image_paths,
 )
-from .recommender_core.config import RecommenderConfig, load_shoptalk_config
+from .recommender_core.config import (
+    RecommenderConfig,
+    load_shoptalk_config,
+    resolve_server_name,
+)
 from .recommender_core.diagnostics import diagnostics_to_dict
 
 
@@ -538,14 +542,15 @@ def main():
     recommender = build_recommender(config)
     demo = create_gradio_interface(recommender)
 
-    print(f"ShopTalk binding: http://{file_config.server_name}:{file_config.server_port}")
-    if file_config.server_name == "0.0.0.0":
-        print(f"Open from this machine: http://127.0.0.1:{file_config.server_port}")
+    server_name = resolve_server_name(file_config.server_name)
+
+    display_host = "127.0.0.1" if server_name == "0.0.0.0" else server_name
+    print(f"Open ShopTalk: http://{display_host}:{file_config.server_port}")
     print()
 
     demo.launch(
         share=False,
-        server_name=file_config.server_name,
+        server_name=server_name,
         server_port=file_config.server_port,
     )
 
