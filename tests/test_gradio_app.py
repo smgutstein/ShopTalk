@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from server import gradio_app
 from server.recommender_core.product_candidate import ProductCandidate
 
@@ -310,23 +312,31 @@ def test_initial_chat_history_seeds_assistant_greeting():
     ]
 
 
-def test_parse_args_defaults_server_binding_to_launcher_or_gradio(monkeypatch):
-    monkeypatch.setattr("sys.argv", ["gradio_app.py"])
-
-    args = gradio_app.parse_args()
-
-    assert args.server_name is None
-    assert args.server_port is None
-    assert args.share is False
-
-
-def test_parse_args_accepts_explicit_server_binding(monkeypatch):
+def test_parse_args_requires_config_and_exposes_only_debug_and_cpu(monkeypatch, tmp_path):
+    config_path = tmp_path / "custom.ini"
     monkeypatch.setattr(
         "sys.argv",
-        ["gradio_app.py", "--server_name", "0.0.0.0", "--server_port", "7861"],
+        ["gradio_app.py", str(config_path), "--debug", "--cpu"],
     )
 
     args = gradio_app.parse_args()
 
-    assert args.server_name == "0.0.0.0"
-    assert args.server_port == 7861
+    assert args.config == config_path
+    assert args.debug is True
+    assert args.cpu is True
+    assert vars(args).keys() == {"config", "debug", "cpu"}
+
+
+
+def test_parse_args_rejects_missing_config(monkeypatch):
+    monkeypatch.setattr("sys.argv", ["gradio_app.py"])
+
+    with pytest.raises(SystemExit):
+        gradio_app.parse_args()
+
+def test_parse_args_rejects_removed_server_and_share_options(monkeypatch):
+    monkeypatch.setattr("sys.argv", ["gradio_app.py", "--share"])
+
+    with pytest.raises(SystemExit):
+        gradio_app.parse_args()
+

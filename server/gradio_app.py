@@ -1,8 +1,8 @@
 """Gradio UI for the ShopTalk recommender."""
 
 import argparse
-# Command-line parsing is kept in this UI module because these flags are
-# specific to serving the Gradio app, not to the lower-level recommender logic.
+# Command-line parsing is deliberately limited to selecting the config file and
+# temporary debug/device overrides. Stable runtime settings live in the INI file.
 import json
 from pathlib import Path
 
@@ -12,102 +12,21 @@ from .gradio_images import (
     chosen_product_image_paths,
     top_product_image_paths,
 )
-from .recommender_core.config import RecommenderConfig
+from .recommender_core.config import RecommenderConfig, load_shoptalk_config
 from .recommender_core.diagnostics import diagnostics_to_dict
-from .shoptalk_paths import (
-    COMBINED_BLURBS_PATH,
-    DEFAULT_CONFIG_PATH,
-    DEFAULT_VECTOR_BACKEND,
-    IMAGES_CSV,
-    VECTOR_DB_OUTPUT_DIR,
-)
 
 
-# parse_args is intentionally small and declarative: it only translates CLI flags
-# into an argparse Namespace. RecommenderConfig.from_args later interprets those
-# values and resolves paths/model defaults.
+# The launcher and direct module entry point require one positional config path
+# and expose only debug mode and forced CPU execution as optional flags.
 def parse_args():
     parser = argparse.ArgumentParser(description="Run the ShopTalk Gradio application.")
-    # Personality/debug/device flags are user-facing convenience knobs for local
-    # demos. They are passed through to RecommenderConfig rather than handled here.
-    parser.add_argument("-p", "--personality", type=int, default=-1, help="Choose a personality")
-    parser.add_argument("-d", "--debug", action="store_true", help="Enable debug mode")
-    parser.add_argument("-c", "--cpu", action="store_true")
-    # The config file supplies defaults for model and runtime settings; explicit
-    # command-line flags below can still override selected fields.
     parser.add_argument(
-        "--config",
+        "config",
         type=Path,
-        default=DEFAULT_CONFIG_PATH,
-        help="Path to the ShopTalk config file.",
+        help="Path to the ShopTalk INI configuration file.",
     )
-    parser.add_argument(
-        "-m",
-        "--model",
-        type=str,
-        default=None,
-        help="Override the LLM model name from the config file.",
-    )
-    parser.add_argument(
-        "--temperature",
-        type=float,
-        default=None,
-        help="Override the LLM temperature from the config file.",
-    )
-    # Vector DB and product-artifact arguments make the UI launchable against
-    # different generated artifact directories without changing Python code.
-    parser.add_argument(
-        "--vector_db_output_dir",
-        type=str,
-        default=str(VECTOR_DB_OUTPUT_DIR),
-        help="Base directory containing generated vector DB artifacts.",
-    )
-    parser.add_argument(
-        "--vector_backend",
-        type=str,
-        default=DEFAULT_VECTOR_BACKEND,
-        choices=["faiss"],
-        help="Vector backend to load for serving.",
-    )
-    parser.add_argument(
-        "--top_k",
-        type=int,
-        default=10,
-        help="Number of top options to keep when querying db.",
-     )
-    parser.add_argument(
-        "--product_blurbs",
-        type=str,
-        default=str(COMBINED_BLURBS_PATH),
-        help="Path to the product blurbs JSON file.",
-    )
-    parser.add_argument(
-        "--images_csv",
-        type=str,
-        default=str(IMAGES_CSV),
-        help="Path to the image ID mapping CSV file.",
-    )
-    # Gradio serving options are kept explicit so Docker/launcher scripts can
-    # bind to 0.0.0.0 while normal local runs can bind to localhost.
-    parser.add_argument(
-        "--share",
-        action="store_true",
-        help="Create a public Gradio share link.",
-    )
-    parser.add_argument(
-        "--server_name",
-        type=str,
-        default=None,
-        help="Server host/interface for Gradio.",
-    )
-    parser.add_argument(
-        "--server_port",
-        type=int,
-        default=None,
-        help="Server port for Gradio.",
-    )
-    # Return the raw Namespace; downstream config construction decides how to
-    # combine CLI values with defaults from shoptalk_paths/config files.
+    parser.add_argument("-d", "--debug", action="store_true", help="Enable debug mode.")
+    parser.add_argument("-c", "--cpu", action="store_true", help="Force CPU execution.")
     return parser.parse_args()
 
 
@@ -614,15 +533,20 @@ def main():
 
     # Build the runtime config from CLI/config-file inputs, then delegate all
     # heavyweight construction to the recommender factory.
+    file_config = load_shoptalk_config(args.config)
     config = RecommenderConfig.from_args(args)
     recommender = build_recommender(config)
     demo = create_gradio_interface(recommender)
-    # server_name/server_port are supplied by args or launcher scripts. In Docker,
-    # server_name is typically 0.0.0.0 so the host port mapping can reach Gradio.
+
+    print(f"ShopTalk binding: http://{file_config.server_name}:{file_config.server_port}")
+    if file_config.server_name == "0.0.0.0":
+        print(f"Open from this machine: http://127.0.0.1:{file_config.server_port}")
+    print()
+
     demo.launch(
-        share=args.share,
-        server_name=args.server_name,
-        server_port=args.server_port,
+        share=False,
+        server_name=file_config.server_name,
+        server_port=file_config.server_port,
     )
 
 

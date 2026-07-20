@@ -7,35 +7,15 @@ from server.recommender_core.shop_talk_recommender import ShopTalkRecommender
 from server.recommender_core import recommender_factory
 
 
-def test_recommender_config_from_args_maps_cli_fields():
-    args = SimpleNamespace(
-        personality=4,
-        debug=True,
-        cpu=True,
-        model="gpt-test",
-        vector_db_output_dir="artifacts/test_vector_db",
-        vector_backend="faiss",
-        top_k=7,
-        product_blurbs="tests/fixtures/product_blurbs.json",
-        images_csv="tests/fixtures/images.csv",
-    )
-
-    config = RecommenderConfig.from_args(args)
-
-    assert config.personality_index == 4
-    assert config.debug is True
-    assert config.force_cpu is True
-    assert config.model_name == "gpt-test"
-    assert str(config.vector_db_output_dir) == "artifacts/test_vector_db"
-    assert config.vector_backend == "faiss"
-    assert config.top_k == 7
-    assert str(config.blurbs_path) == "tests/fixtures/product_blurbs.json"
-    assert str(config.images_csv_path) == "tests/fixtures/images.csv"
-
-
-def test_shoptalk_recommender_from_args_delegates_to_factory(monkeypatch):
+def test_shoptalk_recommender_from_args_delegates_to_factory(monkeypatch, tmp_path):
     calls = []
     fake_recommender = object()
+    config_path = tmp_path / "shoptalk_config.ini"
+    config_path.write_text(
+        "[app]\npersonality = 2\n"
+        "[retrieval]\ntop_k = 5\n",
+        encoding="utf-8",
+    )
 
     def fake_build_recommender(config):
         calls.append(config)
@@ -46,18 +26,7 @@ def test_shoptalk_recommender_from_args_delegates_to_factory(monkeypatch):
         fake_build_recommender,
     )
 
-    args = SimpleNamespace(
-        personality=2,
-        debug=False,
-        cpu=False,
-        model="gpt-test",
-        vector_db_output_dir="artifacts/test_vector_db",
-        vector_backend="faiss",
-        top_k=5,
-        product_blurbs="tests/fixtures/product_blurbs.json",
-        images_csv="tests/fixtures/images.csv",
-    )
-
+    args = SimpleNamespace(config=config_path, debug=False, cpu=False)
     result = ShopTalkRecommender.from_args(args)
 
     assert result is fake_recommender

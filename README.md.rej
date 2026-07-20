@@ -1,0 +1,51 @@
+--- README.md
++++ README.md
+@@ -426,39 +446,26 @@
+ After the image files, `images.csv`, product blurbs, vector DB artifacts, and `.env` file are in place, run:
+ 
+ ```bash
+-./run_ShopTalk_gradio.sh
++./run_ShopTalk_gradio.sh shoptalk_config.ini
+ ```
+ 
+ Equivalent module command:
+ 
+ ```bash
+-python -m server.gradio_app
++python -m server.gradio_app shoptalk_config.ini
+ ```
+ 
+-Common runtime options:
++The configuration file is a mandatory positional argument. The only optional
++flags are `--debug` and `--cpu`:
+ 
+ ```bash
+-python -m server.gradio_app --help
++./run_ShopTalk_gradio.sh --help
++./run_ShopTalk_gradio.sh path/to/shoptalk_config.ini
++./run_ShopTalk_gradio.sh path/to/shoptalk_config.ini --debug
++./run_ShopTalk_gradio.sh path/to/shoptalk_config.ini --cpu
+ ```
+ 
+-Examples:
+-
+-```bash
+-# Force CPU
+-./run_ShopTalk_gradio.sh --cpu
+-
+-# Enable debug output
+-./run_ShopTalk_gradio.sh --debug
+-
+-# Use a specific LLM model
+-./run_ShopTalk_gradio.sh --model gpt-4o --temperature 0.1
+-
+-# Choose a specific assistant personality by index
+-./run_ShopTalk_gradio.sh --personality 0
+-
+-# Create a public Gradio share link
+-./run_ShopTalk_gradio.sh --share
+-```
++All other application and server settings are read from the selected INI file.
+ 
+ The Gradio UI supports text-only queries, image-only queries, and combined text-plus-image queries.
+ 

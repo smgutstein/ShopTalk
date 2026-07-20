@@ -23,6 +23,8 @@ DEFAULT_APP_LLM_MODEL = "gpt-4o"
 DEFAULT_APP_LLM_TEMPERATURE = 0.1
 DEFAULT_EVAL_LLM_MODEL = "gpt-4o"
 DEFAULT_EVAL_LLM_TEMPERATURE = 0.0
+DEFAULT_SERVER_NAME = "127.0.0.1"
+DEFAULT_SERVER_PORT = 7860
 
 
 @dataclass(frozen=True)
@@ -31,42 +33,62 @@ class ShopTalkFileConfig:
     app_temperature: float = DEFAULT_APP_LLM_TEMPERATURE
     eval_model_name: str = DEFAULT_EVAL_LLM_MODEL
     eval_temperature: float = DEFAULT_EVAL_LLM_TEMPERATURE
+    personality_index: int = -1
+    vector_db_output_dir: Path = VECTOR_DB_OUTPUT_DIR
+    vector_backend: str = DEFAULT_VECTOR_BACKEND
+    top_k: int = 10
+    product_blurbs_path: Path = COMBINED_BLURBS_PATH
+    images_csv_path: Path = IMAGES_CSV
+    server_name: str = DEFAULT_SERVER_NAME
+    server_port: int = DEFAULT_SERVER_PORT
 
 
 def load_shoptalk_config(config_path: str | Path | None = None) -> ShopTalkFileConfig:
-    """Load app/eval LLM settings from the ShopTalk INI config file.
-
-    Missing files and missing keys fall back to explicit code defaults. That keeps
-    tests and ad-hoc scripts usable while still making the config file the normal
-    source of user-editable model settings.
-    """
+    """Load application, evaluation, artifact, and server settings from INI."""
     path = Path(config_path) if config_path is not None else DEFAULT_CONFIG_PATH
     parser = ConfigParser()
     if path.exists():
         parser.read(path, encoding="utf-8")
 
-    app_model_name = parser.get("llm", "model_name", fallback=DEFAULT_APP_LLM_MODEL)
-    app_temperature = parser.getfloat(
-        "llm",
-        "temperature",
-        fallback=DEFAULT_APP_LLM_TEMPERATURE,
-    )
-    eval_model_name = parser.get(
-        "evals",
-        "model_name",
-        fallback=DEFAULT_EVAL_LLM_MODEL,
-    )
-    eval_temperature = parser.getfloat(
-        "evals",
-        "temperature",
-        fallback=DEFAULT_EVAL_LLM_TEMPERATURE,
-    )
-
     return ShopTalkFileConfig(
-        app_model_name=app_model_name,
-        app_temperature=app_temperature,
-        eval_model_name=eval_model_name,
-        eval_temperature=eval_temperature,
+        app_model_name=parser.get(
+            "llm", "model_name", fallback=DEFAULT_APP_LLM_MODEL
+        ),
+        app_temperature=parser.getfloat(
+            "llm", "temperature", fallback=DEFAULT_APP_LLM_TEMPERATURE
+        ),
+        eval_model_name=parser.get(
+            "evals", "model_name", fallback=DEFAULT_EVAL_LLM_MODEL
+        ),
+        eval_temperature=parser.getfloat(
+            "evals", "temperature", fallback=DEFAULT_EVAL_LLM_TEMPERATURE
+        ),
+        personality_index=parser.getint("app", "personality", fallback=-1),
+        vector_db_output_dir=Path(
+            parser.get(
+                "retrieval",
+                "vector_db_output_dir",
+                fallback=str(VECTOR_DB_OUTPUT_DIR),
+            )
+        ),
+        vector_backend=parser.get(
+            "retrieval", "vector_backend", fallback=DEFAULT_VECTOR_BACKEND
+        ),
+        top_k=parser.getint("retrieval", "top_k", fallback=10),
+        product_blurbs_path=Path(
+            parser.get(
+                "data", "product_blurbs", fallback=str(COMBINED_BLURBS_PATH)
+            )
+        ),
+        images_csv_path=Path(
+            parser.get("data", "images_csv", fallback=str(IMAGES_CSV))
+        ),
+        server_name=parser.get(
+            "server", "server_name", fallback=DEFAULT_SERVER_NAME
+        ),
+        server_port=parser.getint(
+            "server", "server_port", fallback=DEFAULT_SERVER_PORT
+        ),
     )
 
 
@@ -88,25 +110,18 @@ class RecommenderConfig:
 
     @classmethod
     def from_args(cls, args):
-        config_path = getattr(args, "config", DEFAULT_CONFIG_PATH)
-        file_config = load_shoptalk_config(config_path)
-        model_name = getattr(args, "model", None) or file_config.app_model_name
-        arg_temperature = getattr(args, "temperature", None)
-        temperature = (
-            arg_temperature
-            if arg_temperature is not None
-            else file_config.app_temperature
+        file_config = load_shoptalk_config(
+            getattr(args, "config", DEFAULT_CONFIG_PATH)
         )
-
         return cls(
-            personality_index=args.personality,
+            personality_index=file_config.personality_index,
             debug=args.debug,
             force_cpu=args.cpu,
-            model_name=model_name,
-            temperature=temperature,
-            vector_db_output_dir=Path(args.vector_db_output_dir),
-            vector_backend=args.vector_backend,
-            top_k=args.top_k,
-            blurbs_path=Path(args.product_blurbs),
-            images_csv_path=Path(args.images_csv),
+            model_name=file_config.app_model_name,
+            temperature=file_config.app_temperature,
+            vector_db_output_dir=file_config.vector_db_output_dir,
+            vector_backend=file_config.vector_backend,
+            top_k=file_config.top_k,
+            blurbs_path=file_config.product_blurbs_path,
+            images_csv_path=file_config.images_csv_path,
         )

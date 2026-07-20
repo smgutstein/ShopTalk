@@ -2,13 +2,11 @@
 
 ## Overview
 
-This repository implements a RAG-style product recommendation chatbot. It retrieves candidate products from a FAISS vector database built from multimodal product artifacts, then uses an LLM to generate grounded, personality-aware recommendations.
-
-The project's main purpose is to compare retrieval strategies: a shared multimodal text/image embedding space, separate unimodal text and image embedding spaces, and hybrid approaches that combine multimodal and unimodal representations.
+This repository implements a RAG-style product recommendation chatbot. It retrieves candidate products from a FAISS vector database built from multimodal product artifacts. Then, it uses an LLM to generate grounded, personality-aware recommendations.
 
 ## Core Questions
 
-1. When using a joint text-image representaional space for a RAG-style product recommendation chatbot, how much does adding images to a request aid in accurate suggestions for a user?
+1. When using a joint text-image representaional space for a RAG-style product recommendation chatbot, does adding images to a request aid in accurate suggestions for a user?
 2. Does a shared multimodal text/image representation space produce better product retrieval than separate unimodal representation spaces?
 3. Can a weighted hybrid approach produce retrieval results that better match a user's preferences and constraints?
 
@@ -28,7 +26,6 @@ The project's main purpose is to compare retrieval strategies: a shared multimod
   - product recommendation display,
   - top retrieved product gallery,
   - diagnostics panel.
-- Refactored recommender core under `server/recommender_core/`.
 - Configurable LLM model and temperature via `shoptalk_config.ini`.
 - Runtime launcher scripts for the Gradio app and eval modules.
 - Unit tests for preprocessing, vector DB helpers, recommender helpers, Gradio helper behavior, image path handling, diagnostics, and vector-store behavior.
@@ -40,10 +37,7 @@ The project's main purpose is to compare retrieval strategies: a shared multimod
 
 ### Still Planned / In Progress
 
-- Replace the old project README with this updated README after review.
-- Improve the portfolio presentation so the repository clearly tells the story of the project without requiring conversational context.
 - Compare the current shared ImageBind representation approach against separate text and image representation spaces.
-- Add more direct examples and screenshots of the Gradio app in use.
 - Add a smaller smoke-test dataset or documented fixture path so reviewers can run a minimal demo without reconstructing the full product artifact set.
 - Answer 2nd & 3rd core questions
 
@@ -84,62 +78,84 @@ The LLM layer is not supposed to invent products. It works from retrieved produc
 Important files and directories:
 
 ```text
-EDA/
-  DescriptionGenerator.py                  Generate product descriptions / blurbs
-  preprocessor.py                          Product metadata preprocessing helpers
-  config.ini                               EDA/preprocessing configuration
+EDA/                                         Offline product-data preparation
+  DescriptionGenerator.py                    Generate product descriptions / blurbs
+  preprocessor.py                            Product metadata preprocessing helpers
+  config.ini                                 EDA/preprocessing configuration
 
-generate_vector_db.py                      Build ImageBind/FAISS vector artifacts
+generate_vector_db.py                        Build ImageBind/FAISS vector artifacts
 
 server/
-  gradio_app.py                            Main Gradio application
-  gradio_images.py                         Image display helpers for Gradio
-  shoptalk_paths.py                        Project-relative path constants
+  gradio_app.py                              Main Gradio application
 
-server/recommender_core/
-  config.py                                Runtime config dataclasses and INI loading
-  conversation_policy.py                   LLM control and recommendation policy
-  diagnostics.py                           Diagnostics data structures/helpers
-  llm_prompts.py                           Prompt construction helpers
-  parsing.py                               Query/embedding-mode parsing helpers
-  product_candidate.py                     Product candidate representation
-  product_images.py                        Product image-path loading helpers
-  product_vector_store.py                  FAISS/product metadata wrapper
-  query_embedder.py                        ImageBind query embedding wrapper
-  recommender_factory.py                   Runtime construction functions
-  reply_types.py                           Reply/result dataclasses
-  shop_talk_recommender.py                 Main recommender orchestration class
-  vector_db.py                             FAISS artifact loading
-  vector_query.py                          Query-vector combination/search helpers
+  recommender_core/                          Primary runtime recommendation package
+    config.py                                Runtime config dataclasses and INI loading
+    conversation_policy.py                   LLM control and recommendation policy
+    diagnostics.py                           Diagnostics data structures/helpers
+    llm_prompts.py                           Prompt construction helpers
+    parsing.py                               Query/embedding-mode parsing helpers
+    product_candidate.py                     Product candidate representation
+    product_images.py                        Product image-path loading helpers
+    product_vector_store.py                  FAISS/product metadata wrapper
+    query_embedder.py                        ImageBind query embedding wrapper
+    recommender_factory.py                   Runtime construction functions
+    reply_types.py                           Structured reply/result models
+    shop_talk_recommender.py                 Main recommender orchestration class
+    vector_db.py                             FAISS artifact loading
+    vector_query.py                          Query-vector combination/search helpers
 
-server/evals/
-  search_decision/
-    eval_search_decision.py                Eval for pre-retrieval search decisions
-    cases/eval_cases_search_decision.jsonl Search-decision test cases
+  evals/                                     Evaluation suites and supporting artifacts
+    search_decision/
+      eval_search_decision.py                Pre-retrieval search-decision evaluation
+      cases/                                 Search-decision test cases
 
-  product_response_decision/
-    eval_product_response_decision.py      Eval for post-retrieval product decisions
-    cases/eval_cases_product_response_decision.jsonl
-                                           Product-decision test cases
+    product_response_decision/
+      eval_product_response_decision.py      Post-retrieval product-response evaluation
+      cases/                                 Product-response test cases
 
-tests/                                     Unit tests and lightweight behavior tests
+    retrieval_llm_response/
+      retrieval_llm_eval.py                  Generate judgments and score reviewed files
+      retrieval_llm_eval_*.ini               Modality-specific evaluation configurations
+      cases/                                 Text, image, and text-plus-image cases
+      generated/                             Raw generated judgment files
+      reviewed/                              Human-reviewed judgment files
+      results/                               Scored evaluation outputs
+      query_images/                          Evaluation images and source provenance
+      image_case_reviewer/                   Image-search and case-review application
+      run_image_case_reviewer.py             Reviewer application entry point
 
-Dockerfiles/                               Docker development environment
-  Dockerfile                               ShopTalk development image
-  docker-compose.yaml                      Compose service definition
-  docker-entrypoint.sh                     Container user/setup entrypoint
-  requirements-docker.txt                  Docker-specific Python dependencies
-  shoptalk_shell.sh                        Docker helper script
-  .env-public                              Non-secret Docker environment defaults
+    retrieval_llm_eval.py                    Compatibility wrapper
+    generate_retrieval_llm_judgments.py      Compatibility wrapper
+    score_retrieval_llm_judgments.py         Compatibility wrapper
 
-run_ShopTalk_gradio.sh                     Root-level launcher for Gradio app
-run_eval_search_decision.sh                Root-level launcher for search-decision eval
-run_eval_product_response_decision.sh       Root-level launcher for product-decision eval
+  recommender.py                             Compatibility import wrapper
+  gradio_images.py                           Compatibility import wrapper
+  shoptalk_paths.py                          Compatibility import wrapper
+  static/images/                             Runtime product images (generated/downloaded)
 
-shoptalk_config.ini                        App/eval LLM model settings
-.env.example                              Template for local OpenAI API key
-requirements.txt                           Python dependencies
-setup.py                                   Package install metadata
+tests/                                       Unit and lightweight behavior tests
+
+Dockerfiles/                                 Docker development environment
+  Dockerfile                                 ShopTalk development image
+  docker-compose.yaml                        Compose service definition
+  docker-entrypoint.sh                       Container user/setup entrypoint
+  requirements-docker.txt                    Docker-specific Python dependencies
+  shoptalk_shell.sh                          Docker helper script
+  .env-public                                Non-secret Docker environment defaults
+
+images/                                      Architecture diagrams and editable sources
+
+run_ShopTalk_gradio.sh                       Launch the Gradio app
+run_eval_search_decision.sh                  Run the search-decision evaluation
+run_eval_product_response_decision.sh        Run the product-response evaluation
+run_generate_retrieval_llm_judgments.sh      Generate retrieval/response judgments
+run_score_retrieval_llm_judgments.sh         Score reviewed retrieval/response judgments
+run_image_case_reviewer.sh                   Launch the image-case reviewer
+
+shoptalk_config.ini                          App/evaluation LLM model settings
+.env.example                                 Template for the local OpenAI API key
+requirements.txt                             Python dependencies
+setup.py                                     Package installation metadata
 ```
 
 ## Generated / Downloaded Files Not Tracked by Git
@@ -192,6 +208,7 @@ Common Docker helper commands:
 ./shoptalk_shell.sh restart    # recreate the container
 ```
 
+<!--
 OpenAI-backed app and eval features require one shared local API-key file at the repository root. From the repository root, create it with:
 
 ```bash
@@ -209,12 +226,15 @@ Both the Docker workflow and the conda/local workflow use this same root-level `
 After entering the container shell, launch the Gradio app from the mounted repository root:
 
 ```bash
-./run_ShopTalk_gradio.sh
+./run_ShopTalk_gradio.sh shoptalk_config.ini
 ```
 
-The launcher detects when it is running inside Docker and binds Gradio to `0.0.0.0` automatically so Docker port mapping works. On a normal local host, it defaults to `127.0.0.1`. You can still override the bind address manually with `--server_name`, but that should not be necessary for the standard Docker workflow.
+The Gradio bind address and port are read from the `[server]` section of
+`shoptalk_config.ini`. The checked-in configuration uses `0.0.0.0:7860` so
+Docker port mapping can reach the app.
 
 Docker does not remove the need for the generated/local artifacts described below. The image archive, `images.csv`, generated product blurbs, and FAISS vector DB still need to exist at the expected mounted paths before the full app can run.
+-->
 
 ### Alternative: Conda Environment
 
@@ -251,36 +271,6 @@ pip install -e .
 Current warning: `requirements.txt` is oriented toward the current development environment and includes `faiss-gpu-cu12`. If your machine does not support that FAISS package, install the appropriate FAISS package for your environment instead. For CPU-only testing, `faiss-cpu` is usually the simpler choice.
 
 Keep `requirements.txt` and `Dockerfiles/requirements-docker.txt` synchronized as the app, eval, and test dependencies change.
-
-#### 4. Configure the OpenAI API key
-
-The conda workflow uses the same root-level `.env` file as the Docker workflow. If you have not already created it, create it from the repository root:
-
-```bash
-cp .env.example .env
-```
-
-Then edit `.env` and set:
-
-```text
-OPENAI_API_KEY="your_openai_api_key"
-```
-
-#### 5. Configure the LLM model
-
-The default model settings live in `shoptalk_config.ini`:
-
-```ini
-[llm]
-model_name = gpt-4o
-temperature = 0.1
-
-[evals]
-model_name = gpt-4o
-temperature = 0.0
-```
-
-You can override the app model at runtime with `--model` and `--temperature`.
 
 ## Data Setup
 
@@ -379,6 +369,57 @@ python generate_vector_db.py \
 
 Serving currently expects the FAISS backend.
 
+## LLM Setup
+
+### 1. Configure the OpenAI API key
+
+Use of OpenAI's LLMs require one shared local API-key file at the repository root. From the repository root, create it with:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and set:
+
+```text
+OPENAI_API_KEY="your_openai_api_key"
+```
+
+### 2. Configure the LLM model
+
+The application, retrieval, data-path, server, and evaluation settings live in
+`shoptalk_config.ini`. For example:
+
+```ini
+[llm]
+model_name = gpt-4o
+temperature = 0.1
+
+[app]
+personality = -1
+
+[retrieval]
+vector_db_output_dir = artifacts/vector_db
+vector_backend = faiss
+top_k = 10
+
+[data]
+product_blurbs = EDA/product_blurbs/combined_blurb_dict.json
+images_csv = images.csv
+
+[server]
+server_name = 0.0.0.0
+server_port = 7860
+
+[evals]
+model_name = gpt-4o
+temperature = 0.0
+```
+
+Use `server_name = 0.0.0.0` for Docker port forwarding. For local-only conda
+use, set it to `127.0.0.1`.
+
+
 ## Run the Gradio App
 
 After the image files, `images.csv`, product blurbs, vector DB artifacts, and `.env` file are in place, run:
@@ -399,11 +440,11 @@ Common runtime options:
 python -m server.gradio_app --help
 ```
 
+Note: The launcher detects when it is running inside Docker and binds Gradio to `0.0.0.0` automatically so Docker port mapping works. On a normal local host, it defaults to `127.0.0.1`. You can still override the bind address manually with `--server_name`, but that should not be necessary for the standard Docker workflow.
+
 Examples:
 
 ```bash
-# Force CPU
-./run_ShopTalk_gradio.sh --cpu
 
 # Enable debug output
 ./run_ShopTalk_gradio.sh --debug
