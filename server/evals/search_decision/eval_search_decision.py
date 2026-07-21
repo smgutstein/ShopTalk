@@ -257,7 +257,7 @@ def print_summary(results: list[EvalResult]) -> None:
         print("No cases evaluated.")
         return
 
-    print(f"{passed}/{total} = {passed / total:.1%}")
+    print(f"correct: {passed}/{total} = {passed / total:.1%}")
     print(f"errors: {sum(result.error is not None for result in results)}")
 
     by_category: dict[str, list[EvalResult]] = defaultdict(list)

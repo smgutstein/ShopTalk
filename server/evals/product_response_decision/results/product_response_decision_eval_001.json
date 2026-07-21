@@ -1,0 +1,822 @@
+{
+  "run": {
+    "config": "/home/steven/Projects/ShopTalk/sgShopTalk/server/evals/product_response_decision/product_response_decision_eval.ini",
+    "cases": "server/evals/product_response_decision/cases/eval_cases_product_response_decision.jsonl",
+    "model": "gpt-4o",
+    "temperature": 0.0
+  },
+  "summary": {
+    "total": 45,
+    "passed": 44,
+    "accuracy": 0.9777777777777777,
+    "action_accuracy": 0.9777777777777777,
+    "product_id_accuracy_on_expected_recommendations": 1.0,
+    "errors": 0,
+    "by_category": {
+      "dive_deeper": {
+        "total": 15,
+        "passed": 14,
+        "accuracy": 0.9333333333333333
+      },
+      "recommend": {
+        "total": 15,
+        "passed": 15,
+        "accuracy": 1.0
+      },
+      "wrong_track": {
+        "total": 15,
+        "passed": 15,
+        "accuracy": 1.0
+      }
+    },
+    "confusion_counts": [
+      {
+        "expected_action": "dive_deeper",
+        "actual_action": "dive_deeper",
+        "count": 14
+      },
+      {
+        "expected_action": "dive_deeper",
+        "actual_action": "recommend",
+        "count": 1
+      },
+      {
+        "expected_action": "recommend",
+        "actual_action": "recommend",
+        "count": 15
+      },
+      {
+        "expected_action": "wrong_track",
+        "actual_action": "wrong_track",
+        "count": 15
+      }
+    ]
+  },
+  "results": [
+    {
+      "case_id": "recommend_001_gray_mesh_headrest_office_chair",
+      "category": "recommend",
+      "latest_user": "I need a gray office chair with a headrest and arms I can move out of the way.",
+      "product_summaries": [
+        "B07Q44L76B: AmazonBasics Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest \u2013 Grey [office_chair, score=0.940]",
+        "B07RGKYS9K: AmazonCommercial Ergonomic Mid-Back Mesh Desk/Computer Chair with Adjustable Seat, Armrests, and Lumbar Support - Black [office_chair, score=0.820]",
+        "B07TFFF6V4: AmazonBasics Mid-Back Guest/Reception Chair, with Contoured Mesh Seat \u2013 Grey [guest_chair, score=0.770]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B07Q44L76B",
+      "actual_product_id": "B07Q44L76B",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_002_ivory_oversized_executive_chair",
+      "category": "recommend",
+      "latest_user": "Can you find me a roomy ivory executive-style desk chair?",
+      "product_summaries": [
+        "B07V6Z97QJ: AmazonBasics Modern LeatherSoft Executive Chair, 300lbs Capacity with Oversized Seat Cushion, Ivory [office_chair, score=0.930]",
+        "B07Q44L76B: AmazonBasics Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest \u2013 Grey [office_chair, score=0.760]",
+        "B07TFFF6V4: AmazonBasics Mid-Back Guest/Reception Chair, with Contoured Mesh Seat \u2013 Grey [guest_chair, score=0.690]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B07V6Z97QJ",
+      "actual_product_id": "B07V6Z97QJ",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_003_round_black_modern_mirror",
+      "category": "recommend",
+      "latest_user": "I'm decorating a room and want a modern round black wall mirror.",
+      "product_summaries": [
+        "B084HV6KDV: Amazon Brand \u2013 Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black [mirror, score=0.950]",
+        "B07RPP7S5R: Amazon Basics Rectangular Wall Mirror - 20\" x 28\", Standard Trim, Nickel [mirror, score=0.780]",
+        "B084HVB14C: Amazon Brand - Rivet Modern Rhombus Cutout Hanging Mirror, 26.75\"H, Black [mirror, score=0.760]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B084HV6KDV",
+      "actual_product_id": "B084HV6KDV",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_004_marble_gold_coffee_table",
+      "category": "recommend",
+      "latest_user": "Show me a coffee table with a marble look and gold accents.",
+      "product_summaries": [
+        "B07DBFQV23: Amazon Brand \u2013 Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold [coffee_table, score=0.940]",
+        "B084MN72YQ: Amazon Brand \u2013 Rivet Modern Industrial Coffee Table with Metal Base and Trays, 42.1\"W, Walnut Finish [coffee_table, score=0.790]",
+        "B07MFYTSC8: Ravenna Home Classic Plank-Top Coffee Table, 42\"W, Black Wood [coffee_table, score=0.720]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B07DBFQV23",
+      "actual_product_id": "B07DBFQV23",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_005_black_cream_geometric_rug",
+      "category": "recommend",
+      "latest_user": "I need a black and cream rug with a geometric pattern.",
+      "product_summaries": [
+        "B07QJLYXGY: Amazon Brand \u2013 Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream [rug, score=0.940]",
+        "B07QHL4LQ2: Ravenna Home Floral Medallion Tiled Rug, 4' x 6', Cerulean Blue with Ivory [rug, score=0.750]",
+        "B071ZJ5X4Y: Amazon Brand \u2013 Stone & Beam Contemporary Speckle Wool Area Rug, 5' x 7' 6\", Blue [rug, score=0.730]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B07QJLYXGY",
+      "actual_product_id": "B07QJLYXGY",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_006_midcentury_lamp_blue_shade",
+      "category": "recommend",
+      "latest_user": "I'm looking for a mid-century table lamp with a light blue shade.",
+      "product_summaries": [
+        "B07DWHQPCQ: Amazon Brand \u2013 Ravenna Home Mid Century Modern White Ceramic Table Lamp With LED Light Bulb - 21 Inches, Light Blue Linen Shade [table_lamp, score=0.950]",
+        "B07QB7G5ZZ: Amazon Brand \u2013 Stone & Beam Glazed Ceramic Table Lamp, 18\"H, Gray [table_lamp, score=0.750]",
+        "B075X2LLTM: Amazon Brand \u2013 Stone & Beam Modern 3 Sphere Ceramic Table Lamp With LED Light Bulb and Drum Shade - 14 x 28.5 Inches, Grey [table_lamp, score=0.720]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B07DWHQPCQ",
+      "actual_product_id": "B07DWHQPCQ",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_007_small_red_bluetooth_speaker",
+      "category": "recommend",
+      "latest_user": "Do you have a small red Bluetooth speaker?",
+      "product_summaries": [
+        "B00LLJ58ME: AmazonBasics Micro Bluetooth Speaker - Red [bluetooth_speaker, score=0.950]",
+        "B00MJEYM5O: AmazonBasics Large Portable Bluetooth Speaker [bluetooth_speaker, score=0.740]",
+        "B01FJEEW1Y: AmazonBasics Micro Bluetooth Speaker (Blue) and 3.5mm Male to Male Stereo Audio Cable (2 Feet) Set [bluetooth_speaker, score=0.710]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B00LLJ58ME",
+      "actual_product_id": "B00LLJ58ME",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_008_orange_packable_daypack",
+      "category": "recommend",
+      "latest_user": "I want a small orange backpack I can use for hiking or travel.",
+      "product_summaries": [
+        "B01AIVT6NM: AmazonBasics Lightweight Packable Hiking Travel Day Pack Backpack - 17.5 x 17.5 x 11.5 Inches, 25 Liter, Orange [backpack, score=0.960]",
+        "B01EWFECJ8: AmazonBasics 8-Piece Packing Cube Set - 1 Large, 1 Medium, 1 Small, and 5 Slim [packing_cubes, score=0.750]",
+        "B07C7CMNLD: EONO Essentials Lightweight 21\" ABS Hard Shell Travel Trolley Carry On Hand Cabin Suitcase with 4 Wheels, Approved for Ryanair, easyJet, British Airways, Flybe and More, 2 Piece Luggage Set, Black [luggage, score=0.700]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B01AIVT6NM",
+      "actual_product_id": "B01AIVT6NM",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_009_plain_black_ballet_flats",
+      "category": "recommend",
+      "latest_user": "I want plain black ballet flats, easy to wear and not too dressy.",
+      "product_summaries": [
+        "B082PMY1L2: Amazon Essentials Women's Ballet Flat, Black Knit, 9.5 Wide US [ballet_flat, score=0.950]",
+        "B082PN2TD9: Amazon Essentials Women's Ballet Flat, Black Knit, 7.5 B US [ballet_flat, score=0.820]",
+        "B071DQ4HHJ: find. Women's Basil-1w501 Ballet Flats, Silver, 8 [ballet_flat, score=0.740]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B082PMY1L2",
+      "actual_product_id": "B082PMY1L2",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_010_light_blue_womens_running_shoes",
+      "category": "recommend",
+      "latest_user": "Do you have light blue running shoes for women?",
+      "product_summaries": [
+        "B08BVKSRLD: ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001) [running_shoe, score=0.950]",
+        "B07R67PD2V: CARE OF by PUMA Women\u2019s Trainer, White, US 8.5 [trainer, score=0.780]",
+        "B07PRMC1MF: Amazon Essentials Women's Collins Combat Boot, Black, 9 B US [boot, score=0.670]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B08BVKSRLD",
+      "actual_product_id": "B08BVKSRLD",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_011_compact_space_heater",
+      "category": "recommend",
+      "latest_user": "I need a small personal space heater for a desk area.",
+      "product_summaries": [
+        "B077P7GM7Z: AmazonBasics 500-Watt Ceramic Small Space Personal Mini Heater [space_heater, score=0.940]",
+        "B082MVGP8T: AmazonBasics Electric Glass and Steel Kettle - 1.0 Liter [electric_kettle, score=0.700]",
+        "B07BZQKC5M: AmazonBasics Air-Circulator 3 Speed Small Room Floor Fan [fan, score=0.680]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B077P7GM7Z",
+      "actual_product_id": "B077P7GM7Z",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_012_neoprene_5lb_dumbbells",
+      "category": "recommend",
+      "latest_user": "Can you find a pair of 5 pound neoprene dumbbells?",
+      "product_summaries": [
+        "B01LR5RO5U: AmazonBasics Neoprene Dumbbell Hand Weights, 5 Pound Each, Green - Set of 2 [dumbbells, score=0.950]",
+        "B01LR5RK0Y: AmazonBasics Neoprene Dumbbell Hand Weights, 4 Pound Each, Blue - Set of 2 [dumbbells, score=0.860]",
+        "B00R3MZSB4: AmazonBasics 1/4-Inch Yoga and Exercise Mat with Carrying Strap, Black [exercise_mat, score=0.620]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B01LR5RO5U",
+      "actual_product_id": "B01LR5RO5U",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_013_rechargeable_aa_batteries",
+      "category": "recommend",
+      "latest_user": "I need rechargeable AA batteries.",
+      "product_summaries": [
+        "B08C4PPMMC: AmazonBasics AA High-Capacity Ni-MH Rechargeable Batteries (2400 mAh), Pre-charged - Pack of 24 (Renewed) [batteries, score=0.940]",
+        "B01B8R6PF2: AmazonBasics 100 Pack AA High-Performance Alkaline Batteries, 10-Year Shelf Life, Easy to Open Value Pack [batteries, score=0.790]",
+        "B01IB843RS: AmazonBasics AAA Performance Alkaline Batteries, 20 Count [batteries, score=0.710]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B08C4PPMMC",
+      "actual_product_id": "B08C4PPMMC",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_014_power_strip_surge_protector",
+      "category": "recommend",
+      "latest_user": "I need a power strip surge protector with a lot of outlets.",
+      "product_summaries": [
+        "B07GPF72BZ: AmazonBasics 12-Outlet Power Strip Surge Protector | 4,320 Joule, 8-Foot Cord [surge_protector, score=0.950]",
+        "B07QZKBRW4: AmazonBasics Extension Cord - 15 feet - US - Black & 6-Outlet Surge Protector Power Strip, 790 Joule - Black [surge_protector, score=0.850]",
+        "B07SYSTN64: AmazonBasics Flat Plug Grounded Indoor Extension Cord with 3 Outlets [extension_cord, score=0.700]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B07GPF72BZ",
+      "actual_product_id": "B07GPF72BZ",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "recommend_015_dry_erase_board",
+      "category": "recommend",
+      "latest_user": "Can you show me a basic dry erase board for my office?",
+      "product_summaries": [
+        "B085PH9QKH: AmazonBasics Dry Erase Board, 24\"x 36\",Aluminum Frame [dry_erase_board, score=0.950]",
+        "B00QSR9BT0: AmazonBasics Narrow Ruled 5 x 8-Inch Writing Pad - Canary (50 sheets per pad, 12 pack) [notepad, score=0.730]",
+        "B0879Y1J7S: AmazonBasics Professional Padfolio, A4 [padfolio, score=0.680]"
+      ],
+      "expected_action": "recommend",
+      "actual_action": "recommend",
+      "expected_product_id": "B085PH9QKH",
+      "actual_product_id": "B085PH9QKH",
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_001_chair_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I need a chair.",
+      "product_summaries": [
+        "B07Q44L76B: AmazonBasics Adjustable High-Back Mesh Chair with Flip-up Arms and Head Rest \u2013 Grey [office_chair, score=0.880]",
+        "B07TFFF6V4: AmazonBasics Mid-Back Guest/Reception Chair, with Contoured Mesh Seat \u2013 Grey [guest_chair, score=0.860]",
+        "B07B4G487Q: Amazon Brand \u2013 Stone & Beam Jacobsen Traditional Accent Chair, 31\"W, Walnut [accent_chair, score=0.840]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_002_rug_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "Can you help me pick a rug?",
+      "product_summaries": [
+        "B07QJLYXGY: Amazon Brand \u2013 Rivet Contemporary Handtufted Cotton-and-Wool Area Rug with Geometric Feathered Pattern, 4' x 6', Black and Cream [rug, score=0.860]",
+        "B071ZJ5X4Y: Amazon Brand \u2013 Stone & Beam Contemporary Speckle Wool Area Rug, 5' x 7' 6\", Blue [rug, score=0.840]",
+        "B07QHL4LQ2: Ravenna Home Floral Medallion Tiled Rug, 4' x 6', Cerulean Blue with Ivory [rug, score=0.820]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_003_lamp_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I'm looking for a lamp.",
+      "product_summaries": [
+        "B07DWHQPCQ: Amazon Brand \u2013 Ravenna Home Mid Century Modern White Ceramic Table Lamp With LED Light Bulb - 21 Inches, Light Blue Linen Shade [table_lamp, score=0.860]",
+        "B07QB7G5ZZ: Amazon Brand \u2013 Stone & Beam Glazed Ceramic Table Lamp, 18\"H, Gray [table_lamp, score=0.840]",
+        "B07DBHLG78: Ravenna Home Metal Living Room Standing Floor Lamp With LED Light Bulb - 59.25 Inches, Matte Black With Beige Shade [floor_lamp, score=0.820]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_004_sofa_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I want a sofa for my living room.",
+      "product_summaries": [
+        "B07BWLJR8S: Amazon Brand \u2013 Rivet Revolve Modern Upholstered Loveseat Sofa, 56\"W, Storm Grey [loveseat, score=0.860]",
+        "B07P8ST9TY: Amazon Brand \u2013 Stone & Beam Charles Classic Oversized Upholstered Sofa, 92\"W, Dove [sofa, score=0.840]",
+        "B07BWK58CN: Amazon Brand \u2013 Stone & Beam Andover Leather Left-Facing L-Shaped Sectional, 124\"W, Charcoal [sectional, score=0.820]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "recommend",
+      "expected_product_id": null,
+      "actual_product_id": "B07P8ST9TY",
+      "passed": false,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_005_shoes_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I need some women's shoes.",
+      "product_summaries": [
+        "B082PMY1L2: Amazon Essentials Women's Ballet Flat, Black Knit, 9.5 Wide US [ballet_flat, score=0.850]",
+        "B07PRMC1MF: Amazon Essentials Women's Collins Combat Boot, Black, 9 B US [boot, score=0.840]",
+        "B08BVKSRLD: ELISE Women's Light Blue Running Shoes-4 UK (37 EU) (5 US) (ES-S20-001) [running_shoe, score=0.830]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_006_coffee_table_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "Can you find me a coffee table?",
+      "product_summaries": [
+        "B07DBFQV23: Amazon Brand \u2013 Ravenna Home Parker Coffee Table, 47.2\"W, Marble &amp; Gold [coffee_table, score=0.860]",
+        "B084MN72YQ: Amazon Brand \u2013 Rivet Modern Industrial Coffee Table with Metal Base and Trays, 42.1\"W, Walnut Finish [coffee_table, score=0.840]",
+        "B07MFYTSC8: Ravenna Home Classic Plank-Top Coffee Table, 42\"W, Black Wood [coffee_table, score=0.830]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_007_mirror_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I need a wall mirror.",
+      "product_summaries": [
+        "B084HV6KDV: Amazon Brand \u2013 Rivet Modern Round Cutout Hanging Mirror, 22.25\" Diameter, Black [mirror, score=0.870]",
+        "B07RPP7S5R: Amazon Basics Rectangular Wall Mirror - 20\" x 28\", Standard Trim, Nickel [mirror, score=0.860]",
+        "B084KDB8BQ: Amazon Brand \u2013 Stone & Beam Vintage Farmhouse Wooden Arched Multipanel Mantel Mirror, 36\"H, Light Stain [mirror, score=0.840]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_008_office_supplies_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I need some supplies for my desk.",
+      "product_summaries": [
+        "B085PH9QKH: AmazonBasics Dry Erase Board, 24\"x 36\",Aluminum Frame [dry_erase_board, score=0.840]",
+        "B00QSR9BT0: AmazonBasics Narrow Ruled 5 x 8-Inch Writing Pad - Canary (50 sheets per pad, 12 pack) [notepad, score=0.820]",
+        "B07W1RDWGN: AmazonBasics 3 Tray Desk Organizer with Sliding Drawer and Hanging File Holder, Black [desk_organizer, score=0.810]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_009_kitchen_appliance_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I need a small kitchen appliance.",
+      "product_summaries": [
+        "B082MVGP8T: AmazonBasics Electric Glass and Steel Kettle - 1.0 Liter [electric_kettle, score=0.850]",
+        "B07QP7SMZ2: AmazonBasics Single Serve Capsule Coffee Maker, Red [coffee_maker, score=0.840]",
+        "B087Z96JCL: AmazonBasics Electric Coffee Bean Grinder, White (Renewed) [coffee_grinder, score=0.830]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_010_storage_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I need something for storage.",
+      "product_summaries": [
+        "B01LX0XEQU: AmazonBasics 4-Shelf Shelving Unit on Wheels - Black [shelving_unit, score=0.850]",
+        "B08FGH14HD: AmazonBasics Fabric 3-Drawer Storage Organizer Unit for Closet, Black (Renewed) [drawer_organizer, score=0.840]",
+        "B07PQZNLWK: AmazonBasics Wall Mounted Coat Rack, 8 Standard Hooks [coat_rack, score=0.810]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_011_bedroom_furniture_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I want some bedroom furniture.",
+      "product_summaries": [
+        "B086NBMYT1: AmazonBasics Faux-Linen Button Tufted-Upholstered Bed with Curve Design - Strong Wood Slat Support\u00a0- Easy Assembly - Dark Grey, Full [bed, score=0.850]",
+        "B07HSHYZKN: Amazon Brand \u2013 Stone & Beam Rylee Modern Acacia Wood 5-Drawer Bedroom Chest, 39.4\"W, Gray-Wash Acacia [chest, score=0.840]",
+        "B075QMHYVD: Amazon Brand \u2013 Rivet Brecken Modern Wood Nightstand Bedside Table, 24 Inch, Brown [nightstand, score=0.830]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_012_exercise_equipment_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I want some exercise equipment for home.",
+      "product_summaries": [
+        "B01LR5RO5U: AmazonBasics Neoprene Dumbbell Hand Weights, 5 Pound Each, Green - Set of 2 [dumbbells, score=0.850]",
+        "B00R3MZSB4: AmazonBasics 1/4-Inch Yoga and Exercise Mat with Carrying Strap, Black [exercise_mat, score=0.840]",
+        "B07RGVHYD4: AmazonBasics Dual Wheel Ab Abdominal Exercise Roller with Knee Pad [ab_roller, score=0.830]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_013_outdoor_patio_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I need something for my patio.",
+      "product_summaries": [
+        "B089G12ZQV: AmazonBasics Commercial, Propane 46,000 BTU, Outdoor Patio Heater with Wheels, Stainless Steel (Renewed) [patio_heater, score=0.850]",
+        "B07WZZL1J6: AmazonBasics PF-CS348-BR Conversation Set, 4-Piece, Brown [patio_conversation_set, score=0.840]",
+        "B0007OIDKS: Strathwood Classic Teak Garden Bench, Two Seater [garden_bench, score=0.820]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_014_bed_sheets_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "I'm looking for sheets.",
+      "product_summaries": [
+        "B07Q1YLCDC: AmazonBasics Cotton and Rayon Derived from Bamboo Bed Sheet Set - Queen, Light Blue [sheet_set, score=0.860]",
+        "B07KB1KMTM: AmazonBasics Premium, Easy-Wash Embroidered Hotel Stitch 120 GSM Sheet Set - Queen, Seafoam Green [sheet_set, score=0.850]",
+        "B002E1AWWE: Pinzon Cotton 500-Thread-Count Cotton Lucia Checks Full Sheet Set, Mineral [sheet_set, score=0.830]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "dive_deeper_015_wall_art_too_broad",
+      "category": "dive_deeper",
+      "latest_user": "Can you show me some wall art?",
+      "product_summaries": [
+        "B073P1JGPN: Amazon Brand \u2013 Rivet Turquoise Blue Crystal Kaleidoscope Canvas Print Wall Art, 12\" x 12\" [wall_art, score=0.860]",
+        "B073P63RQ5: Amazon Brand \u2013 Stone & Beam Modern Black and White Desert Cactus Photo on Wood, White Frame, 12\" x 12\" [wall_art, score=0.840]",
+        "B073P5Y9J8: Amazon Brand \u2013 Rivet Modern Black Framed Black and White Paris Map Print, 12\" x 12\" [wall_art, score=0.830]"
+      ],
+      "expected_action": "dive_deeper",
+      "actual_action": "dive_deeper",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_001_gaming_laptop_results_are_cables",
+      "category": "wrong_track",
+      "latest_user": "I need a gaming laptop with a real graphics card.",
+      "product_summaries": [
+        "B00CES8HYM: AmazonBasics USB 2.0 Printer Type Cable - A-Male to B-Male\u00a0Adapter Cord [usb_cable, score=0.820]",
+        "B0134V3KIA: AmazonBasics Mini DisplayPort to HDMI Display Adapter Cable - 6 Feet [display_adapter, score=0.790]",
+        "B010QZD6I6: AmazonBasics Notebook Laptop Stand Arm Mount Tray [laptop_stand, score=0.760]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_002_road_bike_results_are_fitness_accessories",
+      "category": "wrong_track",
+      "latest_user": "Can you help me find a road bike for commuting and weekend rides?",
+      "product_summaries": [
+        "B00R3MZSB4: AmazonBasics 1/4-Inch Yoga and Exercise Mat with Carrying Strap, Black [exercise_mat, score=0.810]",
+        "B07RGVHYD4: AmazonBasics Dual Wheel Ab Abdominal Exercise Roller with Knee Pad [ab_roller, score=0.780]",
+        "B01LR5RO5U: AmazonBasics Neoprene Dumbbell Hand Weights, 5 Pound Each, Green - Set of 2 [dumbbells, score=0.750]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_003_bike_helmet_results_are_hats",
+      "category": "wrong_track",
+      "latest_user": "I need a bike helmet for riding around the city.",
+      "product_summaries": [
+        "B07R54NZBC: Amazon Brand - Goodthreads Men's Sherpa Trapper Hat, Navy, Small [winter_hat, score=0.800]",
+        "B079J7R9GD: Starter Men's Performance Visor, Amazon Exclusive, Black, One Size [visor, score=0.780]",
+        "B07Q47NW6B: Spotted Zebra Boys' Toddler Hat Scarf Mittens Gloves Cold Weather Accessories, Dino Fairisle Set, 4T [kids_cold_weather_accessory, score=0.740]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_004_robot_vacuum_results_are_cleaning_supplies",
+      "category": "wrong_track",
+      "latest_user": "Do you have a robot vacuum that works well on hardwood floors?",
+      "product_summaries": [
+        "B07YD5CQFB: Whole Foods Market, Organic Multisurface Cleaner, Unscented, 24 Fl Oz [cleaner, score=0.820]",
+        "B07FKFVJ5N: Amazon Brand - Solimo Dishwasher Detergent Pacs, Fresh Scent, 54 Count [dishwasher_detergent, score=0.790]",
+        "B07XBGB5FC: AmazonBasics Dust Mop Head Replacement, Cotton, 18 Inch, 6-Pack (Renewed) [dust_mop_head, score=0.760]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_005_snow_blower_results_are_patio_items",
+      "category": "wrong_track",
+      "latest_user": "Do you have a snow blower for clearing a driveway?",
+      "product_summaries": [
+        "B089G12ZQV: AmazonBasics Commercial, Propane 46,000 BTU, Outdoor Patio Heater with Wheels, Stainless Steel (Renewed) [patio_heater, score=0.800]",
+        "B07RB2PNLD: AmazonBasics 23.5 Inch Steel Lattice Fire Pit and Round Fire Pit Cover, Small [fire_pit, score=0.770]",
+        "B07WZZL1J6: AmazonBasics PF-CS348-BR Conversation Set, 4-Piece, Brown [patio_conversation_set, score=0.740]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_006_formal_black_dress_shoe_results_are_sneakers",
+      "category": "wrong_track",
+      "latest_user": "I need a formal black dress shoe for a wedding.",
+      "product_summaries": [
+        "B07R9MLZD2: CARE OF by PUMA Men\u2019s Leather Low-Top Trainers, Black, US 11.5 [trainer, score=0.820]",
+        "B06XGF9YR3: Amazon Brand - find. Men's Sneakers Avenue Slip-on Grey (Grey) US 12 [sneaker, score=0.780]",
+        "B07JQGDHCQ: find. Men's Fly Knit [knit_shoe, score=0.740]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_007_waterproof_hiking_boot_results_are_slippers",
+      "category": "wrong_track",
+      "latest_user": "I need waterproof hiking boots for wet trails.",
+      "product_summaries": [
+        "B0746MD13N: Amazon Brand - 206 Collective Women's Roosevelt Shearling Slide Slipper Shoe, Sand, 7 B US [slipper, score=0.800]",
+        "B08CHZY3H7: Solefit Women's Black Slippers-7 UK (41 EU) (SLFT-0067) [slipper, score=0.770]",
+        "B07VHT55JS: Amazon Essentials Women's Slumber Slipper, Black, 6 M US - Amazon Vine [slipper, score=0.740]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_008_compact_microwave_results_are_popcorn",
+      "category": "wrong_track",
+      "latest_user": "I'm trying to find a compact microwave for a small apartment.",
+      "product_summaries": [
+        "B074MFX9GN: 365 Everyday Value, Organic Microwave Popcorn, Butter Flavor, 3.5 oz, 3 pk [popcorn, score=0.820]",
+        "B082MVGP8T: AmazonBasics Electric Glass and Steel Kettle - 1.0 Liter [electric_kettle, score=0.760]",
+        "B07QP7SMZ2: AmazonBasics Single Serve Capsule Coffee Maker, Red [coffee_maker, score=0.740]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_009_dslr_camera_results_are_frames",
+      "category": "wrong_track",
+      "latest_user": "I'm looking for a DSLR camera body.",
+      "product_summaries": [
+        "B07RGPH6TV: AmazonBasics Photo Frame for use with Instax - 3-Opening - 3.25\"x2\", White [photo_frame, score=0.810]",
+        "B07RM1LD9X: AmazonBasics Photo Frame for use with Instax - 4-Opening - 3.25\"x2\", Barnwood [photo_frame, score=0.790]",
+        "B07VX9QSVW: AmazonBasics Scratch Off Poster of The World Map with Scratcher and Tracking Accessories, 24\" x 31.5\" [map_poster, score=0.700]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_010_king_mattress_results_are_bed_frames",
+      "category": "wrong_track",
+      "latest_user": "I need a king size mattress, not just a bed frame.",
+      "product_summaries": [
+        "B07K6V2MFZ: AmazonBasics Heavy Duty Non-Slip Bed Frame with Steel Slats, Easy Assembly - 14\"H, King [bed_frame, score=0.820]",
+        "B014GCAARK: Brooklyn Bedding Super Duty High Rise Platform Frame, Twin XL [platform_frame, score=0.800]",
+        "B07RKK943W: Amazon Brand - Solimo Costa Engineered Wood Queen Bed with Storage (Walnut) [bed_with_storage, score=0.760]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_011_noise_canceling_headphones_results_are_speakers",
+      "category": "wrong_track",
+      "latest_user": "Do you have noise-canceling over-ear headphones?",
+      "product_summaries": [
+        "B00LLJ58ME: AmazonBasics Micro Bluetooth Speaker - Red [bluetooth_speaker, score=0.800]",
+        "B00MJEYM5O: AmazonBasics Large Portable Bluetooth Speaker [bluetooth_speaker, score=0.770]",
+        "B00GHY5F3K: AmazonBasics USB Powered Computer Speakers (A100) [computer_speakers, score=0.740]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_012_stainless_cookware_results_are_dinnerware",
+      "category": "wrong_track",
+      "latest_user": "I need a stainless steel cookware set for cooking.",
+      "product_summaries": [
+        "B01M8HNS4G: AmazonBasics 18-Piece Dinnerware Set, Service for 6 and International Silver Arabesque Frost 18/0 Stainless Steel Flatware, 20-Piece Set, Service for 4 (5114325) Bundle [dinnerware_set, score=0.800]",
+        "B0157FD9MS: AmazonBasics 6-Piece White Dinner Plate Set [dinner_plate_set, score=0.780]",
+        "B000UD8EC8: Pinzon 3-Piece Nylon Mixing Bowl Set [mixing_bowls, score=0.740]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_013_dog_harness_results_are_dog_food",
+      "category": "wrong_track",
+      "latest_user": "Can you find a dog harness for walking a medium dog?",
+      "product_summaries": [
+        "B07D4ZB5Q6: Amazon Brand - Solimo Premium Dry Dog Food Chicken & Rice Recipe (5 Lb Bag) [dog_food, score=0.820]",
+        "B08633KQQW: Amazon Brand \u2013 Wag Dry Dog Food, Salmon and Brown Rice, 5 lb Bag [dog_food, score=0.800]",
+        "B07MWSP2FG: Amazon Brand - Wag American Turkey & Sweet Potato Jerky Treats for Dogs, 1 Lb Bag [dog_treats, score=0.770]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_014_lawn_mower_results_are_garden_furniture",
+      "category": "wrong_track",
+      "latest_user": "I need an electric lawn mower.",
+      "product_summaries": [
+        "B0007OIDKS: Strathwood Classic Teak Garden Bench, Two Seater [garden_bench, score=0.800]",
+        "B00GAXLIFW: Strathwood Barnes 9' Aluminum Patio Umbrella [patio_umbrella, score=0.770]",
+        "B000BIXAP8: Strathwood Granite Finish Mounted Hose Hanger [hose_hanger, score=0.740]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    },
+    {
+      "case_id": "wrong_track_015_blood_pressure_monitor_results_are_basic_care_meds",
+      "category": "wrong_track",
+      "latest_user": "I'm looking for a blood pressure monitor.",
+      "product_summaries": [
+        "B074F28Q9M: Basic Care Allergy Relief Loratadine Tablets, 90 Count [allergy_medicine, score=0.800]",
+        "B079HXLZGY: Amazon Basic Care Sleep Aid Tablets, Doxylamine Succinate Tablets, 25 mg, Nighttime Sleep Aid to Help You Fall Asleep, 96 Count [sleep_aid, score=0.780]",
+        "B07R1DMNK4: Amazon Basic Care Ibuprofen Tablets 200 mg, Pain Reliever/Fever Reducer (NSAID), 1000 Count [ibuprofen, score=0.760]"
+      ],
+      "expected_action": "wrong_track",
+      "actual_action": "wrong_track",
+      "expected_product_id": null,
+      "actual_product_id": null,
+      "passed": true,
+      "reason": "",
+      "error": null
+    }
+  ]
+}

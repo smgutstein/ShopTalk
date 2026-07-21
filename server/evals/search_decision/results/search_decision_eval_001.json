@@ -1,0 +1,586 @@
+{
+  "run": {
+    "config": "/home/steven/Projects/ShopTalk/sgShopTalk/server/evals/search_decision/search_decision_eval.ini",
+    "cases": "server/evals/search_decision/cases/eval_cases_search_decision.jsonl",
+    "model": "gpt-4o",
+    "temperature": 0.0
+  },
+  "summary": {
+    "total": 46,
+    "passed": 44,
+    "accuracy": 0.9565217391304348,
+    "errors": 0,
+    "by_category": {
+      "acknowledgement": {
+        "total": 5,
+        "passed": 5,
+        "accuracy": 1.0
+      },
+      "alternative_request": {
+        "total": 5,
+        "passed": 5,
+        "accuracy": 1.0
+      },
+      "boundary": {
+        "total": 6,
+        "passed": 5,
+        "accuracy": 0.8333333333333334
+      },
+      "changed_constraint": {
+        "total": 5,
+        "passed": 5,
+        "accuracy": 1.0
+      },
+      "clarification_question": {
+        "total": 5,
+        "passed": 5,
+        "accuracy": 1.0
+      },
+      "existing_candidate_question": {
+        "total": 5,
+        "passed": 4,
+        "accuracy": 0.8
+      },
+      "initial_general_question": {
+        "total": 5,
+        "passed": 5,
+        "accuracy": 1.0
+      },
+      "initial_product_request": {
+        "total": 5,
+        "passed": 5,
+        "accuracy": 1.0
+      },
+      "unsupported_product_type": {
+        "total": 5,
+        "passed": 5,
+        "accuracy": 1.0
+      }
+    },
+    "confusion_counts": [
+      {
+        "expected_action": "answer_without_search",
+        "actual_action": "answer_without_search",
+        "count": 20
+      },
+      {
+        "expected_action": "answer_without_search",
+        "actual_action": "search",
+        "count": 2
+      },
+      {
+        "expected_action": "search",
+        "actual_action": "search",
+        "count": 24
+      }
+    ]
+  },
+  "results": [
+    {
+      "case_id": "initial_product_request_001",
+      "category": "initial_product_request",
+      "latest_user": "I need comfortable walking shoes for wide feet.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "comfortable walking shoes wide feet",
+      "passed": true,
+      "reason": "Initial product request with product type and fit constraint.",
+      "error": null
+    },
+    {
+      "case_id": "initial_product_request_002",
+      "category": "initial_product_request",
+      "latest_user": "Looking for black dress shoes I can wear to work.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "black dress shoes for work",
+      "passed": true,
+      "reason": "Initial request with product type, color, and use case.",
+      "error": null
+    },
+    {
+      "case_id": "initial_product_request_003",
+      "category": "initial_product_request",
+      "latest_user": "Can you find lightweight trail running shoes?",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "lightweight trail running shoes",
+      "passed": true,
+      "reason": "Explicit request to find a product.",
+      "error": null
+    },
+    {
+      "case_id": "initial_product_request_004",
+      "category": "initial_product_request",
+      "latest_user": "I want casual sneakers for walking around the city.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "casual sneakers for city walking",
+      "passed": true,
+      "reason": "Initial product request with use case.",
+      "error": null
+    },
+    {
+      "case_id": "initial_product_request_005",
+      "category": "initial_product_request",
+      "latest_user": "Show me blue suede shoes.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "blue suede shoes",
+      "passed": true,
+      "reason": "Plausible product request; recommendation depends on retrieved inventory quality.",
+      "error": null
+    },
+    {
+      "case_id": "initial_general_question_001",
+      "category": "initial_general_question",
+      "latest_user": "What does arch support mean?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "First-turn explanation question, not a request to retrieve products.",
+      "error": null
+    },
+    {
+      "case_id": "initial_general_question_002",
+      "category": "initial_general_question",
+      "latest_user": "How do I know if a shoe fits properly?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "General product-selection advice can be answered without retrieval.",
+      "error": null
+    },
+    {
+      "case_id": "initial_general_question_003",
+      "category": "initial_general_question",
+      "latest_user": "Do running shoes usually last longer than walking shoes?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "General comparison question, not a product retrieval request.",
+      "error": null
+    },
+    {
+      "case_id": "initial_general_question_004",
+      "category": "initial_general_question",
+      "latest_user": "What's the difference between loafers and moccasins?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Definition/comparison question does not require product retrieval.",
+      "error": null
+    },
+    {
+      "case_id": "initial_general_question_005",
+      "category": "initial_general_question",
+      "latest_user": "Are suede shoes hard to keep clean?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Care/advice question can be answered without searching inventory.",
+      "error": null
+    },
+    {
+      "case_id": "changed_constraint_001",
+      "category": "changed_constraint",
+      "latest_user": "Actually, I need wide sizes.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "comfortable wide walking shoes",
+      "passed": true,
+      "reason": "New fit constraint should change retrieval.",
+      "error": null
+    },
+    {
+      "case_id": "changed_constraint_002",
+      "category": "changed_constraint",
+      "latest_user": "Make that waterproof if possible.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "waterproof trail running shoes",
+      "passed": true,
+      "reason": "New feature constraint should trigger new retrieval.",
+      "error": null
+    },
+    {
+      "case_id": "changed_constraint_003",
+      "category": "changed_constraint",
+      "latest_user": "No, more casual than that.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "casual work shoes",
+      "passed": true,
+      "reason": "User changes style direction.",
+      "error": null
+    },
+    {
+      "case_id": "changed_constraint_004",
+      "category": "changed_constraint",
+      "latest_user": "I also need something good for standing all day.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "comfortable sneakers for standing all day",
+      "passed": true,
+      "reason": "New use-case constraint changes product requirements.",
+      "error": null
+    },
+    {
+      "case_id": "changed_constraint_005",
+      "category": "changed_constraint",
+      "latest_user": "Actually brown would be better.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "brown dress shoes",
+      "passed": true,
+      "reason": "Color constraint changed.",
+      "error": null
+    },
+    {
+      "case_id": "alternative_request_001",
+      "category": "alternative_request",
+      "latest_user": "Show me something cheaper.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "affordable comfortable walking shoes",
+      "passed": true,
+      "reason": "User asks for a lower-price alternative to the prior recommendation.",
+      "error": null
+    },
+    {
+      "case_id": "alternative_request_002",
+      "category": "alternative_request",
+      "latest_user": "Do you have anything more stylish?",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "stylish casual sneakers",
+      "passed": true,
+      "reason": "User asks for an alternative with a changed style preference.",
+      "error": null
+    },
+    {
+      "case_id": "alternative_request_003",
+      "category": "alternative_request",
+      "latest_user": "Show me another option with better grip.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "trail shoes with superior grip",
+      "passed": true,
+      "reason": "User asks for an alternative with a new performance constraint.",
+      "error": null
+    },
+    {
+      "case_id": "alternative_request_004",
+      "category": "alternative_request",
+      "latest_user": "What else do you have that's less formal?",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "casual office shoes",
+      "passed": true,
+      "reason": "User asks for an alternative with a less-formal style preference.",
+      "error": null
+    },
+    {
+      "case_id": "alternative_request_005",
+      "category": "alternative_request",
+      "latest_user": "Can you suggest a different brand?",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "different brand running shoes",
+      "passed": true,
+      "reason": "User asks for an alternative with a changed brand preference.",
+      "error": null
+    },
+    {
+      "case_id": "existing_candidate_question_001",
+      "category": "existing_candidate_question",
+      "latest_user": "What about the second one?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "User asks about an already-presented candidate.",
+      "error": null
+    },
+    {
+      "case_id": "existing_candidate_question_002",
+      "category": "existing_candidate_question",
+      "latest_user": "Can you compare those two?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Comparison can use existing candidates instead of new retrieval.",
+      "error": null
+    },
+    {
+      "case_id": "existing_candidate_question_003",
+      "category": "existing_candidate_question",
+      "latest_user": "Why not the lighter trail runner?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "User asks about a known candidate, not new products.",
+      "error": null
+    },
+    {
+      "case_id": "existing_candidate_question_004",
+      "category": "existing_candidate_question",
+      "latest_user": "Which of those is best for standing all day?",
+      "expected_action": "answer_without_search",
+      "actual_action": "search",
+      "search_query": "best walking shoes for standing all day",
+      "passed": false,
+      "reason": "Phrase 'of those' asks to evaluate existing candidates.",
+      "error": null
+    },
+    {
+      "case_id": "existing_candidate_question_005",
+      "category": "existing_candidate_question",
+      "latest_user": "Is the first one more formal?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "User asks about an already-presented candidate.",
+      "error": null
+    },
+    {
+      "case_id": "clarification_question_001",
+      "category": "clarification_question",
+      "latest_user": "What does arch support mean?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "User asks for explanation of a term, not new products.",
+      "error": null
+    },
+    {
+      "case_id": "clarification_question_002",
+      "category": "clarification_question",
+      "latest_user": "What is aggressive tread?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Definition question does not require retrieval.",
+      "error": null
+    },
+    {
+      "case_id": "clarification_question_003",
+      "category": "clarification_question",
+      "latest_user": "Why did you recommend that one?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Question asks about previous recommendation.",
+      "error": null
+    },
+    {
+      "case_id": "clarification_question_004",
+      "category": "clarification_question",
+      "latest_user": "Is cushioning more important than support?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "General product-selection explanation can be answered without retrieval.",
+      "error": null
+    },
+    {
+      "case_id": "clarification_question_005",
+      "category": "clarification_question",
+      "latest_user": "How should I choose between them?",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Asks for decision guidance based on current context, not new products.",
+      "error": null
+    },
+    {
+      "case_id": "acknowledgement_001",
+      "category": "acknowledgement",
+      "latest_user": "Thanks.",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Simple acknowledgement.",
+      "error": null
+    },
+    {
+      "case_id": "acknowledgement_002",
+      "category": "acknowledgement",
+      "latest_user": "OK, that makes sense.",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Acknowledges previous answer without changing requirements.",
+      "error": null
+    },
+    {
+      "case_id": "acknowledgement_003",
+      "category": "acknowledgement",
+      "latest_user": "Got it.",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "No new shopping intent.",
+      "error": null
+    },
+    {
+      "case_id": "acknowledgement_004",
+      "category": "acknowledgement",
+      "latest_user": "That helps.",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Positive acknowledgement only.",
+      "error": null
+    },
+    {
+      "case_id": "acknowledgement_005",
+      "category": "acknowledgement",
+      "latest_user": "Cool, thank you.",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "Thanks without new product constraints.",
+      "error": null
+    },
+    {
+      "case_id": "unsupported_product_type_001",
+      "category": "unsupported_product_type",
+      "latest_user": "I need a winter coat for hiking.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "winter hiking coat",
+      "passed": true,
+      "reason": "Shopping request, but requested product type is outside the shoe-focused catalog.",
+      "error": null
+    },
+    {
+      "case_id": "unsupported_product_type_002",
+      "category": "unsupported_product_type",
+      "latest_user": "Can you find me a leather backpack?",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "leather backpack",
+      "passed": true,
+      "reason": "Shopping request should trigger retrieval, but backpack is outside the catalog.",
+      "error": null
+    },
+    {
+      "case_id": "unsupported_product_type_003",
+      "category": "unsupported_product_type",
+      "latest_user": "Show me waterproof gloves.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "waterproof gloves",
+      "passed": true,
+      "reason": "Product request is clear, but requested product type is not carried.",
+      "error": null
+    },
+    {
+      "case_id": "unsupported_product_type_004",
+      "category": "unsupported_product_type",
+      "latest_user": "I'm looking for a laptop bag for commuting.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "laptop bag for commuting",
+      "passed": true,
+      "reason": "Shopping request, but not a shoe or footwear request.",
+      "error": null
+    },
+    {
+      "case_id": "unsupported_product_type_005",
+      "category": "unsupported_product_type",
+      "latest_user": "Do you have ski goggles?",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "ski goggles",
+      "passed": true,
+      "reason": "Catalog mismatch should be caught after retrieval, not answered with unrelated products.",
+      "error": null
+    },
+    {
+      "case_id": "boundary_001",
+      "category": "boundary",
+      "latest_user": "Blue Suede Shoes",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "blue suede shoes",
+      "passed": true,
+      "reason": "Ambiguous phrase but plausibly a product request; retrieval is appropriate.",
+      "error": null
+    },
+    {
+      "case_id": "boundary_002",
+      "category": "boundary",
+      "latest_user": "I meant the song.",
+      "expected_action": "answer_without_search",
+      "actual_action": "answer_without_search",
+      "search_query": null,
+      "passed": true,
+      "reason": "User clarifies non-shopping intent; no product retrieval should occur.",
+      "error": null
+    },
+    {
+      "case_id": "boundary_003",
+      "category": "boundary",
+      "latest_user": "What about blue?",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "comfortable blue walking shoes",
+      "passed": true,
+      "reason": "Short follow-up introduces a color constraint.",
+      "error": null
+    },
+    {
+      "case_id": "boundary_004",
+      "category": "boundary",
+      "latest_user": "Not those.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "men's dress shoes",
+      "passed": true,
+      "reason": "Rejection implies need for alternatives, although the user gives little detail.",
+      "error": null
+    },
+    {
+      "case_id": "boundary_005",
+      "category": "boundary",
+      "latest_user": "No.",
+      "expected_action": "answer_without_search",
+      "actual_action": "search",
+      "search_query": "dress shoes",
+      "passed": false,
+      "reason": "Too little information; better response is to ask what they disliked rather than blindly search.",
+      "error": null
+    },
+    {
+      "case_id": "boundary_006",
+      "category": "boundary",
+      "latest_user": "Show me another one.",
+      "expected_action": "search",
+      "actual_action": "search",
+      "search_query": "comfortable walking shoes for men",
+      "passed": true,
+      "reason": "User asks for another candidate but gives no new preference; search is acceptable for this architecture.",
+      "error": null
+    }
+  ]
+}

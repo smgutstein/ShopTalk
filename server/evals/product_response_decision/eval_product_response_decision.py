@@ -423,11 +423,15 @@ def print_summary(results: list[EvalResult]) -> None:
     if not results:
         print("No cases evaluated.")
         return
-    print(f"joint:      {summary['passed']}/{summary['total']} = {summary['accuracy']:.1%}")
-    print(f"action:     {summary['action_accuracy']:.1%}")
+    print(f"action-and-selection accuracy: {summary['passed']}/{summary['total']} = {summary['accuracy']:.1%}")
+    print(f"action accuracy:               {summary['action_accuracy']:.1%}")
     product_accuracy = summary["product_id_accuracy_on_expected_recommendations"]
-    print(f"product ID: {product_accuracy:.1%}" if product_accuracy is not None else "product ID: n/a")
-    print(f"errors:     {summary['errors']}")
+    print(
+        f"product-selection accuracy:    {product_accuracy:.1%}"
+        if product_accuracy is not None
+        else "product-selection accuracy:    n/a"
+    )
+    print(f"evaluation errors:             {summary['errors']}")
 
     print()
     print("By category")
