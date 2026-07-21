@@ -36,7 +36,7 @@ limit = 7
 [output]
 output_dir = reports
 output_prefix = product_response_test
-output_csv = reports/details.csv
+detail_level = failures
 """.strip(),
         encoding="utf-8",
     )
@@ -49,10 +49,10 @@ output_csv = reports/details.csv
     assert config.limit == 7
     assert config.output_dir == Path("reports")
     assert config.output_prefix == "product_response_test"
-    assert config.output_csv == Path("reports/details.csv")
+    assert config.detail_level == "failures"
 
 
-def test_load_eval_config_supports_unlimited_run_and_no_csv(tmp_path):
+def test_load_eval_config_supports_unlimited_run(tmp_path):
     config_path = tmp_path / "eval.ini"
     config_path.write_text(
         """
@@ -67,7 +67,7 @@ limit = none
 [output]
 output_dir = reports
 output_prefix = product_response_test
-output_csv =
+detail_level = all
 """.strip(),
         encoding="utf-8",
     )
@@ -75,4 +75,4 @@ output_csv =
     config = load_eval_config(config_path)
 
     assert config.limit is None
-    assert config.output_csv is None
+    assert config.detail_level == "all"

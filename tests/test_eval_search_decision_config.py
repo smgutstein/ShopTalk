@@ -37,7 +37,7 @@ categories = boundary, acknowledgement
 [output]
 output_dir = results/search
 output_prefix = trial
-show_passes = true
+detail_level = failures
 """.strip(),
         encoding="utf-8",
     )
@@ -52,7 +52,7 @@ show_passes = true
     assert config.category == ["boundary", "acknowledgement"]
     assert config.output_dir == Path("results/search")
     assert config.output_prefix == "trial"
-    assert config.show_passes is True
+    assert config.detail_level == "failures"
 
 
 def test_load_eval_config_supports_all_cases_and_categories(tmp_path):
@@ -71,7 +71,7 @@ categories =
 [output]
 output_dir = results/search
 output_prefix = trial
-show_passes = false
+detail_level = all
 """.strip(),
         encoding="utf-8",
     )
@@ -80,4 +80,4 @@ show_passes = false
 
     assert config.limit is None
     assert config.category is None
-    assert config.show_passes is False
+    assert config.detail_level == "all"

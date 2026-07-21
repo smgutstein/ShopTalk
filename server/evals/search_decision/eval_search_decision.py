@@ -28,7 +28,7 @@ from tqdm import tqdm
 
 from contextlib import redirect_stdout
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -74,6 +74,7 @@ class EvalResult:
     search_query: str | None
     passed: bool
     reason: str
+    error: str | None = None
 
 
 def build_conversation_policy(model_name: str, temperature: float) -> ConversationPolicy:
@@ -180,6 +181,7 @@ def evaluate_case(policy: ConversationPolicy, case: EvalCase) -> EvalResult:
         search_query=decision.search_query,
         passed=passed,
         reason=case.reason,
+        error=None,
     )
 
 
@@ -198,7 +200,7 @@ def next_numbered_output_path(
     index = 1
     while True:
         candidate = output_dir / f"{prefix}_{index:03d}{suffix}"
-        if not candidate.exists():
+        if not candidate.exists() and not candidate.with_suffix(".json").exists():
             return candidate
         index += 1
 
@@ -207,7 +209,7 @@ def write_report(
     results: list[EvalResult],
     *,
     output_path: Path,
-    show_passes: bool,
+    detail_level: str,
     cases_path: Path,
     model_name: str,
     temperature: float,
@@ -224,10 +226,7 @@ def write_report(
             )
             print_summary(results)
             print_failures(results)
-            print_detailed_cases(results)
-
-            if show_passes:
-                print_passes(results)
+            print_detailed_cases(results, detail_level=detail_level)
 
 
 def print_run_info(
@@ -259,6 +258,7 @@ def print_summary(results: list[EvalResult]) -> None:
         return
 
     print(f"{passed}/{total} = {passed / total:.1%}")
+    print(f"errors: {sum(result.error is not None for result in results)}")
 
     by_category: dict[str, list[EvalResult]] = defaultdict(list)
     for result in results:
@@ -311,16 +311,17 @@ def print_failures(results: list[EvalResult]) -> None:
 
 
 
-def print_detailed_cases(results: list[EvalResult]) -> None:
-    """Print every evaluated case grouped by category."""
+def print_detailed_cases(results: list[EvalResult], *, detail_level: str) -> None:
+    """Print evaluated cases grouped by category."""
+    selected = results if detail_level == "all" else [r for r in results if not r.passed]
     by_category: dict[str, list[EvalResult]] = defaultdict(list)
-    for result in results:
+    for result in selected:
         by_category[result.category].append(result)
 
     print()
     print("Detailed cases by category")
     print("--------------------------")
-    if not results:
+    if not selected:
         print("None.")
         return
 
@@ -342,30 +343,59 @@ def print_detailed_cases(results: list[EvalResult]) -> None:
             print(f"   Search query: {result.search_query or '<none>'}")
             if result.reason:
                 print(f"   Reason:       {result.reason}")
+            if result.error:
+                print(f"   Error:        {result.error}")
             print()
 
-def print_passes(results: list[EvalResult]) -> None:
-    """Print passing cases for inspection.
 
-    Passing cases are omitted by default to keep routine reports short. They can
-    be useful while validating a new case suite or auditing the model's proposed
-    search queries.
-    """
-    passes = [result for result in results if result.passed]
+def build_summary(results: list[EvalResult]) -> dict[str, Any]:
+    """Build the common machine-readable summary block."""
+    total = len(results)
+    passed = sum(result.passed for result in results)
+    by_category: dict[str, dict[str, Any]] = {}
+    for category in sorted({result.category for result in results}):
+        category_results = [result for result in results if result.category == category]
+        category_passed = sum(result.passed for result in category_results)
+        by_category[category] = {
+            "total": len(category_results),
+            "passed": category_passed,
+            "accuracy": category_passed / len(category_results),
+        }
+    confusion = Counter((result.expected_action, result.actual_action) for result in results)
+    return {
+        "total": total,
+        "passed": passed,
+        "accuracy": passed / total if total else None,
+        "errors": sum(result.error is not None for result in results),
+        "by_category": by_category,
+        "confusion_counts": [
+            {"expected_action": expected, "actual_action": actual, "count": count}
+            for (expected, actual), count in sorted(confusion.items())
+        ],
+    }
 
-    print()
-    print("Passes")
-    print("------")
-    if not passes:
-        print("None.")
-        return
 
-    for result in passes:
-        print(f"{result.case_id} [{result.category}]")
-        print(f"  latest_user:  {result.latest_user}")
-        print(f"  action:       {result.actual_action}")
-        print(f"  search_query: {result.search_query}")
-        print()
+def write_json_results(
+    results: list[EvalResult],
+    *,
+    output_path: Path,
+    config_path: Path,
+    cases_path: Path,
+    model_name: str,
+    temperature: float,
+) -> None:
+    """Write the shared machine-readable evaluation result structure."""
+    payload = {
+        "run": {
+            "config": str(config_path),
+            "cases": str(cases_path),
+            "model": model_name,
+            "temperature": temperature,
+        },
+        "summary": build_summary(results),
+        "results": [asdict(result) for result in results],
+    }
+    output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -404,6 +434,14 @@ def _optional_categories(value: str) -> list[str] | None:
     return categories or None
 
 
+def _parse_detail_level(value: str) -> str:
+    """Parse the shared report-detail setting."""
+    detail_level = value.strip().lower()
+    if detail_level not in {"all", "failures"}:
+        raise ValueError("output.detail_level must be 'all' or 'failures'")
+    return detail_level
+
+
 def load_eval_config(config_path: Path) -> argparse.Namespace:
     """Load all search-decision evaluation settings from one INI file."""
     if not config_path.exists():
@@ -415,7 +453,7 @@ def load_eval_config(config_path: Path) -> argparse.Namespace:
     required = {
         "model": ("model_name", "temperature"),
         "eval": ("cases", "limit", "categories"),
-        "output": ("output_dir", "output_prefix", "show_passes"),
+        "output": ("output_dir", "output_prefix", "detail_level"),
     }
     for section, options in required.items():
         if not parser.has_section(section):
@@ -435,7 +473,7 @@ def load_eval_config(config_path: Path) -> argparse.Namespace:
         category=_optional_categories(parser.get("eval", "categories")),
         output_dir=Path(parser.get("output", "output_dir")),
         output_prefix=parser.get("output", "output_prefix").strip(),
-        show_passes=parser.getboolean("output", "show_passes"),
+        detail_level=_parse_detail_level(parser.get("output", "detail_level")),
     )
 
 
@@ -496,7 +534,8 @@ def main(argv: list[str] | None = None) -> int:
                 actual_action=f"ERROR: {type(exc).__name__}",
                 search_query=None,
                 passed=False,
-                reason=str(exc),
+                reason=case.reason,
+                error=f"{type(exc).__name__}: {exc}",
             )
         results.append(result)
 
@@ -507,14 +546,25 @@ def main(argv: list[str] | None = None) -> int:
     write_report(
         results,
         output_path=output_path,
-        show_passes=args.show_passes,
+        detail_level=args.detail_level,
         cases_path=args.cases,
         model_name=args.model_name,
         temperature=args.temperature,
         config_path=args.config_path,
     )
 
-    print(f"Wrote eval results to {output_path}")
+    json_output_path = output_path.with_suffix(".json")
+    write_json_results(
+        results,
+        output_path=json_output_path,
+        config_path=args.config_path,
+        cases_path=args.cases,
+        model_name=args.model_name,
+        temperature=args.temperature,
+    )
+
+    print(f"Wrote eval report to {output_path}")
+    print(f"Wrote JSON results to {json_output_path}")
 
     return 0 if all(result.passed for result in results) else 1
 

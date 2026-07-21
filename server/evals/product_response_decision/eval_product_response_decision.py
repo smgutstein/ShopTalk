@@ -13,11 +13,11 @@ from __future__ import annotations
 
 import argparse
 import configparser
-import csv
 import json
 import os
 from contextlib import redirect_stdout
-from dataclasses import dataclass
+from collections import Counter, defaultdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from tqdm import tqdm
 from typing import Any, Iterable
@@ -80,6 +80,7 @@ class EvalResult:
     actual_product_id: str | None
     passed: bool
     reason: str
+    error: str | None = None
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -111,7 +112,7 @@ class ProductResponseDecisionEvalConfig:
     limit: int | None
     output_dir: Path
     output_prefix: str
-    output_csv: Path | None
+    detail_level: str
 
 
 def _required(config: configparser.ConfigParser, section: str, option: str) -> str:
@@ -126,12 +127,6 @@ def _required(config: configparser.ConfigParser, section: str, option: str) -> s
     return value
 
 
-def _optional_path(value: str) -> Path | None:
-    """Convert a blank optional path to None."""
-    value = value.strip()
-    return Path(value) if value else None
-
-
 def _optional_limit(value: str) -> int | None:
     """Parse a positive integer limit or the explicit value ``none``."""
     value = value.strip().lower()
@@ -141,6 +136,14 @@ def _optional_limit(value: str) -> int | None:
     if limit <= 0:
         raise ValueError("Config setting [eval] limit must be positive or 'none'")
     return limit
+
+
+def _parse_detail_level(value: str) -> str:
+    """Parse the shared report-detail setting."""
+    detail_level = value.strip().lower()
+    if detail_level not in {"all", "failures"}:
+        raise ValueError("Config setting [output] detail_level must be 'all' or 'failures'")
+    return detail_level
 
 
 def load_eval_config(path: Path) -> ProductResponseDecisionEvalConfig:
@@ -156,7 +159,7 @@ def load_eval_config(path: Path) -> ProductResponseDecisionEvalConfig:
         limit=_optional_limit(_required(parser, "eval", "limit")),
         output_dir=Path(_required(parser, "output", "output_dir")),
         output_prefix=_required(parser, "output", "output_prefix"),
-        output_csv=_optional_path(parser.get("output", "output_csv", fallback="")),
+        detail_level=_parse_detail_level(_required(parser, "output", "detail_level")),
     )
 
 
@@ -309,28 +312,21 @@ def summarize_products(found_products: dict[str, ProductCandidate]) -> list[str]
 
 
 def run_eval(policy: ConversationPolicy, cases: list[EvalCase]) -> list[EvalResult]:
-    """Run all cases through the post-retrieval decision policy.
-
-    A case passes only when both the action and selected product ID match. For
-    non-recommend actions, the product ID is normalized to None because the policy
-    should not select a product when it asks for clarification or rejects results.
-    """
+    """Run all cases, recording case-level errors without aborting the suite."""
     results: list[EvalResult] = []
     for case in tqdm(cases):
-        action = policy.decide_next_action(
-            conversation_history=case.conversation_history,
-            found_products=case.found_products,
-            source_knowledge=case.source_knowledge,
-        )
-
-        actual_product_id = action.product_id if action.action == "recommend" else None
-        passed = (
-            action.action == case.expected_action
-            and actual_product_id == case.expected_product_id
-        )
-
-        results.append(
-            EvalResult(
+        try:
+            action = policy.decide_next_action(
+                conversation_history=case.conversation_history,
+                found_products=case.found_products,
+                source_knowledge=case.source_knowledge,
+            )
+            actual_product_id = action.product_id if action.action == "recommend" else None
+            passed = (
+                action.action == case.expected_action
+                and actual_product_id == case.expected_product_id
+            )
+            result = EvalResult(
                 case_id=case.case_id,
                 category=case.category,
                 latest_user=latest_user_message(case.conversation_history),
@@ -341,35 +337,187 @@ def run_eval(policy: ConversationPolicy, cases: list[EvalCase]) -> list[EvalResu
                 actual_product_id=actual_product_id,
                 passed=passed,
                 reason=case.reason,
+                error=None,
             )
-        )
+        except Exception as exc:
+            result = EvalResult(
+                case_id=case.case_id,
+                category=case.category,
+                latest_user=latest_user_message(case.conversation_history),
+                product_summaries=summarize_products(case.found_products),
+                expected_action=case.expected_action,
+                actual_action=f"ERROR: {type(exc).__name__}",
+                expected_product_id=case.expected_product_id,
+                actual_product_id=None,
+                passed=False,
+                reason=case.reason,
+                error=f"{type(exc).__name__}: {exc}",
+            )
+        results.append(result)
     return results
 
 
-def next_numbered_output_path(
-    output_dir: Path,
-    *,
-    prefix: str,
-    suffix: str = ".txt",
-) -> Path:
-    """Return the next available numbered output path.
-
-    Example: product_response_decision_eval_001.txt, ...
-    """
+def next_numbered_output_path(output_dir: Path, *, prefix: str, suffix: str = ".txt") -> Path:
+    """Return the next available numbered output path."""
     output_dir.mkdir(parents=True, exist_ok=True)
-
     index = 1
     while True:
         candidate = output_dir / f"{prefix}_{index:03d}{suffix}"
-        if not candidate.exists():
+        if not candidate.exists() and not candidate.with_suffix(".json").exists():
             return candidate
         index += 1
+
+
+def print_run_info(*, config_path: Path, cases_path: Path, model_name: str, temperature: float) -> None:
+    """Print eval run configuration."""
+    print("Run configuration")
+    print("-----------------")
+    print(f"config:      {config_path}")
+    print(f"cases:       {cases_path}")
+    print(f"model:       {model_name}")
+    print(f"temperature: {temperature}")
+
+
+def build_summary(results: list[EvalResult]) -> dict[str, Any]:
+    """Build common statistics plus product-selection statistics."""
+    total = len(results)
+    passed = sum(result.passed for result in results)
+    action_correct = sum(result.actual_action == result.expected_action for result in results)
+    expected_recommendations = [r for r in results if r.expected_action == "recommend"]
+    product_correct = sum(
+        r.actual_product_id == r.expected_product_id for r in expected_recommendations
+    )
+    by_category: dict[str, dict[str, Any]] = {}
+    for category in sorted({result.category for result in results}):
+        category_results = [result for result in results if result.category == category]
+        category_passed = sum(result.passed for result in category_results)
+        by_category[category] = {
+            "total": len(category_results),
+            "passed": category_passed,
+            "accuracy": category_passed / len(category_results),
+        }
+    confusion = Counter((result.expected_action, result.actual_action) for result in results)
+    return {
+        "total": total,
+        "passed": passed,
+        "accuracy": passed / total if total else None,
+        "action_accuracy": action_correct / total if total else None,
+        "product_id_accuracy_on_expected_recommendations": (
+            product_correct / len(expected_recommendations) if expected_recommendations else None
+        ),
+        "errors": sum(result.error is not None for result in results),
+        "by_category": by_category,
+        "confusion_counts": [
+            {"expected_action": expected, "actual_action": actual, "count": count}
+            for (expected, actual), count in sorted(confusion.items())
+        ],
+    }
+
+
+def print_summary(results: list[EvalResult]) -> None:
+    """Print overall, category, action, and product-selection statistics."""
+    summary = build_summary(results)
+    print()
+    print("Overall")
+    print("-------")
+    if not results:
+        print("No cases evaluated.")
+        return
+    print(f"joint:      {summary['passed']}/{summary['total']} = {summary['accuracy']:.1%}")
+    print(f"action:     {summary['action_accuracy']:.1%}")
+    product_accuracy = summary["product_id_accuracy_on_expected_recommendations"]
+    print(f"product ID: {product_accuracy:.1%}" if product_accuracy is not None else "product ID: n/a")
+    print(f"errors:     {summary['errors']}")
+
+    print()
+    print("By category")
+    print("-----------")
+    for category, values in summary["by_category"].items():
+        print(f"{category}: {values['passed']}/{values['total']} = {values['accuracy']:.1%}")
+
+    print()
+    print("Confusion counts")
+    print("----------------")
+    for item in summary["confusion_counts"]:
+        print(
+            f"expected={item['expected_action']:22s} "
+            f"actual={item['actual_action']:22s} count={item['count']}"
+        )
+
+
+def print_failures(results: list[EvalResult]) -> None:
+    """Print detailed failure information."""
+    failures = [result for result in results if not result.passed]
+    print()
+    print("Failures")
+    print("--------")
+    if not failures:
+        print("None.")
+        return
+    for result in failures:
+        print(f"{result.case_id} [{result.category}]")
+        print(f"  latest_user:        {result.latest_user}")
+        print(f"  expected_action:    {result.expected_action}")
+        print(f"  actual_action:      {result.actual_action}")
+        print(f"  expected_product:   {result.expected_product_id}")
+        print(f"  actual_product:     {result.actual_product_id}")
+        print(f"  reason:             {result.reason}")
+        if result.error:
+            print(f"  error:              {result.error}")
+        print()
+
+
+def print_detailed_cases(results: list[EvalResult], *, detail_level: str) -> None:
+    """Print evaluated cases grouped by category."""
+    selected = results if detail_level == "all" else [r for r in results if not r.passed]
+    by_category: dict[str, list[EvalResult]] = defaultdict(list)
+    for result in selected:
+        by_category[result.category].append(result)
+
+    print()
+    print("Detailed cases by category")
+    print("--------------------------")
+    if not selected:
+        print("None.")
+        return
+
+    for category in sorted(by_category):
+        category_results = by_category[category]
+        category_passed = sum(result.passed for result in category_results)
+        category_total = len(category_results)
+        print()
+        print(f"{category} ({category_passed}/{category_total} passed)")
+        print("~" * (len(category) + len(f" ({category_passed}/{category_total} passed)")))
+        for index, result in enumerate(category_results, start=1):
+            status = "PASS" if result.passed else "FAIL"
+            print(f"{index}. {result.case_id}: {status}")
+            print(f"   Tested:       {result.latest_user}")
+            print(
+                f"   Expected:     action={result.expected_action}, "
+                f"product_id={result.expected_product_id or '<none>'}"
+            )
+            print(
+                f"   Actual:       action={result.actual_action}, "
+                f"product_id={result.actual_product_id or '<none>'}"
+            )
+            print("   Products:")
+            if result.product_summaries:
+                for product_summary in result.product_summaries:
+                    print(f"     - {product_summary}")
+            else:
+                print("     - <none>")
+            if result.reason:
+                print(f"   Reason:       {result.reason}")
+            if result.error:
+                print(f"   Error:        {result.error}")
+            print()
 
 
 def write_report(
     results: list[EvalResult],
     *,
     output_path: Path,
+    detail_level: str,
     cases_path: Path,
     model_name: str,
     temperature: float,
@@ -384,131 +532,40 @@ def write_report(
                 model_name=model_name,
                 temperature=temperature,
             )
-            print_results(results)
-            print_detailed_cases(results)
+            print_summary(results)
+            print_failures(results)
+            print_detailed_cases(results, detail_level=detail_level)
 
 
-def print_run_info(
+def write_json_results(
+    results: list[EvalResult],
     *,
+    output_path: Path,
     config_path: Path,
     cases_path: Path,
     model_name: str,
     temperature: float,
 ) -> None:
-    """Print eval run configuration."""
-    print("Run configuration")
-    print("-----------------")
-    print(f"config:      {config_path}")
-    print(f"cases:       {cases_path}")
-    print(f"model:       {model_name}")
-    print(f"temperature: {temperature}")
+    """Write the shared machine-readable evaluation result structure."""
+    payload = {
+        "run": {
+            "config": str(config_path),
+            "cases": str(cases_path),
+            "model": model_name,
+            "temperature": temperature,
+        },
+        "summary": build_summary(results),
+        "results": [asdict(result) for result in results],
+    }
+    output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
-def print_results(results: list[EvalResult]) -> None:
-    """Print a compact pass/fail table for the whole run."""
-    passed_count = sum(result.passed for result in results)
-    total_count = len(results)
-
-    print(f"\nPassed {passed_count}/{total_count} cases")
-    print("-" * 96)
-    print(
-        f"{'case_id':36} {'expected':14} {'actual':14} "
-        f"{'expected_pid':14} {'actual_pid':14} result"
-    )
-    print("-" * 96)
-
-    for result in results:
-        status = "PASS" if result.passed else "FAIL"
-        print(
-            f"{result.case_id[:36]:36} "
-            f"{result.expected_action[:14]:14} "
-            f"{result.actual_action[:14]:14} "
-            f"{(result.expected_product_id or '')[:14]:14} "
-            f"{(result.actual_product_id or '')[:14]:14} "
-            f"{status}"
-        )
-
-
-
-
-def print_detailed_cases(results: list[EvalResult]) -> None:
-    """Print every evaluated case grouped by category."""
-    by_category: dict[str, list[EvalResult]] = {}
-    for result in results:
-        by_category.setdefault(result.category, []).append(result)
-
-    print()
-    print("Detailed cases by category")
-    print("--------------------------")
-    if not results:
-        print("None.")
-        return
-
-    for category in sorted(by_category):
-        category_results = by_category[category]
-        category_passed = sum(result.passed for result in category_results)
-        category_total = len(category_results)
-
-        print()
-        print(f"{category} ({category_passed}/{category_total} passed)")
-        print("~" * (len(category) + len(f" ({category_passed}/{category_total} passed)")))
-
-        for index, result in enumerate(category_results, start=1):
-            status = "PASS" if result.passed else "FAIL"
-            print(f"{index}. {result.case_id}: {status}")
-            print(f"   Tested:       {result.latest_user}")
-            print(f"   Expected:     action={result.expected_action}, "
-                  f"product_id={result.expected_product_id or '<none>'}")
-            print(f"   Actual:       action={result.actual_action}, "
-                  f"product_id={result.actual_product_id or '<none>'}")
-            print("   Products:")
-            if result.product_summaries:
-                for product_summary in result.product_summaries:
-                    print(f"     - {product_summary}")
-            else:
-                print("     - <none>")
-            if result.reason:
-                print(f"   Reason:       {result.reason}")
-            print()
-
-def write_csv(results: list[EvalResult], output_path: Path) -> None:
-    """Write minimal machine-readable results for spreadsheet inspection."""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", newline="", encoding="utf-8") as outfile:
-        writer = csv.DictWriter(
-            outfile,
-            fieldnames=[
-                "case_id",
-                "expected_action",
-                "actual_action",
-                "expected_product_id",
-                "actual_product_id",
-                "passed",
-            ],
-        )
-        writer.writeheader()
-        for result in results:
-            writer.writerow(
-                {
-                    "case_id": result.case_id,
-                    "expected_action": result.expected_action,
-                    "actual_action": result.actual_action,
-                    "expected_product_id": result.expected_product_id,
-                    "actual_product_id": result.actual_product_id,
-                    "passed": result.passed,
-                }
-            )
-
-
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     """CLI entry point for the focused post-retrieval decision eval."""
-    args = parse_args()
+    args = parse_args(argv)
     eval_config = load_eval_config(args.config)
     cases = load_cases(eval_config.cases_path, limit=eval_config.limit)
-    policy = build_conversation_policy(
-        eval_config.model_name,
-        eval_config.temperature,
-    )
+    policy = build_conversation_policy(eval_config.model_name, eval_config.temperature)
     results = run_eval(policy, cases)
 
     output_path = next_numbered_output_path(
@@ -518,19 +575,24 @@ def main() -> int:
     write_report(
         results,
         output_path=output_path,
+        detail_level=eval_config.detail_level,
         config_path=args.config,
         cases_path=eval_config.cases_path,
         model_name=eval_config.model_name,
         temperature=eval_config.temperature,
     )
-    print(f"Wrote eval results to {output_path}")
-
-    if eval_config.output_csv is not None:
-        write_csv(results, eval_config.output_csv)
-        print(f"Wrote CSV results to {eval_config.output_csv}")
-
+    json_output_path = output_path.with_suffix(".json")
+    write_json_results(
+        results,
+        output_path=json_output_path,
+        config_path=args.config,
+        cases_path=eval_config.cases_path,
+        model_name=eval_config.model_name,
+        temperature=eval_config.temperature,
+    )
+    print(f"Wrote eval report to {output_path}")
+    print(f"Wrote JSON results to {json_output_path}")
     return 0 if all(result.passed for result in results) else 1
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
