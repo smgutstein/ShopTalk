@@ -10,6 +10,7 @@ Evaluates the pre-retrieval decision: whether the conversation policy should run
 a product search at all.
 
 - `eval_search_decision.py` is the evaluator implementation.
+- `search_decision_eval.ini` defines the complete default run.
 - `cases/` contains hand-authored JSONL cases.
 - `results/` contains generated reports and can usually be deleted/regenerated.
 
@@ -19,6 +20,7 @@ Evaluates the post-retrieval response-mode decision: recommend a product, ask th
 user to clarify/dive deeper, or say no suitable item was found.
 
 - `eval_product_response_decision.py` is the evaluator implementation.
+- `product_response_decision_eval.ini` defines the complete default run.
 - `cases/` contains hand-authored JSONL cases.
 - `results/` contains generated reports and can usually be deleted/regenerated.
 

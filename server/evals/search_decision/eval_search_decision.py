@@ -12,17 +12,16 @@ Run from the repository root:
 
     python -m server.evals.search_decision.eval_search_decision
 
-Optionally:
+To use a different complete run configuration:
 
     python -m server.evals.search_decision.eval_search_decision \
-        --cases server/evals/search_decision/cases/eval_cases_search_decision.jsonl \
-        --category boundary \
-        --show-passes
+        --config path/to/search_decision_eval.ini
 """
 
 from __future__ import annotations
 
 import argparse
+import configparser
 import json
 import os
 from tqdm import tqdm
@@ -36,21 +35,27 @@ from typing import Any
 from langchain_classic.schema import AIMessage, HumanMessage
 
 try:  # Supports: python -m server.evals.search_decision.eval_search_decision
-    from ...recommender_core.config import load_shoptalk_config
     from ...recommender_core.conversation_policy import ConversationPolicy
     from ...recommender_core.utils import load_openai_api_key
-    from ...shoptalk_paths import DEFAULT_CONFIG_PATH
 except ImportError:  # Supports running from inside server/: python -m evals.search_decision.eval_search_decision
-    from recommender_core.config import load_shoptalk_config
     from recommender_core.conversation_policy import ConversationPolicy
     from recommender_core.utils import load_openai_api_key
-    from shoptalk_paths import DEFAULT_CONFIG_PATH
 
 
 # Keep defaults beside this file so the command works from the repository root
 # without requiring callers to remember the eval case path or output directory.
-DEFAULT_CASES_PATH = Path(__file__).with_name("cases") / "eval_cases_search_decision.jsonl"
-DEFAULT_RESULTS_DIR = Path(__file__).with_name("results")
+DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("search_decision_eval.ini")
+
+
+@dataclass(frozen=True)
+class EvalCase:
+    """One normalized pre-retrieval search-decision test case."""
+
+    case_id: str
+    category: str
+    conversation_history: list[Any]
+    expected_action: str
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -92,52 +97,53 @@ def build_conversation_policy(model_name: str, temperature: float) -> Conversati
     return ConversationPolicy(chat_model)
 
 
-def load_cases(path: Path) -> list[dict[str, Any]]:
-    """Load search-decision eval cases from a JSON or JSONL file.
-
-    JSONL is the normal format for hand-maintained case suites. Plain JSON is
-    still supported so older list-based case files can be evaluated without a
-    migration step.
-    """
+def load_cases(path: Path) -> list[EvalCase]:
+    """Load JSONL search-decision cases and normalize them to EvalCase objects."""
     if not path.exists():
         raise FileNotFoundError(f"Case file not found: {path}")
+    if path.suffix != ".jsonl":
+        raise ValueError(f"Search-decision case file must be JSONL: {path}")
 
-    if path.suffix == ".jsonl":
-        cases: list[dict[str, Any]] = []
-        with path.open("r", encoding="utf-8") as f:
-            for line_number, line in enumerate(f, start=1):
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    cases.append(json.loads(line))
-                except json.JSONDecodeError as exc:
-                    raise ValueError(
-                        f"Invalid JSONL in {path} at line {line_number}: {exc}"
-                    ) from exc
-        return cases
-
+    cases: list[EvalCase] = []
     with path.open("r", encoding="utf-8") as f:
-        payload = json.load(f)
-
-    if isinstance(payload, list):
-        cases = payload
-    else:
-        cases = payload.get("cases", [])
-
-    if not isinstance(cases, list):
-        raise ValueError(f"Expected a list of cases in {path}")
+        for line_number, line in enumerate(f, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                case_data = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"Invalid JSONL in {path} at line {line_number}: {exc}"
+                ) from exc
+            cases.append(parse_case(case_data, line_number=line_number))
 
     return cases
 
 
-def message_from_dict(message: dict[str, str]):
-    """Convert a case-history message dict into a LangChain message.
+def parse_case(case_data: dict[str, Any], *, line_number: int) -> EvalCase:
+    """Normalize one raw JSONL case into the search evaluator's case object."""
+    case_id = case_data.get("case_id") or f"line_{line_number}"
+    conversation_history = [
+        message_from_dict(message) for message in case_data.get("messages", [])
+    ]
 
-    Search routing depends on conversational context, so prior assistant turns
-    and prior user turns must be reconstructed in the same message format used by
-    the real ConversationPolicy.
-    """
+    expected = case_data.get("expected", {})
+    expected_action = expected.get("action")
+    if expected_action is None:
+        raise ValueError(f"Case {case_id!r} is missing expected.action")
+
+    return EvalCase(
+        case_id=case_id,
+        category=case_data.get("category", "uncategorized"),
+        conversation_history=conversation_history,
+        expected_action=expected_action,
+        reason=case_data.get("reason", ""),
+    )
+
+
+def message_from_dict(message: dict[str, str]):
+    """Convert a case message dict into a LangChain message."""
     role = message.get("role")
     content = message.get("content", "")
 
@@ -150,41 +156,30 @@ def message_from_dict(message: dict[str, str]):
     raise ValueError(f"Unsupported message role: {role!r}")
 
 
-def build_conversation_history(case: dict[str, Any]):
-    """Build conversation history including the latest user message.
-
-    Cases store previous turns under ``history`` and the utterance under test as
-    ``latest_user``. Appending the latest user message here makes the eval file
-    easier to read and keeps the tested turn explicit.
-    """
-    history = [message_from_dict(message) for message in case.get("history", [])]
-    history.append(HumanMessage(content=case["latest_user"]))
-    return history
+def latest_user_message(conversation_history: list[Any]) -> str:
+    """Return the latest user message for readable reporting."""
+    for message in reversed(conversation_history):
+        if isinstance(message, HumanMessage):
+            return str(message.content)
+    return ""
 
 
-def evaluate_case(policy: ConversationPolicy, case: dict[str, Any]) -> EvalResult:
-    """Run one eval case through the SearchDecision layer.
+def evaluate_case(policy: ConversationPolicy, case: EvalCase) -> EvalResult:
+    """Run one EvalCase through the SearchDecision layer."""
+    decision = policy.decide_search_action(case.conversation_history)
 
-    The pass/fail check is intentionally limited to the action. The generated
-    search query is recorded for inspection, but this module does not yet grade
-    query quality because that is a fuzzier retrieval-facing concern.
-    """
-    conversation_history = build_conversation_history(case)
-    decision = policy.decide_search_action(conversation_history)
-
-    expected_action = case["expected_search_action"]
     actual_action = decision.action
-    passed = actual_action == expected_action
+    passed = actual_action == case.expected_action
 
     return EvalResult(
-        case_id=case["id"],
-        category=case["category"],
-        latest_user=case["latest_user"],
-        expected_action=expected_action,
+        case_id=case.case_id,
+        category=case.category,
+        latest_user=latest_user_message(case.conversation_history),
+        expected_action=case.expected_action,
         actual_action=actual_action,
         search_query=decision.search_query,
         passed=passed,
-        reason=case.get("reason", ""),
+        reason=case.reason,
     )
 
 
@@ -216,6 +211,7 @@ def write_report(
     cases_path: Path,
     model_name: str,
     temperature: float,
+    config_path: Path,
 ) -> None:
     """Write the human-readable eval report to a file."""
     with output_path.open("w", encoding="utf-8") as outfile:
@@ -224,6 +220,7 @@ def write_report(
                 cases_path=cases_path,
                 model_name=model_name,
                 temperature=temperature,
+                config_path=config_path,
             )
             print_summary(results)
             print_failures(results)
@@ -238,10 +235,12 @@ def print_run_info(
     cases_path: Path,
     model_name: str,
     temperature: float,
+    config_path: Path,
 ) -> None:
     """Print eval run configuration."""
     print("Run configuration")
     print("-----------------")
+    print(f"config:      {config_path}")
     print(f"cases:       {cases_path}")
     print(f"model:       {model_name}")
     print(f"temperature: {temperature}")
@@ -370,75 +369,83 @@ def print_passes(results: list[EvalResult]) -> None:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    """Parse CLI options for the search-routing eval.
-
-    ``argv`` is injectable so tests can call this parser without mutating
-    ``sys.argv``.
-    """
+    """Parse the evaluator config-file option."""
     parser = argparse.ArgumentParser(
         description="Evaluate SearchDecision behavior on labeled cases."
     )
     parser.add_argument(
-        "--cases",
-        type=Path,
-        default=DEFAULT_CASES_PATH,
-        help=f"Path to JSON/JSONL case file. Default: {DEFAULT_CASES_PATH}",
-    )
-    parser.add_argument(
         "--config",
         type=Path,
-        default=DEFAULT_CONFIG_PATH,
-        help="Path to the ShopTalk config file.",
-    )
-    parser.add_argument(
-        "--model-name",
-        default=None,
-        help="Override the eval model name from the config file.",
-    )
-    parser.add_argument(
-        "--temperature",
-        type=float,
-        default=None,
-        help="Override the eval temperature from the config file.",
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=None,
-        help="Optionally evaluate only the first N selected cases.",
-    )
-    parser.add_argument(
-        "--category",
-        action="append",
-        default=None,
-        help="Optionally evaluate only one or more categories. May be repeated.",
-    )
-    parser.add_argument(
-        "--show-passes",
-        action="store_true",
-        help="Include passing cases in the written report.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=DEFAULT_RESULTS_DIR,
-        help=f"Directory for numbered result files. Default: {DEFAULT_RESULTS_DIR}",
-    )
-    parser.add_argument(
-        "--output-prefix",
-        default="search_decision_eval",
-        help="Filename prefix for numbered result files.",
+        default=DEFAULT_EVAL_CONFIG_PATH,
+        help=f"Path to the evaluator config file. Default: {DEFAULT_EVAL_CONFIG_PATH}",
     )
     return parser.parse_args(argv)
 
 
+def _optional_int(value: str, *, field_name: str) -> int | None:
+    """Parse an optional non-negative integer from the INI file."""
+    normalized = value.strip().lower()
+    if normalized in {"", "none"}:
+        return None
+
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise ValueError(f"{field_name} must be an integer or 'none': {value!r}") from exc
+
+    if parsed < 0:
+        raise ValueError(f"{field_name} must be non-negative: {parsed}")
+    return parsed
+
+
+def _optional_categories(value: str) -> list[str] | None:
+    """Parse a comma-separated category filter from the INI file."""
+    categories = [category.strip() for category in value.split(",") if category.strip()]
+    return categories or None
+
+
+def load_eval_config(config_path: Path) -> argparse.Namespace:
+    """Load all search-decision evaluation settings from one INI file."""
+    if not config_path.exists():
+        raise FileNotFoundError(f"Eval config file not found: {config_path}")
+
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+
+    required = {
+        "model": ("model_name", "temperature"),
+        "eval": ("cases", "limit", "categories"),
+        "output": ("output_dir", "output_prefix", "show_passes"),
+    }
+    for section, options in required.items():
+        if not parser.has_section(section):
+            raise ValueError(f"Missing [{section}] section in {config_path}")
+        for option in options:
+            if not parser.has_option(section, option):
+                raise ValueError(
+                    f"Missing {option!r} in [{section}] section of {config_path}"
+                )
+
+    return argparse.Namespace(
+        config_path=config_path,
+        model_name=parser.get("model", "model_name").strip(),
+        temperature=parser.getfloat("model", "temperature"),
+        cases=Path(parser.get("eval", "cases")),
+        limit=_optional_int(parser.get("eval", "limit"), field_name="eval.limit"),
+        category=_optional_categories(parser.get("eval", "categories")),
+        output_dir=Path(parser.get("output", "output_dir")),
+        output_prefix=parser.get("output", "output_prefix").strip(),
+        show_passes=parser.getboolean("output", "show_passes"),
+    )
+
+
 def select_cases(
-    cases: list[dict[str, Any]],
+    cases: list[EvalCase],
     *,
     categories: list[str] | None,
     limit: int | None,
-) -> list[dict[str, Any]]:
-    """Filter cases according to CLI arguments.
+) -> list[EvalCase]:
+    """Filter cases according to the evaluator configuration.
 
     Category filtering is useful when debugging one decision boundary, while
     ``limit`` keeps quick smoke runs cheap during prompt iteration.
@@ -447,7 +454,7 @@ def select_cases(
 
     if categories:
         wanted = set(categories)
-        selected = [case for case in selected if case.get("category") in wanted]
+        selected = [case for case in selected if case.category in wanted]
 
     if limit is not None:
         selected = selected[:limit]
@@ -457,7 +464,8 @@ def select_cases(
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point for the pre-retrieval search-decision eval."""
-    args = parse_args(argv)
+    cli_args = parse_args(argv)
+    args = load_eval_config(cli_args.config)
 
     cases = load_cases(args.cases)
     cases = select_cases(
@@ -470,16 +478,9 @@ def main(argv: list[str] | None = None) -> int:
         print("No cases selected.")
         return 2
 
-    file_config = load_shoptalk_config(args.config)
-    model_name = args.model_name or file_config.eval_model_name
-    temperature = (
-        args.temperature
-        if args.temperature is not None
-        else file_config.eval_temperature
-    )
     policy = build_conversation_policy(
-        model_name=model_name,
-        temperature=temperature,
+        model_name=args.model_name,
+        temperature=args.temperature,
     )
 
     results: list[EvalResult] = []
@@ -488,10 +489,10 @@ def main(argv: list[str] | None = None) -> int:
             result = evaluate_case(policy, case)
         except Exception as exc:  # Eval harness should report case-level failures.
             result = EvalResult(
-                case_id=case.get("id", "<missing id>"),
-                category=case.get("category", "<missing category>"),
-                latest_user=case.get("latest_user", ""),
-                expected_action=case.get("expected_search_action", "<missing expected>"),
+                case_id=case.case_id,
+                category=case.category,
+                latest_user=latest_user_message(case.conversation_history),
+                expected_action=case.expected_action,
                 actual_action=f"ERROR: {type(exc).__name__}",
                 search_query=None,
                 passed=False,
@@ -508,8 +509,9 @@ def main(argv: list[str] | None = None) -> int:
         output_path=output_path,
         show_passes=args.show_passes,
         cases_path=args.cases,
-        model_name=model_name,
-        temperature=temperature,
+        model_name=args.model_name,
+        temperature=args.temperature,
+        config_path=args.config_path,
     )
 
     print(f"Wrote eval results to {output_path}")

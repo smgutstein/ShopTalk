@@ -470,7 +470,7 @@ There are several decisions that go into any product recommendation. The chatbot
 2. Whether to make a recommendation based upon what has been found within the vector DB & conversational context, query the user for more information, or decide that the user's request cannot be fulfilled.
 3. What product to recommend
 
-The eval scripts require an OpenAI API key and use the eval model settings from `shoptalk_config.ini` unless overridden.
+The eval scripts require an OpenAI API key. Each evaluator has its own INI file that records the complete run configuration.
 
 ### Search-decision eval
 
@@ -480,19 +480,22 @@ The eval scripts require an OpenAI API key and use the eval model settings from 
 
 This evaluates whether the LLM policy makes the right pre-retrieval decision: search now, ask for clarification, or continue without search.
 
-Useful options:
-
-```bash
-./run_eval_search_decision.sh --help
-./run_eval_search_decision.sh --category boundary
-./run_eval_search_decision.sh --show-passes
-./run_eval_search_decision.sh --model gpt-4o --temperature 0.0
-```
-
-Results are written to numbered text files under:
+The complete default run is defined in:
 
 ```text
-server/evals/eval_results/
+server/evals/search_decision/search_decision_eval.ini
+```
+
+To reproduce a different run, copy and edit that file, then select it explicitly:
+
+```bash
+./run_eval_search_decision.sh --config path/to/search_decision_eval.ini
+```
+
+The evaluator accepts no per-setting command-line overrides. Results are written to the directory configured in the INI file; the default is:
+
+```text
+server/evals/search_decision/results/
 ```
 
 ### Product-decision eval
@@ -503,12 +506,16 @@ server/evals/eval_results/
 
 This evaluates the post-retrieval LLM decision: recommend a retrieved product or ask for more information.
 
-Useful options:
+The complete run definition is stored in:
+
+```text
+server/evals/product_response_decision/product_response_decision_eval.ini
+```
+
+Use a different complete run configuration with:
 
 ```bash
-./run_eval_product_response_decision.sh --help
-./run_eval_product_response_decision.sh --limit 10
-./run_eval_product_response_decision.sh --model gpt-4o --temperature 0.0
+./run_eval_product_response_decision.sh --config path/to/product_response_decision_eval.ini
 ```
 
 Results are also written to numbered text files under:

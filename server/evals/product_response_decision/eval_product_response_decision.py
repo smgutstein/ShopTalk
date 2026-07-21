@@ -12,6 +12,7 @@ whether the system should run a new search before retrieval.
 from __future__ import annotations
 
 import argparse
+import configparser
 import csv
 import json
 import os
@@ -22,25 +23,20 @@ from tqdm import tqdm
 from typing import Any, Iterable
 
 try:  # Supports: python -m server.evals.product_response_decision.eval_product_response_decision
-    from ...recommender_core.config import load_shoptalk_config
     from ...recommender_core.conversation_policy import ConversationPolicy
     from ...recommender_core.product_candidate import ProductCandidate
     from ...recommender_core.utils import load_openai_api_key
-    from ...shoptalk_paths import DEFAULT_CONFIG_PATH
 except ImportError:  # Supports running from inside server/: python -m evals.product_response_decision.eval_product_response_decision
-    from recommender_core.config import load_shoptalk_config
     from recommender_core.conversation_policy import ConversationPolicy
     from recommender_core.product_candidate import ProductCandidate
     from recommender_core.utils import load_openai_api_key
-    from shoptalk_paths import DEFAULT_CONFIG_PATH
 
 from langchain_classic.schema import AIMessage, HumanMessage, SystemMessage
 
 
 # Keep the default paths next to this module so the eval can be run from the
 # repository root without supplying a long list of command-line arguments.
-DEFAULT_CASES_PATH = Path(__file__).with_name("cases") / "eval_cases_product_response_decision.jsonl"
-DEFAULT_RESULTS_DIR = Path(__file__).with_name("results")
+DEFAULT_CONFIG_PATH = Path(__file__).with_name("product_response_decision_eval.ini")
 
 
 @dataclass(frozen=True)
@@ -86,63 +82,82 @@ class EvalResult:
     reason: str
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse CLI options for the focused LLM-decision eval.
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse the evaluator config selector.
 
-    These options intentionally control only the eval harness: case source, model
-    override, result output, and optional limiting. Product retrieval settings do
-    not belong here because this module never performs retrieval.
+    Every setting that defines an evaluation run lives in the selected INI file.
+    This leaves one reproducible source of truth instead of mixing config values
+    with command-line overrides.
     """
     parser = argparse.ArgumentParser(
         description="Evaluate ConversationPolicy.decide_next_action on JSONL cases."
     )
     parser.add_argument(
-        "--cases",
-        type=Path,
-        default=DEFAULT_CASES_PATH,
-        help="Path to JSONL eval cases.",
-    )
-    parser.add_argument(
         "--config",
         type=Path,
         default=DEFAULT_CONFIG_PATH,
-        help="Path to the ShopTalk config file.",
+        help=f"Path to the evaluator config file. Default: {DEFAULT_CONFIG_PATH}",
     )
-    parser.add_argument(
-        "--model",
-        default=None,
-        help="Override the eval model name from the config file.",
+    return parser.parse_args(argv)
+
+
+@dataclass(frozen=True)
+class ProductResponseDecisionEvalConfig:
+    """Resolved settings for one product-response decision evaluation run."""
+
+    model_name: str
+    temperature: float
+    cases_path: Path
+    limit: int | None
+    output_dir: Path
+    output_prefix: str
+    output_csv: Path | None
+
+
+def _required(config: configparser.ConfigParser, section: str, option: str) -> str:
+    """Return a required non-empty INI value with a clear error message."""
+    if not config.has_section(section):
+        raise ValueError(f"Missing required config section [{section}]")
+    if not config.has_option(section, option):
+        raise ValueError(f"Missing required config setting [{section}] {option}")
+    value = config.get(section, option).strip()
+    if not value:
+        raise ValueError(f"Config setting [{section}] {option} must not be empty")
+    return value
+
+
+def _optional_path(value: str) -> Path | None:
+    """Convert a blank optional path to None."""
+    value = value.strip()
+    return Path(value) if value else None
+
+
+def _optional_limit(value: str) -> int | None:
+    """Parse a positive integer limit or the explicit value ``none``."""
+    value = value.strip().lower()
+    if value in {"", "none"}:
+        return None
+    limit = int(value)
+    if limit <= 0:
+        raise ValueError("Config setting [eval] limit must be positive or 'none'")
+    return limit
+
+
+def load_eval_config(path: Path) -> ProductResponseDecisionEvalConfig:
+    """Load and validate the evaluator-specific INI file."""
+    parser = configparser.ConfigParser()
+    if not parser.read(path):
+        raise FileNotFoundError(f"Could not read evaluator config: {path}")
+
+    return ProductResponseDecisionEvalConfig(
+        model_name=_required(parser, "model", "model_name"),
+        temperature=float(_required(parser, "model", "temperature")),
+        cases_path=Path(_required(parser, "eval", "cases")),
+        limit=_optional_limit(_required(parser, "eval", "limit")),
+        output_dir=Path(_required(parser, "output", "output_dir")),
+        output_prefix=_required(parser, "output", "output_prefix"),
+        output_csv=_optional_path(parser.get("output", "output_csv", fallback="")),
     )
-    parser.add_argument(
-        "--temperature",
-        type=float,
-        default=None,
-        help="Override the eval temperature from the config file.",
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=None,
-        help="Optional maximum number of cases to run.",
-    )
-    parser.add_argument(
-        "--output-csv",
-        type=Path,
-        default=None,
-        help="Optional path to write detailed CSV results.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=DEFAULT_RESULTS_DIR,
-        help=f"Directory for numbered result files. Default: {DEFAULT_RESULTS_DIR}",
-    )
-    parser.add_argument(
-        "--output-prefix",
-        default="llm_decision_eval",
-        help="Filename prefix for numbered result files.",
-    )
-    return parser.parse_args()
 
 
 def build_conversation_policy(model_name: str, temperature: float) -> ConversationPolicy:
@@ -165,6 +180,11 @@ def load_cases(path: Path, limit: int | None = None) -> list[EvalCase]:
     Empty lines are ignored to make the case file easier to edit by hand. JSON
     syntax errors include the line number so a broken case can be fixed quickly.
     """
+    if not path.exists():
+        raise FileNotFoundError(f"Case file not found: {path}")
+    if path.suffix != ".jsonl":
+        raise ValueError(f"Product-response case file must be JSONL: {path}")
+
     cases: list[EvalCase] = []
     with path.open("r", encoding="utf-8") as infile:
         for line_number, raw_line in enumerate(infile, start=1):
@@ -334,7 +354,7 @@ def next_numbered_output_path(
 ) -> Path:
     """Return the next available numbered output path.
 
-    Example: llm_decision_eval_001.txt, llm_decision_eval_002.txt, ...
+    Example: product_response_decision_eval_001.txt, ...
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -353,11 +373,13 @@ def write_report(
     cases_path: Path,
     model_name: str,
     temperature: float,
+    config_path: Path,
 ) -> None:
     """Write the human-readable eval report to a file."""
     with output_path.open("w", encoding="utf-8") as outfile:
         with redirect_stdout(outfile):
             print_run_info(
+                config_path=config_path,
                 cases_path=cases_path,
                 model_name=model_name,
                 temperature=temperature,
@@ -368,6 +390,7 @@ def write_report(
 
 def print_run_info(
     *,
+    config_path: Path,
     cases_path: Path,
     model_name: str,
     temperature: float,
@@ -375,6 +398,7 @@ def print_run_info(
     """Print eval run configuration."""
     print("Run configuration")
     print("-----------------")
+    print(f"config:      {config_path}")
     print(f"cases:       {cases_path}")
     print(f"model:       {model_name}")
     print(f"temperature: {temperature}")
@@ -479,33 +503,31 @@ def write_csv(results: list[EvalResult], output_path: Path) -> None:
 def main() -> int:
     """CLI entry point for the focused post-retrieval decision eval."""
     args = parse_args()
-    file_config = load_shoptalk_config(args.config)
-    model_name = args.model or file_config.eval_model_name
-    temperature = (
-        args.temperature
-        if args.temperature is not None
-        else file_config.eval_temperature
+    eval_config = load_eval_config(args.config)
+    cases = load_cases(eval_config.cases_path, limit=eval_config.limit)
+    policy = build_conversation_policy(
+        eval_config.model_name,
+        eval_config.temperature,
     )
-    cases = load_cases(args.cases, limit=args.limit)
-    policy = build_conversation_policy(model_name, temperature)
     results = run_eval(policy, cases)
 
     output_path = next_numbered_output_path(
-        args.output_dir,
-        prefix=args.output_prefix,
+        eval_config.output_dir,
+        prefix=eval_config.output_prefix,
     )
     write_report(
         results,
         output_path=output_path,
-        cases_path=args.cases,
-        model_name=model_name,
-        temperature=temperature,
+        config_path=args.config,
+        cases_path=eval_config.cases_path,
+        model_name=eval_config.model_name,
+        temperature=eval_config.temperature,
     )
     print(f"Wrote eval results to {output_path}")
 
-    if args.output_csv is not None:
-        write_csv(results, args.output_csv)
-        print(f"Wrote CSV results to {args.output_csv}")
+    if eval_config.output_csv is not None:
+        write_csv(results, eval_config.output_csv)
+        print(f"Wrote CSV results to {eval_config.output_csv}")
 
     return 0 if all(result.passed for result in results) else 1
 
