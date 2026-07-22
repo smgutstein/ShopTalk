@@ -169,7 +169,7 @@ def test_metrics_payload_contains_text_report_data() -> None:
     assert report["run_metadata"]["total_cases"] == 2
     assert report["judgment_completeness"]["allow_unjudged"] is True
     assert report["judgment_completeness"]["total_judgment_fields"] == 12
-    assert report["judgment_completeness"]["unjudged_fields_or_products"] == 1
+    assert report["judgment_completeness"]["unjudged_judgments"] == 1
     assert report["judgment_completeness"]["unjudged_percent"] == pytest.approx(100 / 12)
     assert report["retrieval_metrics"]["strict_hit_at_5"] == 0.5
     assert report["llm_response_metrics"]["grounded_response_rate_all"] == 1.0
@@ -189,25 +189,24 @@ def test_parse_args_accepts_positional_config_path(tmp_path):
     assert score_args.config == config
 
 
-def test_parse_args_still_accepts_config_option(tmp_path):
-    """Keep -c/--config working so existing automation is not broken."""
+def test_parse_args_requires_positional_config():
+    """Both commands reject invocation without the required INI path."""
+    from server.evals.retrieval_llm_response.retrieval_llm_eval import parse_args
+
+    for command in ("generate", "score"):
+        with pytest.raises(SystemExit) as exc_info:
+            parse_args([command])
+        assert exc_info.value.code == 2
+
+
+def test_parse_args_rejects_config_flags(tmp_path):
+    """The config is positional only; -c/--config are not supported."""
     from server.evals.retrieval_llm_response.retrieval_llm_eval import parse_args
 
     config = tmp_path / "example.ini"
 
-    args = parse_args(["generate", "-c", str(config)])
+    for option in ("-c", "--config"):
+        with pytest.raises(SystemExit) as exc_info:
+            parse_args(["generate", option, str(config)])
+        assert exc_info.value.code == 2
 
-    assert args.config == config
-
-
-def test_parse_args_rejects_conflicting_config_paths(tmp_path):
-    """Two different config paths are ambiguous and must fail loudly."""
-    from server.evals.retrieval_llm_response.retrieval_llm_eval import parse_args
-
-    positional = tmp_path / "positional.ini"
-    optional = tmp_path / "optional.ini"
-
-    with pytest.raises(SystemExit) as exc_info:
-        parse_args(["generate", str(positional), "-c", str(optional)])
-
-    assert exc_info.value.code == 2

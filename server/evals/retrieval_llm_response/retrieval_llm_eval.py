@@ -55,7 +55,6 @@ DEFAULT_GENERATED_DIR = Path(__file__).with_name("generated")
 DEFAULT_REVIEWED_DIR = Path(__file__).with_name("reviewed")
 DEFAULT_SCORED_DIR = Path(__file__).with_name("results")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_judgments"
-DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
 EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v4"
 
 REQUIRED_CASE_NOTE_PREFIXES = (
@@ -1294,7 +1293,7 @@ def build_metrics_payload(
         "judgment_completeness": {
             "allow_unjudged": allow_unjudged,
             "total_judgment_fields": total_judgment_fields,
-            "unjudged_fields_or_products": unjudged_count,
+            "unjudged_judgments": unjudged_count,
             "unjudged_percent": unjudged_percent,
             "warnings": warnings,
         },
@@ -1349,7 +1348,7 @@ def write_metrics_report(
             print("---------------------")
             print(f"unjudged fields allowed:  {'yes' if allow_unjudged else 'no'}")
             print(
-                "unjudged fields/products: "
+                "unjudged judgments:       "
                 f"{unjudged_count}/{total_judgment_fields} = {unjudged_percent:.1f}%"
             )
             if warnings:
@@ -1380,7 +1379,7 @@ def write_metrics_report(
             else:
                 print("No judged failures detected.")
 
-def generate_main(config_path: Path = DEFAULT_EVAL_CONFIG_PATH) -> int:
+def generate_main(config_path: Path) -> int:
     """Run preset ShopTalk cases and write a hand-editable judgment JSON file.
 
     The generated file is intentionally self-contained for human review. Each
@@ -1484,7 +1483,7 @@ def generate_main(config_path: Path = DEFAULT_EVAL_CONFIG_PATH) -> int:
 
 
 def score_main(
-    config_path: Path = DEFAULT_EVAL_CONFIG_PATH,
+    config_path: Path,
     *,
     allow_unjudged: bool = False,
 ) -> int:
@@ -1549,59 +1548,6 @@ def score_main(
     return 0
 
 
-def _add_config_arguments(subparser: argparse.ArgumentParser) -> None:
-    """Add positional and backward-compatible optional config arguments.
-
-    The preferred interface is a single positional INI path::
-
-        retrieval_llm_eval.py generate path/to/eval.ini
-
-    ``-c/--config`` remains available so existing commands do not break. Both
-    forms are optional because the historical default INI is still supported.
-    Resolution and conflict checking happen after parsing in
-    :func:`_resolve_config_path`.
-    """
-    subparser.add_argument(
-        "config_path",
-        nargs="?",
-        type=Path,
-        help=(
-            "Path to the retrieval/LLM evaluation INI file. "
-            f"Default: {DEFAULT_EVAL_CONFIG_PATH}"
-        ),
-    )
-    subparser.add_argument(
-        "-c",
-        "--config",
-        dest="config_option",
-        type=Path,
-        help="Backward-compatible alternative to the positional INI path.",
-    )
-
-
-def _resolve_config_path(
-    parser: argparse.ArgumentParser,
-    args: argparse.Namespace,
-) -> Path:
-    """Resolve the selected INI path and reject contradictory arguments.
-
-    Accepting both spellings is useful during migration, but silently choosing
-    one when both differ would make runs hard to reproduce. The parser therefore
-    reports an error for conflicting paths while allowing the same path to be
-    supplied redundantly.
-    """
-    positional = args.config_path
-    optional = args.config_option
-
-    if positional is not None and optional is not None and positional != optional:
-        parser.error(
-            "configuration file specified twice with different paths; "
-            "use either positional CONFIG or -c/--config"
-        )
-
-    return positional or optional or DEFAULT_EVAL_CONFIG_PATH
-
-
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse the unified retrieval/LLM evaluation command line."""
     parser = argparse.ArgumentParser(
@@ -1613,13 +1559,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "generate",
         help="Run preset cases and write a hand-editable judgment JSON file.",
     )
-    _add_config_arguments(generate_parser)
+    generate_parser.add_argument(
+        "config",
+        type=Path,
+        help="Path to the required retrieval/LLM evaluation INI file.",
+    )
 
     score_parser = subparsers.add_parser(
         "score",
         help="Score a hand-edited retrieval/LLM judgment JSON file.",
     )
-    _add_config_arguments(score_parser)
+    score_parser.add_argument(
+        "config",
+        type=Path,
+        help="Path to the required retrieval/LLM evaluation INI file.",
+    )
     score_parser.add_argument(
         "--allow-unjudged",
         action="store_true",
@@ -1629,9 +1583,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
 
-    args = parser.parse_args(argv)
-    args.config = _resolve_config_path(parser, args)
-    return args
+    return parser.parse_args(argv)
 
 
 def main() -> int:

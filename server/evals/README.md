@@ -30,7 +30,7 @@ Runs full retrieval plus final LLM response generation, producing human-editable
 judgment files and metrics reports.
 
 - `retrieval_llm_eval.py` is the unified generate/score implementation.
-- `retrieval_llm_eval.ini` is the normal config for this eval.
+- Each modality has its own required `retrieval_llm_eval_*_45.ini` config.
 - `cases/` contains hand-authored JSONL cases.
 - `generated/` contains immutable numbered judgment files produced by eval runs.
 - `reviewed/` receives matching editable copies for human judgment.
@@ -48,5 +48,6 @@ policy evaluations:
 - `run_eval_product_response_decision.sh` runs
   `server.evals.product_response_decision.eval_product_response_decision`.
 
-`server.evals.retrieval_llm_eval` remains the entry point for the retrieval and
-response evaluation workflow.
+The root-level retrieval/response scripts call
+`server.evals.retrieval_llm_response.retrieval_llm_eval` directly. Both require
+a modality-specific INI path as the first positional argument.
