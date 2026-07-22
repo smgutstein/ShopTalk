@@ -12,16 +12,52 @@ The project is designed to compare text-only, image-only, and combined text-and-
 2. Does a shared multimodal text/image representation space produce better product retrieval than separate unimodal representation spaces?
 3. Can weighting or combining text and image retrieval signals improve results over the best single-modality baseline?
 
-## Current Finding
+## Current Results
 
-In the first completed 45-case evaluation, text-only requests outperformed combined text-and-image requests on most retrieval and response metrics when both used the current shared ImageBind vector space. Both configurations correctly avoided recommending unavailable products in all evaluated missing-product cases.
+The first completed end-to-end evaluation compares text-only requests with combined text-and-image requests using the same 45-case structure and the current shared ImageBind representation space.
 
-The image-only runs produced no product recommendations and instead consistently requested additional information. This suggests that, under the current prompting and decision policy, an image by itself does not provide enough explicit purchase intent for the LLM to select a product confidently.
+Each evaluation contains:
 
-The combined text-and-image result does not establish that images are generally harmful to product retrieval. Possible explanations include needing to more closely align texts with images. At present, images were chosen by entering the search queries into a search engine and then hand selecting the most appropriate image. When an image is added to an existing text query, if that query does not reference the image or make clear what the salient aspects of the image are, then adding the image only adds noise to the query. It should be noted that images were paired with text queries by entering the text query into a search engine (i.e. Duck Duck Go) and then hand selecting the most salient image.
+- 30 positive cases for which a suitable product should be retrieved;
+- 15 missing-product cases for which the system should avoid making a recommendation;
+- human-reviewed retrieval, product-decision, response-quality, and grounding judgments.
 
+Both runs used `gpt-4o` with a temperature of `0.0`. All required human-judgment fields were completed before scoring.
 
-The next evaluation will test image-referencing text queries and compare them with the existing text-only and text-plus-image cases. Later experiments will examine alternative modality weighting, separate text and image representations, and retrieval-signal fusion.
+### Text-Only vs. Text-and-Image
+
+| Metric | Text only | Text + image |
+|---|---:|---:|
+| Target or equivalent retrieved | **83.3%** | 63.3% |
+| Exact target retrieved | **50.0%** | 43.3% |
+| Strict hit@1 | **46.7%** | 43.3% |
+| Strict hit@5 | **83.3%** | 76.7% |
+| Lenient hit@5 | 96.7% | **100.0%** |
+| Mean reciprocal rank | **0.727** | 0.710 |
+| Mean top-1 relevance | **1.433** | 1.267 |
+| Mean retrieval quality | **1.156** | 1.067 |
+| Correct product decision on positive cases | **90.0%** | 63.3% |
+| Mean response quality | **1.778** | 1.667 |
+| Grounded responses | **95.6%** | 88.9% |
+| False recommendations on missing-product cases | **0.0%** | **0.0%** |
+| Correct no-match decisions | **100.0%** | **100.0%** |
+
+Under the current retrieval and query-construction approach, text-only requests performed better on most retrieval and response metrics. The largest differences were in target-or-equivalent retrieval, where text only led by 20 percentage points, and correct product decisions, where it led by 26.7 percentage points.
+
+Both configurations correctly avoided recommending unavailable products in all 15 missing-product cases. This suggests that the system's no-match behavior is currently more reliable than its selection of the best product among imperfectly retrieved candidates.
+
+These results do not establish that images are generally harmful to product retrieval. The evaluated images were found by submitting the existing text requests to an image search engine and manually selecting a seemingly relevant result. The text requests did not explicitly identify which visual characteristics mattered. Consequently, the added image could introduce irrelevant visual information rather than useful complementary evidence.
+
+Image-only runs did not produce product recommendations and instead requested more information. This primarily reflects the current conversation policy: an unexplained image does not provide explicit enough purchase intent for the LLM to proceed confidently. It should not be interpreted as a direct measurement of image-only retrieval quality.
+
+The next evaluation will use text requests that explicitly refer to information in the accompanying image. Later experiments will examine modality weighting, separate text and image representation spaces, and retrieval-result fusion.
+
+The complete reviewed judgments and machine-readable scored reports are available under:
+
+```text
+server/evals/retrieval_llm_response/reviewed/
+server/evals/retrieval_llm_response/results/
+```
 
 ## Current Project Status
 
@@ -527,17 +563,17 @@ Generate raw judgments for a modality with:
 
 ```bash
 ./run_generate_retrieval_llm_judgments.sh \
-  server/evals/retrieval_llm_response/retrieval_llm_eval_text_only.ini
+  server/evals/retrieval_llm_response/retrieval_llm_eval_text_only_45.ini
 ```
 
 ```bash
 ./run_generate_retrieval_llm_judgments.sh \
-  server/evals/retrieval_llm_response/retrieval_llm_eval_image_only.ini
+  server/evals/retrieval_llm_response/retrieval_llm_eval_image_only_45.ini
 ```
 
 ```bash
 ./run_generate_retrieval_llm_judgments.sh \
-  server/evals/retrieval_llm_response/retrieval_llm_eval_text_plus_image.ini
+  server/evals/retrieval_llm_response/retrieval_llm_eval_text_plus_image_45.ini
 ```
 
 Each generated file records the user request, retrieval behavior, retrieved candidates, selected product, final response, and evidence available to the LLM.
