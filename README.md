@@ -4,7 +4,7 @@
 
 ShopTalk implements a RAG-style product recommendation chatbot and evaluation test bed. It retrieves candidate products from a FAISS vector database built from multimodal product artifacts. Then, it uses an LLM to generate grounded, personality-aware recommendations.
 
-The project is designed to compare text-only, image-only, and combined text-and-image product requests, in order to determine when multimodal information improves or degrades retrieval and recommendation quality.
+The project is designed to compare text-only, image-only, and combined text-and-image product requests to determine when multimodal information improves or degrades retrieval and recommendation quality.
 
 ## Core Questions
 
@@ -44,7 +44,7 @@ The next evaluation will test image-referencing text queries and compare them wi
 
 ### In Progress
 
-- Evaluate effect oftailoring text requests to specific images
+- Evaluate the effect of tailoring text requests to specific images.
 - Evaluate alternative text/image weighting and fusion strategies.
 - Compare the shared ImageBind representation with separate text and image representation spaces.
 - Add a small reproducible fixture or smoke-test dataset that can run without rebuilding the full product artifact collection.
@@ -184,71 +184,56 @@ These are local artifacts, not source files.
 
 ## Environment Setup
 
-There are two supported ways to create the ShopTalk development environment:
+ShopTalk supports two development environments:
 
-1. **Docker**, which is the preferred path for most development and review because it packages the Torch/ImageBind/FAISS stack in a repeatable container.
-2. **Conda**, which is useful when you want direct local control of the Python environment.
+1. **Docker**, recommended for most users because it provides a repeatable Torch, ImageBind, and FAISS environment.
+2. **Conda**, useful when you need direct control of the local Python environment.
 
-The project has a few heavy dependencies. ImageBind and FAISS are the two most likely sources of environment friction, which is why the Docker path is listed first.
+Both approaches still require the local data and generated artifacts described in the following sections.
 
 ### Recommended: Docker Development Environment
 
-A Docker-based development environment is provided under `Dockerfiles/`. This is the preferred path if you want to avoid repeatedly rebuilding the local Torch/ImageBind/FAISS environment by hand. It is still a development container, not a production deployment.
-
-From the repository root:
+The Docker development environment is defined under `Dockerfiles/`. Run the helper script from the repository root:
 
 ```bash
-cd Dockerfiles
-./shoptalk_shell.sh
+./Dockerfiles/shoptalk_shell.sh
 ```
 
-With no argument, `shoptalk_shell.sh` builds and starts the Compose service if needed, then opens an interactive shell inside the container.
+With no argument, the script builds and starts the Compose service if necessary, then opens an interactive shell inside the container.
 
-Common Docker helper commands:
+Common commands:
 
 ```bash
-.Dockerfiles/shoptalk_shell.sh shell      # start if needed, then open an interactive shell
-.Dockerfiles/shoptalk_shell.sh start      # build/start the container in the background
-.Dockerfiles/shoptalk_shell.sh status     # show Compose service status
-.Dockerfiles/shoptalk_shell.sh logs       # follow container logs
-.Dockerfiles/shoptalk_shell.sh stop       # stop the container but keep it available
-.Dockerfiles/shoptalk_shell.sh down       # stop and remove the Compose container/network
-.Dockerfiles/shoptalk_shell.sh restart    # recreate the container
+./Dockerfiles/shoptalk_shell.sh shell      # Open a container shell
+./Dockerfiles/shoptalk_shell.sh start      # Build and start in the background
+./Dockerfiles/shoptalk_shell.sh status     # Show service status
+./Dockerfiles/shoptalk_shell.sh logs       # Follow container logs
+./Dockerfiles/shoptalk_shell.sh stop       # Stop the container
+./Dockerfiles/shoptalk_shell.sh down       # Remove the container and network
+./Dockerfiles/shoptalk_shell.sh restart    # Recreate the container
 ```
 
-<!--
-OpenAI-backed app and eval features require one shared local API-key file at the repository root. From the repository root, create it with:
+Docker uses `Dockerfiles/.env-public` for non-secret Compose defaults. OpenAI-backed application and evaluation features use the root-level `.env` file described under [LLM Setup](#llm-setup).
 
-```bash
-cp .env.example .env
-```
-
-Then edit `.env` and set:
-
-```text
-OPENAI_API_KEY="your_openai_api_key"
-```
-
-Both the Docker workflow and the conda/local workflow use this same root-level `.env` file for API keys. Docker also uses `Dockerfiles/.env-public` for non-secret Compose/container defaults; you normally should not need to edit it.
-
-After entering the container shell, launch the Gradio app from the mounted repository root:
+After entering the container shell, launch the application from the mounted repository root:
 
 ```bash
 ./run_ShopTalk_gradio.sh shoptalk_config.ini
 ```
 
-The Gradio bind address and port are read from the `[server]` section of
-`shoptalk_config.ini`. The checked-in configuration uses `0.0.0.0:7860` so
-Docker port mapping can reach the app.
+The launcher binds to `0.0.0.0` inside Docker so the configured port can be exposed to the host. The standard Compose configuration makes the application available on the local machine at:
 
-Docker does not remove the need for the generated/local artifacts described below. The image archive, `images.csv`, generated product blurbs, and FAISS vector DB still need to exist at the expected mounted paths before the full app can run.
--->
+```text
+http://127.0.0.1:7860
+```
+
+The Docker environment does not include the full image archive, `images.csv`, generated product blurbs, or vector database artifacts. Those files must exist at the documented repository paths before the full application can run.
 
 ### Alternative: Conda Environment
 
-Use the conda path if you specifically want a local non-container environment.
+Use the conda workflow when you want a local, non-containerized environment.
 
-#### 1. Create and activate a conda environment
+#### 1. Create and activate the environment
 
 From the parent directory that will contain both `ImageBind` and this repository:
 
@@ -274,11 +259,11 @@ cd ../ShopTalk
 pip install -e .
 ```
 
-`pip install -e .` uses `setup.py` and `requirements.txt`.
+`pip install -e .` installs the package using `setup.py` and `requirements.txt`.
 
-Current warning: `requirements.txt` is oriented toward the current development environment and includes `faiss-gpu-cu12`. If your machine does not support that FAISS package, install the appropriate FAISS package for your environment instead. For CPU-only testing, `faiss-cpu` is usually the simpler choice.
+`requirements.txt` currently targets the development environment and includes `faiss-gpu-cu12`. Systems without compatible CUDA support should install an appropriate FAISS package instead; `faiss-cpu` is the simpler option for CPU-only use.
 
-Keep `requirements.txt` and `Dockerfiles/requirements-docker.txt` synchronized as the app, eval, and test dependencies change.
+Keep `requirements.txt` and `Dockerfiles/requirements-docker.txt` synchronized as application, evaluation, and test dependencies change.
 
 ## Data Setup
 
@@ -381,7 +366,7 @@ Serving currently expects the FAISS backend.
 
 ### 1. Configure the OpenAI API key
 
-Use of OpenAI's LLMs require one shared local API-key file at the repository root. From the repository root, create it with:
+Using OpenAI's LLMs requires one shared local API-key file at the repository root. From the repository root, create it with:
 
 ```bash
 cp .env.example .env
@@ -465,7 +450,7 @@ The Gradio UI supports text-only queries, image-only queries, and combined text-
 
 ## Run Tests
 
-In order to verify technical correctness of code, there is a series of lightweight unit and behavior tests in the `tests` dir. They are intended to catch errors in helpers, configuration, parsing, diagnostics, vector-store loading, image-path handling, and UI helper logic without requiring a full ImageBind embedding run.
+The `tests/` directory contains lightweight unit and behavior tests for verifying code correctness. They are intended to catch errors in helpers, configuration, parsing, diagnostics, vector-store loading, image-path handling, and UI helper logic without requiring a full ImageBind embedding run.
 
 ```bash
 python -m pytest -q
@@ -601,17 +586,15 @@ The main limitations are:
 
 ## Suggested Next Development Steps
 
-1. Use this file as the new `README.md` after verifying local commands.
-2. Clean up `requirements.txt` so app, eval, and test dependencies are explicitly declared.
-3. Add a short demo section with screenshots or a GIF of the Gradio UI.
-4. Add a small smoke-test artifact path or scripted mini-demo so reviewers can run something quickly.
-5. Implement the representation comparison:
-   - current shared ImageBind embedding,
-   - separate text embedding search,
-   - separate image embedding search,
-   - score fusion or reranking between text/image channels.
-6. Add retrieval metrics for a small hand-labeled query set.
-7. Keep architecture cleanup focused. The project needs clarity more than production-scale abstraction.
+1. Create image-referencing text queries and compare them with the existing text-only and loosely paired text-plus-image cases.
+2. Produce a paired comparison across text-only, image-only, and text-plus-image runs, including per-case wins, losses, ties, and failure analysis.
+3. Test alternative text/image weighting within the current shared ImageBind representation.
+4. Compare the shared ImageBind approach with dedicated text and image representations.
+5. Evaluate score fusion or reranking between text and image retrieval channels.
+6. Add a small reproducible fixture or smoke-test artifact set so reviewers can run a minimal end-to-end example without rebuilding the full dataset.
+7. Add screenshots or a short demonstration video of the Gradio application.
+8. Separate runtime, evaluation, and development dependencies more clearly.
+9. Limit further architecture cleanup to changes that directly improve clarity, testing, or experimental reproducibility.
 
 ## Legacy Notes
 
