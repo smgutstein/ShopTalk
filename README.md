@@ -2,43 +2,52 @@
 
 ## Overview
 
-This repository implements a RAG-style product recommendation chatbot. It retrieves candidate products from a FAISS vector database built from multimodal product artifacts. Then, it uses an LLM to generate grounded, personality-aware recommendations.
+ShopTalk implements a RAG-style product recommendation chatbot and evaluation test bed. It retrieves candidate products from a FAISS vector database built from multimodal product artifacts. Then, it uses an LLM to generate grounded, personality-aware recommendations.
+
+The project is designed to compare text-only, image-only, and combined text-and-image product requests, in order to determine when multimodal information improves or degrades retrieval and recommendation quality.
 
 ## Core Questions
 
-1. When using a joint text-image representaional space for a RAG-style product recommendation chatbot, does adding images to a request help produce accurate suggestions for a user?
+1. When using a joint text-image representational space for a RAG-style product recommendation chatbot, does adding images to a request help produce accurate suggestions for a user?
 2. Does a shared multimodal text/image representation space produce better product retrieval than separate unimodal representation spaces?
-3. Can a weighted hybrid approach produce retrieval results that better match a user's preferences and constraints?
+3. Can weighting or combining text and image retrieval signals improve results over the best single-modality baseline?
 
+## Current Finding
+
+In the first completed 45-case evaluation, text-only requests outperformed combined text-and-image requests on most retrieval and response metrics when both used the current shared ImageBind vector space. Both configurations correctly avoided recommending unavailable products in all evaluated missing-product cases.
+
+The image-only runs produced no product recommendations and instead consistently requested additional information. This suggests that, under the current prompting and decision policy, an image by itself does not provide enough explicit purchase intent for the LLM to select a product confidently.
+
+The combined text-and-image result does not establish that images are generally harmful to product retrieval. Possible explanations include needing to more closely align texts with images. At present, images were chosen by entering the search queries into a search engine and then hand selecting the most appropriate image. When an image is added to an existing text query, if that query does not reference the image or make clear what the salient aspects of the image are, then adding the image only adds noise to the query. It should be noted that images were paired with text queries by entering the text query into a search engine (i.e. Duck Duck Go) and then hand selecting the most salient image.
+
+
+The next evaluation will test image-referencing text queries and compare them with the existing text-only and text-plus-image cases. Later experiments will examine alternative modality weighting, separate text and image representations, and retrieval-signal fusion.
 
 ## Current Project Status
 
 ### Implemented
 
-- Product metadata preprocessing and product blurb generation under `EDA/`.
-- Multimodal vector database generation in `generate_vector_db.py`.
-- ImageBind-based product embeddings using a shared text/image representation space.
-- FAISS artifact generation for serving-time vector search.
-- Optional NumPy artifact generation for inspection and debugging.
-- Gradio application with:
-  - pure text query input, pure image query input, or both
-  - product recommendation display,
-  - top retrieved product gallery,
-  - diagnostics panel.
-- Configurable LLM model and temperature via `shoptalk_config.ini`.
-- Runtime launcher scripts for the Gradio app and eval modules.
-- Unit tests for preprocessing, vector DB helpers, recommender helpers, Gradio helper behavior, image path handling, diagnostics, and vector-store behavior.
-- Two targeted LLM evaluation modules:
-  - search-decision evaluation: should the assistant search now, ask a clarifying question, or continue without search?
-  - product-decision evaluation: given retrieved products, should the assistant recommend a product or ask for more information?
-- Numbered human-readable eval result files, so repeated eval runs do not overwrite previous results.
-- Completed an initial 45-case comparison of text-only and text-plus-image requests using the current shared ImageBind vector store.
+- Product metadata preprocessing and product-blurb generation.
+- ImageBind-based embedding of product text and images in a shared representation space.
+- Generation of FAISS vector-search artifacts, with optional NumPy artifacts for inspection and debugging.
+- A Gradio application supporting text-only, image-only, and combined text-and-image requests.
+- Retrieved-product galleries, recommendation output, and runtime diagnostics.
+- Configurable LLM and application settings through `shoptalk_config.ini`.
+- Docker and conda-based launch workflows.
+- Automated tests covering preprocessing, configuration, retrieval helpers, vector-store behavior, conversation policy, structured responses, image handling, diagnostics, Gradio helpers, and evaluation workflows.
+- Separate evaluation modules for:
+  - deciding whether a conversation turn requires product search;
+  - deciding how to respond after candidate products have been retrieved;
+  - evaluating the complete retrieval-and-response pipeline.
+- A human-review workflow that separates generated outputs, reviewed judgments, and scored results.
+- A completed 45-case comparison of text-only and combined text-and-image requests using the current shared ImageBind vector store.
 
-### Still Planned / In Progress
+### In Progress
 
-- Add a smaller smoke-test dataset or documented fixture path so reviewers can run a minimal demo without reconstructing the full product artifact set.
-- Answer 2nd & 3rd core questions
-  - Compare the current shared ImageBind representation approach against separate text and image representation spaces.
+- Evaluate effect oftailoring text requests to specific images
+- Evaluate alternative text/image weighting and fusion strategies.
+- Compare the shared ImageBind representation with separate text and image representation spaces.
+- Add a small reproducible fixture or smoke-test dataset that can run without rebuilding the full product artifact collection.
 
 ## Architecture Overview
 
