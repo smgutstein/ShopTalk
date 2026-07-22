@@ -577,25 +577,27 @@ The scorer reports retrieval success, target rank, reciprocal rank, product-deci
 
 ## Notes for Reviewers
 
-This repository is best read as a portfolio ML systems project, not as a polished product.
+This repository is best understood as a portfolio ML systems project and experimental test bed rather than a production-ready shopping application.
 
 The strongest parts are:
 
-- end-to-end shape of the system,
-- multimodal vector search pipeline,
-- separation of recommender runtime components,
-- Gradio demo with text and image input,
-- diagnostics visibility,
-- targeted LLM behavior evals.
+- the complete path from product-data preprocessing through multimodal retrieval and grounded LLM response generation;
+- separation of preprocessing, retrieval, conversation policy, UI, and evaluation components;
+- support for text-only, image-only, and combined text-and-image requests;
+- explicit evaluation of pre-retrieval decisions, post-retrieval response decisions, and end-to-end retrieval-and-response quality;
+- a human-review workflow that preserves generated outputs, reviewed judgments, and scored results;
+- automated tests covering the main helpers, configuration paths, retrieval behavior, structured outputs, UI behavior, and evaluation workflows;
+- documentation for both Docker and conda-based development environments.
 
-The weakest or least finished parts are:
+The main limitations are:
 
-- the full artifact setup is still heavy,
-- there is not yet a tiny reproducible demo dataset checked into the repo,
-- retrieval quality evaluation is still thin,
-- the current multimodal approach has not yet been compared against separate text/image representation spaces,
-- `requirements.txt`, `Dockerfiles/requirements-docker.txt`, and environment-file documentation need to be kept synchronized as the app/eval stack changes,
-- the README and portfolio presentation have lagged behind the code until this revision.
+- the full artifact setup remains large and time-consuming;
+- the repository does not yet include a small reproducible demo dataset or prebuilt smoke-test artifact set;
+- the current modality comparison uses a limited hand-constructed evaluation set;
+- image-only behavior and image-referencing text queries require further analysis;
+- the shared ImageBind representation has not yet been compared with dedicated text and image representations;
+- alternative modality weighting, score fusion, and reranking strategies remain untested;
+- the project has not yet been evaluated as a production system for latency, scale, security, or sustained multi-user operation.
 
 ## Suggested Next Development Steps
 
