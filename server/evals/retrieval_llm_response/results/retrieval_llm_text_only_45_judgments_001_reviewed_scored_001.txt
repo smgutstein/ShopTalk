@@ -1,0 +1,68 @@
+ShopTalk Retrieval + LLM Eval Metrics
+====================================
+
+Run metadata
+------------
+judgments:    server/evals/retrieval_llm_response/reviewed/retrieval_llm_text_only_45_judgments_001_reviewed.json
+cases_path:   server/evals/retrieval_llm_response/cases/eval_cases_retrieval_llm_text_only_45.jsonl
+created_at:   2026-07-10T12:00:56
+model:        gpt-4o
+temperature:  0.0
+total cases:  45
+
+Judgment completeness
+---------------------
+unjudged fields allowed:  no
+unjudged judgments:       0/495 = 0.0%
+
+Retrieval metrics
+-----------------
+positive_cases                   30
+target_or_equivalent_retrieved_rate 0.833
+exact_target_retrieved_rate_diagnostic 0.500
+strict_hit_at_1                  0.467
+strict_hit_at_5                  0.833
+lenient_hit_at_5                 0.967
+mrr_strict                       0.727
+mean_top1_relevance              1.433
+mean_relevance_at_5              1.247
+mean_retrieval_quality           1.156
+
+LLM response metrics
+--------------------
+positive_cases                   30
+missing_product_cases            15
+product_decision_correct_rate_positive 0.900
+mean_response_quality_all        1.778
+grounded_response_rate_all       0.956
+false_recommendation_rate_missing 0.000
+correct_no_match_rate_missing    1.000
+
+Failure summary
+---------------
+- text_003: LLM product decision judged incorrect
+- text_003: final LLM response was not grounded
+- text_009: LLM product decision judged incorrect
+- text_014: no target-or-equivalent product was retrieved
+- text_017: no target-or-equivalent product was retrieved
+- text_017: retrieval set judged bad
+- text_022: no target-or-equivalent product was retrieved
+- text_025: no target-or-equivalent product was retrieved
+- text_026: no target-or-equivalent product was retrieved
+- text_030: LLM product decision judged incorrect
+- text_030: final LLM response was not grounded
+- text_031: retrieval set judged bad
+- text_032: retrieval set judged bad
+- text_033: retrieval set judged bad
+- text_034: retrieval set judged bad
+- text_035: retrieval set judged bad
+- text_036: retrieval set judged bad
+- text_037: retrieval set judged bad
+- text_038: retrieval set judged bad
+- text_039: retrieval set judged bad
+- text_040: retrieval set judged bad
+- text_041: retrieval set judged bad
+- text_042: retrieval set judged bad
+- text_043: retrieval set judged bad
+- text_044: retrieval set judged bad
+- text_045: retrieval set judged bad
