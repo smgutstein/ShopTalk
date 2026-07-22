@@ -9,4 +9,4 @@ cd "$(dirname "$0")"
 # prefix matches the selected evaluation config and writes its report to results/.
 # Any arguments supplied here (normally positional CONFIG and optionally
 # --allow-unjudged) are passed through unchanged.
-python -m server.evals.retrieval_llm_eval score "$@"
+python -m server.evals.retrieval_llm_response.retrieval_llm_eval score "$@"

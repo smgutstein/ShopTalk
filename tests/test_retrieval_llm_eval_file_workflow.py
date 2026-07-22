@@ -28,8 +28,8 @@ limit = none
 
 [runtime]
 shoptalk_config = shoptalk_config.ini
-model = config
-temperature = config
+model = gpt-4o
+temperature = 0.0
 
 [artifacts]
 vector_db_output_dir = artifacts/vector_db
@@ -159,6 +159,7 @@ def test_metrics_payload_contains_text_report_data() -> None:
         payload=payload,
         judgment_path=Path("reviewed.json"),
         warnings=["case_001: unjudged"],
+        allow_unjudged=True,
         retrieval_metrics={"strict_hit_at_5": 0.5},
         llm_metrics={"grounded_response_rate_all": 1.0},
         failures=["case_002: failed"],
@@ -166,7 +167,10 @@ def test_metrics_payload_contains_text_report_data() -> None:
 
     assert report["judgments"] == "reviewed.json"
     assert report["run_metadata"]["total_cases"] == 2
+    assert report["judgment_completeness"]["allow_unjudged"] is True
+    assert report["judgment_completeness"]["total_judgment_fields"] == 12
     assert report["judgment_completeness"]["unjudged_fields_or_products"] == 1
+    assert report["judgment_completeness"]["unjudged_percent"] == pytest.approx(100 / 12)
     assert report["retrieval_metrics"]["strict_hit_at_5"] == 0.5
     assert report["llm_response_metrics"]["grounded_response_rate_all"] == 1.0
     assert report["failure_summary"] == ["case_002: failed"]

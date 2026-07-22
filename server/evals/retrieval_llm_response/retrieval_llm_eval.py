@@ -55,7 +55,6 @@ DEFAULT_GENERATED_DIR = Path(__file__).with_name("generated")
 DEFAULT_REVIEWED_DIR = Path(__file__).with_name("reviewed")
 DEFAULT_SCORED_DIR = Path(__file__).with_name("results")
 DEFAULT_OUTPUT_PREFIX = "retrieval_llm_judgments"
-DEFAULT_SCORE_OUTPUT_PREFIX = "retrieval_llm_metrics"
 DEFAULT_EVAL_CONFIG_PATH = Path(__file__).with_name("retrieval_llm_eval.ini")
 EXPECTED_SCHEMA_VERSION = "retrieval_llm_judgments_v4"
 
@@ -866,11 +865,6 @@ def load_score_args(config_path: Path) -> argparse.Namespace:
         judgments=configured_judgment_path(parser),
         output=_auto_path(parser, "score", "output"),
         output_dir=Path(parser.get("score", "output_dir", fallback=str(DEFAULT_SCORED_DIR))),
-        output_prefix=parser.get(
-            "score",
-            "output_prefix",
-            fallback=DEFAULT_SCORE_OUTPUT_PREFIX,
-        ),
         allow_unjudged=parser.getboolean("score", "allow_unjudged", fallback=False),
     )
 
@@ -1205,6 +1199,15 @@ def find_unjudged_fields(cases: list[dict[str, Any]]) -> list[str]:
     return warnings
 
 
+def count_judgment_fields(cases: list[dict[str, Any]]) -> int:
+    """Return the total number of judgment fields checked for completeness."""
+    required_case_field_count = 6  # target/equivalent plus five human-eval fields
+    return sum(
+        required_case_field_count + len(case.get("retrieved_products") or [])
+        for case in cases
+    )
+
+
 def summarize_failures(cases: list[dict[str, Any]]) -> list[str]:
     """Collect concise failure notes for the report.
 
@@ -1262,6 +1265,7 @@ def build_metrics_payload(
     payload: dict[str, Any],
     judgment_path: Path,
     warnings: list[str],
+    allow_unjudged: bool,
     retrieval_metrics: dict[str, Any],
     llm_metrics: dict[str, Any],
     failures: list[str],
@@ -1269,6 +1273,13 @@ def build_metrics_payload(
     """Build the machine-readable companion to the text metrics report."""
     metadata = payload.get("metadata", {})
     cases = payload.get("cases", [])
+    total_judgment_fields = count_judgment_fields(cases)
+    unjudged_count = len(warnings)
+    unjudged_percent = (
+        100.0 * unjudged_count / total_judgment_fields
+        if total_judgment_fields
+        else 0.0
+    )
 
     return {
         "report_type": "shoptalk_retrieval_llm_eval_metrics",
@@ -1281,7 +1292,10 @@ def build_metrics_payload(
             "total_cases": len(cases),
         },
         "judgment_completeness": {
-            "unjudged_fields_or_products": len(warnings),
+            "allow_unjudged": allow_unjudged,
+            "total_judgment_fields": total_judgment_fields,
+            "unjudged_fields_or_products": unjudged_count,
+            "unjudged_percent": unjudged_percent,
             "warnings": warnings,
         },
         "retrieval_metrics": retrieval_metrics,
@@ -1296,6 +1310,7 @@ def write_metrics_report(
     judgment_path: Path,
     output_path: Path,
     warnings: list[str],
+    allow_unjudged: bool,
     retrieval_metrics: dict[str, Any],
     llm_metrics: dict[str, Any],
     failures: list[str],
@@ -1305,6 +1320,13 @@ def write_metrics_report(
 
     metadata = payload.get("metadata", {})
     cases = payload.get("cases", [])
+    total_judgment_fields = count_judgment_fields(cases)
+    unjudged_count = len(warnings)
+    unjudged_percent = (
+        100.0 * unjudged_count / total_judgment_fields
+        if total_judgment_fields
+        else 0.0
+    )
 
     with output_path.open("w", encoding="utf-8") as outfile:
         # redirect_stdout keeps the report formatting simple while still writing
@@ -1325,7 +1347,11 @@ def write_metrics_report(
 
             print("Judgment completeness")
             print("---------------------")
-            print(f"unjudged fields/products: {len(warnings)}")
+            print(f"unjudged fields allowed:  {'yes' if allow_unjudged else 'no'}")
+            print(
+                "unjudged fields/products: "
+                f"{unjudged_count}/{total_judgment_fields} = {unjudged_percent:.1f}%"
+            )
             if warnings:
                 print("First 25 warnings:")
                 for warning in warnings[:25]:
@@ -1498,6 +1524,7 @@ def score_main(
         judgment_path=args.judgments,
         output_path=output_path,
         warnings=warnings,
+        allow_unjudged=args.allow_unjudged,
         retrieval_metrics=retrieval_metrics,
         llm_metrics=llm_metrics,
         failures=failures,
@@ -1508,6 +1535,7 @@ def score_main(
             payload=payload,
             judgment_path=args.judgments,
             warnings=warnings,
+            allow_unjudged=args.allow_unjudged,
             retrieval_metrics=retrieval_metrics,
             llm_metrics=llm_metrics,
             failures=failures,
