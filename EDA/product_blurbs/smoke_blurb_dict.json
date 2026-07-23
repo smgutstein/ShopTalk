@@ -1,0 +1,341 @@
+{
+  "B01MRBGZPY": {
+    "llm_str": "We sell The Fix Women's Jaylene Slip Fashion Sneaker, Light Rose Metallic, 9.5 B US. It is important to note that its Product ID is B01MRBGZPY.. Its brand is The Fix.  This product type may be categorized as a shoes product. Its color may be described as Light Rose Metallic, or more simply Gold. It consists of Leather. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shoes\n    3. Loafers & Slip-Ons\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shops\nThe fabric type is Leather. The model year of this item is 2017. There are several bullet points associated with this item:\n    1. Pin dots decorate the textured gold-tone leather upper of this slip-on fashion sneaker with goring dart at vamp and wrap-around white midsole.\n    2. Padded collar, goring insets\n",
+    "item_name": "Amazon Brand - The Fix Women's Jaylene Slip Fashion Sneaker, Light Rose Metallic, 9.5 B US",
+    "feature_fields": {
+      "product_name": "The Fix Women's Jaylene Slip Fashion Sneaker, Light Rose Metallic, 9.5 B US",
+      "brand": "The Fix",
+      "product_type": "shoes",
+      "color": "Light Rose Metallic",
+      "material": "Leather",
+      "categories": [
+        "Women/Shoes/Loafers & Slip-Ons",
+        "Women/Shops"
+      ],
+      "fabric": "Leather",
+      "model_year": "2017"
+    },
+    "main_image_id": "61fsW32jJvL",
+    "other_image_id": null,
+    "preproc_llm_str": [
+      [
+        "sell fix womens jaylene slip fashion sneaker light rise metallic 95"
+      ],
+      [
+        "b us important note product i d b01mrbgzpy brand fix product type may categorize shoe product color may describe light rise metallic simply gold consist leather categorical group item go general least general 1 woman 2 shoe 3 loafer slipon additionally categorical group item general least general could also express 1 woman 2 shop fabric type leather model year item 2017 several bullet point associate item 1 pin dot decorate textured goldtone leather upper slipon fashion sneaker gore dart vamp wraparound white midsole 2 pad collar goring inset"
+      ]
+    ],
+    "word_count": 99
+  },
+  "B01MRBH1RC": {
+    "llm_str": "We sell The Fix Women's Foley Tassel Slide Sandal, Bright Orange, 9.5 B US. It is important to note that its Product ID is B01MRBH1RC.. Its brand is The Fix.  This product type may be categorized as a shoes product. It weighs 5.50 ounces, which is  equivalent to 0.34 pounds. Its color may be described as Bright Orange, or more simply Red. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shoes\n    3. Sandals\n    4. Slides\nThe fabric type is Suede. The model year of this item is 2017. There are several bullet points associated with this item:\n    1. Menswear-inspired tassels are rendered in riotous orange in this suede slide sandal with minimalist heel.\n    2. Slip-on closure\n",
+    "item_name": "Amazon Brand - The Fix Women's Foley Tassel Slide Sandal, Bright Orange, 9.5 B US",
+    "feature_fields": {
+      "product_name": "The Fix Women's Foley Tassel Slide Sandal, Bright Orange, 9.5 B US",
+      "brand": "The Fix",
+      "product_type": "shoes",
+      "weight": "5.50 ounces",
+      "color": "Bright Orange",
+      "categories": [
+        "Women/Shops",
+        "Women/Shoes/Sandals/Slides"
+      ],
+      "fabric": "Suede",
+      "model_year": "2017"
+    },
+    "main_image_id": "61XaSxbZ5gL",
+    "other_image_id": [
+      "71d4MpWMxNL",
+      "71kosrH-XgL",
+      "61CgTK7NZRL",
+      "71Y0Mva9dNL",
+      "71SEMzgUQPL",
+      "61arBmhjtHL",
+      "6163eh7evML"
+    ],
+    "preproc_llm_str": [
+      [
+        "sell fix women foley tassel slide sandal bright orange 95 b we"
+      ],
+      [
+        "important note product i d b01mrbh1rc brand fix product type may categorize shoe product weigh 550 ounce equivalent 034 pound color may describe bright orange simply red categorical group item go general least general 1 woman 2 shop additionally categorical group item general least general could also express 1 woman 2 shoe 3 sandal 4 slide fabric type suede model year item 2017 several bullet point associate item 1 menswearinspire tassel render riotous orange suede slide sandal minimalist heel 2 slipon closure"
+      ]
+    ],
+    "word_count": 94
+  },
+  "B01MRBH2CY": {
+    "llm_str": "We sell The Fix Women's Cantu Ruffle Ankle Wrap Dress Sandal, Mushroom, 11 B US. It is important to note that its Product ID is B01MRBH2CY.. Its brand is The Fix.  This product type may be categorized as a shoes product. It weighs 6.40 ounces, which is  equivalent to 0.40 pounds. Its color may be described as Mushroom, or more simply Grey. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shoes\n    3. Sandals\n    4. Heeled Sandals\nThe fabric type is Leather. The model year of this item is 2017. There are several bullet points associated with this item:\n    1. Stacked lettuce-edge ruffles in black suede texturize the toe strap of this ankle-wrap sandal with covered heel.\n    2. Tonal stitching\n",
+    "item_name": "Amazon Brand - The Fix Women's Cantu Ruffle Ankle Wrap Dress Sandal, Mushroom, 11 B US",
+    "feature_fields": {
+      "product_name": "The Fix Women's Cantu Ruffle Ankle Wrap Dress Sandal, Mushroom, 11 B US",
+      "brand": "The Fix",
+      "product_type": "shoes",
+      "weight": "6.40 ounces",
+      "color": "Mushroom",
+      "categories": [
+        "Women/Shops",
+        "Women/Shoes/Sandals/Heeled Sandals"
+      ],
+      "fabric": "Leather",
+      "model_year": "2017"
+    },
+    "main_image_id": "81wD7336REL",
+    "other_image_id": [
+      "817vcvSNO+L",
+      "71Ugsf9wGBL",
+      "818kbyRc37L",
+      "81pAfVbcAdL",
+      "81KxRtEi7aL",
+      "71QRq7ZVYRL",
+      "71kZPZLATUL"
+    ],
+    "preproc_llm_str": [
+      [
+        "sell fix womens cantu ruffle ankle wrap dress sandal mushroom 11"
+      ],
+      [
+        "b we"
+      ],
+      [
+        "important note product i d b01mrbh2cy brand fix product type may categorize shoe product weigh 640 ounce equivalent 040 pound color may describe mushroom simply grey categorical group item go general least general 1 woman 2 shop additionally categorical group item general least general could also express 1 woman 2 shoe 3 sandal 4 heel sandal fabric type leather model year item 2017 several bullet point associate item 1 stack lettuceedge ruffle black suede texturize toe strap anklewrap sandal cover heel 2 tonal stitching"
+      ]
+    ],
+    "word_count": 97
+  },
+  "B01MRBH2Y3": {
+    "llm_str": "We sell The Fix Women's Dawson Stud Heel Dress Sandal. It is important to note that its Product ID is B01MRBH2Y3.. Its brand is The Fix.  This product type may be categorized as a shoes product. It weighs 8.70 ounces, which is  equivalent to 0.54 pounds. It consists of Leather. The categorical groups of this item, going from most general to least general are:\n    1. Women\n    2. Shops\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Women\n    2. Shoes\n    3. Sandals\n    4. Heeled Sandals\nThe fabric type is Leather. The model year of this item is 2017. There are several bullet points associated with this item:\n    1. High-gloss studs punctuate the leather upper of this wide-strap cage sandal with self-block heel.\n    2. Lace-up back with tie closure\n",
+    "item_name": "Amazon Brand - The Fix Women's Dawson Stud Heel Dress Sandal",
+    "feature_fields": {
+      "product_name": "The Fix Women's Dawson Stud Heel Dress Sandal",
+      "brand": "The Fix",
+      "product_type": "shoes",
+      "weight": "8.70 ounces",
+      "material": "Leather",
+      "categories": [
+        "Women/Shops",
+        "Women/Shoes/Sandals/Heeled Sandals"
+      ],
+      "fabric": "Leather",
+      "model_year": "2017"
+    },
+    "main_image_id": "81cAjUIm3BL",
+    "other_image_id": [
+      "81HGo5hAKkL",
+      "81u69SzZ3oL",
+      "81Q8P6ncSJL",
+      "81LwvihCBcL",
+      "81fYS3-hgIL",
+      "91WcY5etXtL",
+      "81GgmUzCFpL"
+    ],
+    "preproc_llm_str": [
+      [
+        "sell fix womens dawson stud heel dress sandal important note product i d b01mrbh2y3 brand fix product type may categorize shoe product weigh 870 ounce equivalent 054 pound consist leather categorical group item go general least general 1 woman 2 shop additionally categorical group item general least general could also express 1 woman 2 shoe 3 sandal 4 heel sandal fabric type leather model year item 2017 several bullet point associate item 1 highgloss stud punctuate leather upper widestrap cage sandal selfblock heel 2 laceup back tie closure"
+      ]
+    ],
+    "word_count": 88
+  },
+  "B000BUU45K": {
+    "llm_str": "We sell Strathwood LED Grill Light with Stand. It is important to note that its Product ID is B000BUU45K.. Its brand is Strathwood by Amazon.com.  This product type may be categorized as a lamp product. Its length is 5.00 inches. Its width is 16.00 inches. Its height is 6.00 inches. Its color may be described as Stainless Steel. It consists of Steel. The categorical groups of this item, going from most general to least general are:\n    1. 2020-12\n    2. 5798010010 - Lanterns\nThe finish type of this item is Steel. There are several bullet points associated with this item:\n    1. LED outdoor grill light with detachable stand\n    2. 304-grade stainless steel construction for protection from the elements\n    3. Light detaches from stand for use as a flashlight\n    4. LED light source means low battery draw and long life\n    5. Goose neck stand for easily angling light\n",
+    "item_name": "Strathwood LED Grill Light with Stand",
+    "feature_fields": {
+      "product_name": "Strathwood LED Grill Light with Stand",
+      "brand": "Strathwood by Amazon.com",
+      "product_type": "lamp",
+      "dimensions": "5.00 inches x 16.00 inches x 6.00 inches",
+      "color": "Stainless Steel",
+      "material": "Steel",
+      "categories": [
+        "2020-12/5798010010 - Lanterns"
+      ],
+      "finish": "Steel"
+    },
+    "main_image_id": "312YGC2GNRL",
+    "other_image_id": null,
+    "preproc_llm_str": [
+      [
+        "sell strathwood lead grill light stand important note product i d b000buu45k brand strathwood amazoncom product type may categorize lamp product length 500 inch width 1600 inch height 600 inch color may describe stainless steel consist steel categorical group item go general least general 1 202012 2 5798010010 lantern finish type item steel several bullet point associate item 1 lead outdoor grill light detachable stand 2 304grade stainless steel construction protection element 3 light detache stand use flashlight 4 lead light source mean low battery draw long life 5 goose neck stand easily angle light"
+      ]
+    ],
+    "word_count": 95
+  },
+  "B000E4CYHE": {
+    "llm_str": "We sell Strathwood Basics Pewter-Finish Torchiere, Set of 2. It is important to note that its Product ID is B000E4CYHE.. Its brand is Strathwood by Amazon.com.  This product type may be categorized as a lamp product. It consists of Steel. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Floor Lamps\nThere are several bullet points associated with this item:\n    1. Pair of torchiere lamps brings style outdoors\n    2. Constructed of corrosion-resistant stainless steel and iron\n    3. Oil lamps and stands require minor assembly\n    4. Pewter-finish lamps come with snuffer and wick\n    5. Each torchiere measures 72 inches in height and 5.5 inches wide\n",
+    "item_name": "Strathwood Basics Pewter-Finish Torchiere, Set of 2",
+    "feature_fields": {
+      "product_name": "Strathwood Basics Pewter-Finish Torchiere, Set of 2",
+      "brand": "Strathwood by Amazon.com",
+      "product_type": "lamp",
+      "material": "Steel",
+      "categories": [
+        "Lighting & Ceiling Fans/Lamps & Shades/Floor Lamps"
+      ]
+    },
+    "main_image_id": "41QPTM8X87L",
+    "other_image_id": [
+      "31P8X779CEL",
+      "41VEZ2ZPK5L",
+      "318B5Y5BP7L"
+    ],
+    "preproc_llm_str": [
+      [
+        "sell strathwood basic pewterfinish torchiere set 2 important note product i d b000e4cyhe brand strathwood amazoncom product type may categorize lamp product consist steel categorical group item go general least general 1 lighting ceiling fan 2 lamp shade 3 floor lamp several bullet point associate item 1 pair torchiere lamp bring style outdoors 2 construct corrosionresistant stainless steel iron 3 oil lamp stand require minor assembly 4 pewterfinish lamp come snuffer wick 5 torchiere measure 72 inch height 55 inch wide"
+      ]
+    ],
+    "word_count": 81
+  },
+  "B001CD1GFM": {
+    "llm_str": "We sell Pinzon Polished Nickel Orb Table Lamp with Black Shade. It is important to note that its Product ID is B001CD1GFM.. Its brand is Pinzon by Amazon.  This product type may be categorized as a lamp product. Its length is 10.00 inches. Its width is 14.00 inches. Its height is 36.00 inches. Its color may be described as Polished Nickel. It consists of Metal. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Table Lamps\nThe finish type of this item is Chrome. This item's shape may be described as 'drum'. There are several bullet points associated with this item:\n    1. Bright silver table lamp with classic black drum shade beautifully enhances urban and modern decors\n    2. Chrome-plated metal base; cotton shade; silver cord; matching finial\n    3. Requires 1 bulb up to 100 watts; UL listed; 3-way switch for adjustable lighting\n    4. Arrives assembled for immediate enjoyment; matching floor lamp available separately\n    5. Measures 36 inches high by 14 inches wide; weighs approximately 10 pounds\n",
+    "item_name": "Pinzon Polished Nickel Orb Table Lamp with Black Shade",
+    "feature_fields": {
+      "product_name": "Pinzon Polished Nickel Orb Table Lamp with Black Shade",
+      "brand": "Pinzon by Amazon",
+      "product_type": "lamp",
+      "dimensions": "10.00 inches x 14.00 inches x 36.00 inches",
+      "color": "Polished Nickel",
+      "material": "Metal",
+      "categories": [
+        "Lighting & Ceiling Fans/Lamps & Shades/Table Lamps"
+      ],
+      "finish": "Chrome",
+      "shape": "drum"
+    },
+    "main_image_id": "61lepTd-EmS",
+    "other_image_id": null,
+    "preproc_llm_str": [
+      [
+        "sell pinzon polished nickel orb table lamp black shade important note product i d b001cd1gfm brand pinzon amazon product type may categorize lamp product length 1000 inch width 1400 inch height 3600 inch color may describe polished nickel consist metal categorical group item go general least general 1 lighting ceiling fan 2 lamp shade 3 table lamp finish type item chrome item shape may describe drum several bullet point associate item 1 bright silver table lamp classic black drum shade beautifully enhance urban modern decor 2 chromeplate metal base cotton shade silver cord matching finial 3 require 1 bulb 100 watt ul list 3way switch adjustable lighting 4 arrive assemble immediate enjoyment matching floor lamp available separately 5 measure 36 inch high 14 inch wide weigh approximately 10 pound"
+      ]
+    ],
+    "word_count": 129
+  },
+  "B001CD1GGG": {
+    "llm_str": "We sell Pinzon Polished Nickel Orb Floor Lamp with Black Shade. It is important to note that its Product ID is B001CD1GGG.. Its brand is Unknown.  This product type may be categorized as a lamp product. It weighs 15.00 pounds. Its length is 10.00 inches. Its width is 14.00 inches. Its height is 61.00 inches. Its color may be described as Polished Nickel. It consists of Metal. The categorical groups of this item, going from most general to least general are:\n    1. Lighting & Ceiling Fans\n    2. Lamps & Shades\n    3. Table Lamps\nThe finish type of this item is Chrome. This item's shape may be described as 'drum'. There are several bullet points associated with this item:\n    1. Bright silver floor lamp with classic black drum shade beautifully enhances urban and modern decors\n    2. Chrome-plated metal base; cotton shade; silver cord; matching finial\n    3. Requires 1 bulb up to 100 watts; UL listed; 3-way switch for adjustable lighting\n    4. Easy assembly required on arrival; matching table lamp available separately\n    5. Measures 61 inches high by 14 inches wide; weighs approximately 18 pounds\n",
+    "item_name": "Pinzon Polished Nickel Orb Floor Lamp with Black Shade",
+    "feature_fields": {
+      "product_name": "Pinzon Polished Nickel Orb Floor Lamp with Black Shade",
+      "brand": "Unknown",
+      "product_type": "lamp",
+      "weight": "15.00 pounds",
+      "dimensions": "10.00 inches x 14.00 inches x 61.00 inches",
+      "color": "Polished Nickel",
+      "material": "Metal",
+      "categories": [
+        "Lighting & Ceiling Fans/Lamps & Shades/Table Lamps"
+      ],
+      "finish": "Chrome",
+      "shape": "drum"
+    },
+    "main_image_id": "71c-fQUd1pS",
+    "other_image_id": null,
+    "preproc_llm_str": [
+      [
+        "sell pinzon polished nickel orb floor lamp black shade important note product i d b001cd1ggg brand unknown product type may categorize lamp product weigh 1500 pound length 1000 inch width 1400 inch height 6100 inch color may describe polished nickel consist metal categorical group item go general least general 1 lighting ceiling fan 2 lamp shade 3 table lamp finish type item chrome item shape may describe drum several bullet point associate item 1 bright silver floor lamp classic black drum shade beautifully enhance urban modern decor 2 chromeplate metal base cotton shade silver cord matching finial 3 require 1 bulb 100 watt ul list 3way switch adjustable lighting 4 easy assembly require arrival matching table lamp available separately 5 measure 61 inch high 14 inch wide weigh approximately 18 pound"
+      ]
+    ],
+    "word_count": 131
+  },
+  "B00018HTFK": {
+    "llm_str": "We sell Strathwood Chaise Lounge Cushion, Hunter. It is important to note that its Product ID is B00018HTFK.. Its brand is Strathwood by Amazon.com.  This product type may be categorized as a chair product. Its color may be described as Hunter, or more simply Green. It consists of Polyester. The categorical groups of this item, going from most general to least general are:\n    1. Patio Furniture & Accessories\n    2. Patio Seating\n    3. Chairs\n    4. Lounge Chairs\nThe fabric type is 50% Polyester/ 50% Olefin. There are several bullet points associated with this item:\n    1. Chaise lounge cushion with high-performance fabric for use outdoors or indoors\n    2. Colorfast olefin upholstery; filled with 2 hefty layers of polyester fiber\n    3. Resists fading in sunlight and resists stains; fabric ties secure cushion to chair\n    4. Available in a choice of colors; coordinating Strathwood throw pillows also available\n    5. Measures 74 inches long by 22 inches wide by 3 inches thick\n",
+    "item_name": "Strathwood Chaise Lounge Cushion, Hunter",
+    "feature_fields": {
+      "product_name": "Strathwood Chaise Lounge Cushion, Hunter",
+      "brand": "Strathwood by Amazon.com",
+      "product_type": "chair",
+      "color": "Hunter",
+      "material": "Polyester",
+      "categories": [
+        "Patio Furniture & Accessories/Patio Seating/Chairs/Lounge Chairs"
+      ],
+      "fabric": "50% Polyester/ 50% Olefin"
+    },
+    "main_image_id": "3152ZF8MY9L",
+    "other_image_id": [
+      "31PEDXK5WXL"
+    ],
+    "preproc_llm_str": [
+      [
+        "sell strathwood chaise lounge cushion hunter important note product i d b00018htfk"
+      ],
+      [
+        "brand strathwood amazoncom product type may categorize chair product color may describe hunter simply green consist polyester categorical group item go general"
+      ],
+      [
+        "least general 1 patio furniture accessory 2 patio seat 3 chair 4 lounge chair fabric type 50 polyester 50 olefin several bullet point associate item 1 chaise lounge cushion highperformance fabric use outdoors indoor 2 colorfast olefin upholstery fill 2 hefty layer polyester fiber 3 resist fade sunlight resist stain fabric tie secure cushion chair 4 available choice color coordinate strathwood throw pillow also available 5 measure 74 inch long 22 inch wide 3 inch thick"
+      ]
+    ],
+    "word_count": 110
+  },
+  "B0006Q5UQ2": {
+    "llm_str": "We sell Strathwood Kapur Adirondack Set. It is important to note that its Product ID is B0006Q5UQ2.. Its brand is Strathwood by Amazon.com.  This product type may be categorized as a chair product. Its color may be described as tinted oil. The categorical groups of this item, going from most general to least general are:\n    1. Patio Furniture & Accessories\n    2. Patio Seating\n    3. Chairs\n    4. Adirondack Chairs\nThere are several bullet points associated with this item:\n    1. Commercial grade, built for superiority and strength\n",
+    "item_name": "Strathwood Kapur Adirondack Set",
+    "feature_fields": {
+      "product_name": "Strathwood Kapur Adirondack Set",
+      "brand": "Strathwood by Amazon.com",
+      "product_type": "chair",
+      "color": "tinted oil",
+      "categories": [
+        "Patio Furniture & Accessories/Patio Seating/Chairs/Adirondack Chairs"
+      ]
+    },
+    "main_image_id": "51QN8NF5JKL",
+    "other_image_id": null,
+    "preproc_llm_str": [
+      [
+        "sell strathwood kapur adirondack set important note product i d b0006q5uq2 brand strathwood amazoncom product type may categorize chair product color may describe tinted oil categorical group item go general least general 1 patio furniture accessory 2 patio seat 3 chair 4 adirondack chair several bullet point associate item 1 commercial grade build superiority strength"
+      ]
+    ],
+    "word_count": 55
+  },
+  "B0006Q5UT4": {
+    "llm_str": "We sell Strathwood Basics Hardwood Chaise Lounge. It is important to note that its Product ID is B0006Q5UT4.. Its brand is Strathwood by Amazon.com.  This product type may be categorized as a chair product. Its length is 73.38 inches. Its width is 25.63 inches. Its height is 12.38 inches. Its color may be described as Natural. It consists of Wood. The categorical groups of this item, going from most general to least general are:\n    1. Patio Furniture & Accessories\n    2. Patio Seating\n    3. Chairs\n    4. Lounge Chairs\nAdditionally, the categorical groups of this item from most general to least general could also be expressed as:\n    1. Patio Furniture & Accessories\n    2. Patio Seating\n    3. Chairs\n    4. Chaise Lounges\nThere are several bullet points associated with this item:\n    1. Made of eucalyptus wood, an all-weather hardwood that is dense and durable\n    2. Mortise and tenon construction with rust-resistant hardware\n    3. Pre-assembled components assemble easily using allen wrench provided\n    4. Weathers to a warm gray or color can be maintained using teak oil\n    5. Dimensions: 73 3/8\" L x 25 5/8\" W x 12 3/8\" H; Max Weight 290 lbs\n",
+    "item_name": "Strathwood Basics Hardwood Chaise Lounge",
+    "feature_fields": {
+      "product_name": "Strathwood Basics Hardwood Chaise Lounge",
+      "brand": "Strathwood by Amazon.com",
+      "product_type": "chair",
+      "dimensions": "73.38 inches x 25.63 inches x 12.38 inches",
+      "color": "Natural",
+      "material": "Wood",
+      "categories": [
+        "Patio Furniture & Accessories/Patio Seating/Chairs/Lounge Chairs",
+        "Patio Furniture & Accessories/Patio Seating/Chairs/Chaise Lounges"
+      ]
+    },
+    "main_image_id": "81rwwzuIeeL",
+    "other_image_id": [
+      "71Nyc38MAAL",
+      "91WvWZWuIQL",
+      "91xFTzaFT5L"
+    ],
+    "preproc_llm_str": [
+      [
+        "sell strathwood basic hardwood chaise lounge important note product i d b0006q5ut4 brand strathwood amazoncom product type may categorize chair product length 7338 inch width 2563 inch height 1238 inch color may describe natural consist wood categorical group item go general least general 1 patio furniture accessory 2 patio seat 3 chair 4 lounge chair additionally categorical group item general least general could also express 1 patio furniture accessory 2 patio seat 3 chair 4 chaise lounge several bullet point associate item 1 make eucalyptus wood allweather hardwood dense durable 2 mortise tenon construction rustresistant hardware 3 preassemble component assemble easily use allen wrench provide 4 weather warm gray color maintain use teak oil 5 dimension 73 38 l x 25 58 w x 12 38 h max weight 290 lbs"
+      ]
+    ],
+    "word_count": 131
+  },
+  "B0006Q5UUI": {
+    "llm_str": "We sell Strathwood Basic Elements Folding Chair (Set of 2). It is important to note that its Product ID is B0006Q5UUI.. Its brand is Strathwood by Amazon.com.  This product type may be categorized as a chair product. It consists of Teak. The categorical groups of this item, going from most general to least general are:\n    1. Furniture\n    2. Game & Recreation Room Furniture\n    3. Folding Tables & Chairs\n    4. Folding Chairs\nThere are several bullet points associated with this item:\n    1. Commercial grade, built for superiority and strength\n",
+    "item_name": "Strathwood Basic Elements Folding Chair (Set of 2)",
+    "feature_fields": {
+      "product_name": "Strathwood Basic Elements Folding Chair (Set of 2)",
+      "brand": "Strathwood by Amazon.com",
+      "product_type": "chair",
+      "material": "Teak",
+      "categories": [
+        "Furniture/Game & Recreation Room Furniture/Folding Tables & Chairs/Folding Chairs"
+      ]
+    },
+    "main_image_id": "416F2QX0YFL",
+    "other_image_id": [
+      "61MWK3E4PCL"
+    ],
+    "preproc_llm_str": [
+      [
+        "sell strathwood basic element fold chair set 2 important note product i d b0006q5uui brand strathwood amazoncom product type may categorize chair product consist teak categorical group item go general least general 1 furniture 2 game recreation room furniture 3 fold table chair 4 fold chair several bullet point associate item 1 commercial grade build superiority strength"
+      ]
+    ],
+    "word_count": 57
+  }
+}
