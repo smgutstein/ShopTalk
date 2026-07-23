@@ -183,7 +183,7 @@ Dockerfiles/                                 Docker development environment
   Dockerfile                                 ShopTalk development image
   docker-compose.yaml                        Compose service definition
   docker-entrypoint.sh                       Container user/setup entrypoint
-  requirements-docker.txt                    Docker-specific Python dependencies
+  requirements-docker.txt                    Docker copy of Python dependencies
   shoptalk_shell.sh                          Docker helper script
   .env-public                                Non-secret Docker environment defaults
 
@@ -236,7 +236,7 @@ The Docker development environment is defined under `Dockerfiles/`. Run the help
 ```
 
 With no argument, the script builds and starts the Compose service if necessary, then opens an interactive shell inside the container.
-
+ 
 Common commands:
 
 ```bash
@@ -629,8 +629,7 @@ The main limitations are:
 5. Evaluate score fusion or reranking between text and image retrieval channels.
 6. Add a small reproducible fixture or smoke-test artifact set so reviewers can run a minimal end-to-end example without rebuilding the full dataset.
 7. Add screenshots or a short demonstration video of the Gradio application.
-8. Separate runtime, evaluation, and development dependencies more clearly.
-9. Limit further architecture cleanup to changes that directly improve clarity, testing, or experimental reproducibility.
+8. Limit further architecture cleanup to changes that directly improve clarity, testing, or experimental reproducibility.
 
 ## Legacy Notes
 
