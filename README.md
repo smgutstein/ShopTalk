@@ -698,6 +698,10 @@ The main limitations are:
 6. Add screenshots or a short demonstration video of the Gradio application.
 7. Limit further architecture cleanup to changes that directly improve clarity, testing, or experimental reproducibility.
 
+## License
+
+This project is released under the MIT License. See [LICENSE.md](LICENSE.md).
+
 ## Legacy Notes
 
 This project grew out of a capstone project I worked on with Raj Avasarala and Matt Belland, which may be found at [`ShopTalk_v0`](https://github.com/ravasarala/ShopTalk). Older versions of this project used a Flask server entry point. The current app entry point is the Gradio app in:
