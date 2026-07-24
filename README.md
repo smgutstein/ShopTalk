@@ -6,6 +6,10 @@ ShopTalk implements a RAG-style product recommendation chatbot and evaluation te
 
 The project is designed to compare text-only, image-only, and combined text-and-image product requests to determine when multimodal information improves or degrades retrieval and recommendation quality.
 
+![ShopTalk Gradio interface](./images/SampleScreen.png)
+
+*Example ShopTalk session showing a product request and the grounded recommendation response.*
+
 ## Core Questions
 
 1. When using a joint text-image representational space for a RAG-style product recommendation chatbot, does adding images to a request help produce accurate suggestions for a user?
