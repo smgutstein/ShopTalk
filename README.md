@@ -700,7 +700,7 @@ The main limitations are:
 
 ## Legacy Notes
 
-Older versions of this project used a Flask server entry point. The current app entry point is the Gradio app in:
+This project grew out of a capstone project I worked on with Raj Avasarala and Matt Belland. Older versions of this project used a Flask server entry point. The current app entry point is the Gradio app in:
 
 ```text
 server/gradio_app.py
