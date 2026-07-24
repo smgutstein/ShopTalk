@@ -77,13 +77,15 @@ server/evals/retrieval_llm_response/results/
   - evaluating the complete retrieval-and-response pipeline.
 - A human-review workflow that separates generated outputs, reviewed judgments, and scored results.
 - A completed 45-case comparison of text-only and combined text-and-image requests using the current shared ImageBind vector store.
+- A committed 12-product smoke-test fixture with product blurbs, product images,
+  image-path metadata, and a prebuilt FAISS vector database.
 
 ### In Progress
 
 - Evaluate the effect of tailoring text requests to specific images.
 - Evaluate alternative text/image weighting and fusion strategies.
 - Compare the shared ImageBind representation with separate text and image representation spaces.
-- Add a small reproducible fixture or smoke-test dataset that can run without rebuilding the full product artifact collection.
+
 
 ## Architecture Overview
 
@@ -122,6 +124,18 @@ The LLM layer is not supposed to invent products. It works from retrieved produc
 Important files and directories:
 
 ```text
+artifacts/
+  smoke_test_vector_db/
+    faiss/
+      embeddings.faiss                       Prebuilt smoke-test FAISS index
+      product_ids.json                       Product IDs aligned with the smoke-test index
+
+EDA/product_blurbs/
+  smoke_blurb_dict.json                      Product metadata for the smoke-test catalog
+
+smoke_test_images/                           Product images for the smoke-test catalog
+smoke_images.csv                             Smoke-test image ID/path mappings
+
 EDA/                                         Offline product-data preparation
   DescriptionGenerator.py                    Generate product descriptions / blurbs
   preprocessor.py                            Product metadata preprocessing helpers
@@ -197,16 +211,16 @@ run_score_retrieval_llm_judgments.sh         Score reviewed retrieval/response j
 run_image_case_reviewer.sh                   Launch the image-case reviewer
 
 shoptalk_config.ini                          App/evaluation LLM model settings
+shoptalk_smoke_config.ini                    Configuration for the committed smoke test
 .env.example                                 Template for the local OpenAI API key
 requirements.txt                             Python dependencies
 setup.py                                     Package installation metadata
 ```
 
-## Generated / Downloaded Files Not Tracked by Git
+## Full Dataset and Generated Artifacts
+The repository intentionally does not include the full image archive, generated product blurb JSON, image metadata CSV, or vector database artifacts. However, it does include a small, prebuilt smoke-test fixture so that the application can be tested without downloading the full product dataset or generating the complete vector database.
 
-The repository intentionally does not include the full image archive, generated product blurb JSON, image metadata CSV, or vector database artifacts.
-
-Expected local paths:
+The full application expects the following local paths:
 
 | Path | Purpose | Source |
 |---|---|---|
@@ -216,7 +230,7 @@ Expected local paths:
 | `artifacts/vector_db/` | Generated FAISS/NumPy vector artifacts | Created by `generate_vector_db.py` |
 | `.env` | Shared local OpenAI API key for both Docker and conda/local runs | Created locally from `.env.example` |
 
-These are local artifacts, not source files.
+These are local artifacts, not source files. They are not required when running the committed smoke test.
 
 ## Environment Setup
 
@@ -225,7 +239,7 @@ ShopTalk supports two development environments:
 1. **Docker**, recommended for most users because it provides a repeatable Torch, ImageBind, and FAISS environment.
 2. **Conda**, useful when you need direct control of the local Python environment.
 
-Both approaches still require the local data and generated artifacts described in the following sections.
+The committed smoke test can be run with either environment without downloading the full product dataset or rebuilding the vector database. Running against the full catalog requires the additional data and generated artifacts described later in this README.
 
 ### Recommended: Docker Development Environment
 
@@ -250,20 +264,6 @@ Common commands:
 ```
 
 Docker uses `Dockerfiles/.env-public` for non-secret Compose defaults. OpenAI-backed application and evaluation features use the root-level `.env` file described under [LLM Setup](#llm-setup).
-
-After entering the container shell, launch the application from the mounted repository root:
-
-```bash
-./run_ShopTalk_gradio.sh shoptalk_config.ini
-```
-
-The launcher binds to `0.0.0.0` inside Docker so the configured port can be exposed to the host. The standard Compose configuration makes the application available on the local machine at:
-
-```text
-http://127.0.0.1:7860
-```
-
-The Docker environment does not include the full image archive, `images.csv`, generated product blurbs, or vector database artifacts. Those files must exist at the documented repository paths before the full application can run.
 
 ### Alternative: Conda Environment
 
@@ -300,6 +300,71 @@ pip install -e .
 `requirements.txt` currently targets the development environment and includes `faiss-gpu-cu12`. Systems without compatible CUDA support should install an appropriate FAISS package instead; `faiss-cpu` is the simpler option for CPU-only use.
 
 Keep `requirements.txt` and `Dockerfiles/requirements-docker.txt` synchronized as application, evaluation, and test dependencies change.
+
+## Run the Smoke Test
+
+The repository includes a small smoke-test catalog that can exercise the
+complete runtime application without downloading the full Amazon Berkeley Objects
+image archive or rebuilding the full vector database.
+
+The committed fixture contains:
+
+- 12 products: four shoes, four lamps, and four chairs;
+- product blurbs for those products;
+- the corresponding product images;
+- image ID-to-path metadata;
+- a prebuilt 1,024-dimensional FAISS vector database.
+
+The smoke test uses the normal ShopTalk runtime path, including ImageBind query
+embedding, FAISS retrieval, product-image display, conversation policy, and
+LLM-generated responses. It is intended to verify that the application runs
+end to end. It is not an evaluation dataset and should not be used to measure
+retrieval quality.
+
+### 1. Configure the OpenAI API key
+
+From the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set:
+
+```text
+OPENAI_API_KEY="your_openai_api_key"
+```
+
+### 2. Launch the application
+
+From either the Conda environment or the Docker container shell, run:
+
+```bash
+./run_ShopTalk_gradio.sh shoptalk_smoke_config.ini
+```
+
+Then open:
+
+```text
+http://127.0.0.1:7860
+```
+
+Example requests:
+
+```text
+I am looking for a black table lamp.
+```
+
+```text
+Recommend a wooden chair.
+```
+
+```text
+I need women's dress sandals.
+```
+
+Inside Docker, the launcher binds to `0.0.0.0` so that the configured port can
+be exposed to the host. On a normal local host, it binds to `127.0.0.1`.
 
 ## Data Setup
 
@@ -449,9 +514,9 @@ temperature = 0.0
 outside Docker. Set an explicit address to override auto-detection.
 
 
-## Run the Gradio App
+## Run the Gradio App with Full Dataset
 
-After the image files, `images.csv`, product blurbs, vector DB artifacts, and `.env` file are in place, run:
+To run ShopTalk against the full product catalog, first place the full image files, `images.csv`, product blurbs, vector database artifacts, and `.env` file at their documented paths. Then run:
 
 ```bash
 ./run_ShopTalk_gradio.sh shoptalk_config.ini
@@ -491,7 +556,6 @@ The `tests/` directory contains lightweight unit and behavior tests for verifyin
 ```bash
 python -m pytest -q
 ```
-
 
 ## Run Evaluation Scripts
 
@@ -608,12 +672,12 @@ The strongest parts are:
 - explicit evaluation of pre-retrieval decisions, post-retrieval response decisions, and end-to-end retrieval-and-response quality;
 - a human-review workflow that preserves generated outputs, reviewed judgments, and scored results;
 - automated tests covering the main helpers, configuration paths, retrieval behavior, structured outputs, UI behavior, and evaluation workflows;
-- documentation for both Docker and conda-based development environments.
+- documentation for both Docker and conda-based development environments;
+- a committed smoke-test fixture for running the complete runtime application without rebuilding the full product database.
 
 The main limitations are:
 
-- the full artifact setup remains large and time-consuming;
-- the repository does not yet include a small reproducible demo dataset or prebuilt smoke-test artifact set;
+- the full dataset setup remains large and time-consuming, although the committed smoke test provides a small end-to-end demonstration;
 - the current modality comparison uses a limited hand-constructed evaluation set;
 - image-only behavior and image-referencing text queries require further analysis;
 - the shared ImageBind representation has not yet been compared with dedicated text and image representations;
@@ -627,9 +691,8 @@ The main limitations are:
 3. Test alternative text/image weighting within the current shared ImageBind representation.
 4. Compare the shared ImageBind approach with dedicated text and image representations.
 5. Evaluate score fusion or reranking between text and image retrieval channels.
-6. Add a small reproducible fixture or smoke-test artifact set so reviewers can run a minimal end-to-end example without rebuilding the full dataset.
-7. Add screenshots or a short demonstration video of the Gradio application.
-8. Limit further architecture cleanup to changes that directly improve clarity, testing, or experimental reproducibility.
+6. Add screenshots or a short demonstration video of the Gradio application.
+7. Limit further architecture cleanup to changes that directly improve clarity, testing, or experimental reproducibility.
 
 ## Legacy Notes
 
