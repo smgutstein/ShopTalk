@@ -1,5 +1,8 @@
 # ShopTalk - A Multimodal RAG-Style Product Recommendation Chatbot
 
+[![Python tests](https://github.com/smgutstein/ShopTalk/actions/workflows/unit_tests.yaml/badge.svg)](https://github.com/smgutstein/ShopTalk/actions/workflows/unit_tests.yaml)
+
+
 ## Overview
 
 ShopTalk implements a RAG-style product recommendation chatbot and evaluation test bed. It retrieves candidate products from a FAISS vector database built from multimodal product artifacts. Then, it uses an LLM to generate grounded, personality-aware recommendations.
