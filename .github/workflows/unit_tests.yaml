@@ -1,0 +1,66 @@
+name: Python tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "setuptools<82"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install \
+            pytest==9.0.3 \
+            numpy==2.2.5 \
+            pandas==2.3.3 \
+            pydantic==2.12.5 \
+            python-dotenv==1.0.0 \
+            tqdm==4.67.3
+
+          python -m pip install \
+            torch==2.7.1 \
+            torchvision==0.22.1 \
+            torchaudio==2.7.1 \
+            --index-url https://download.pytorch.org/whl/cpu
+                
+          python -m pip install \
+            "git+https://github.com/facebookresearch/ImageBind.git@53680b02d7e37b19b124fa37bae4b6c98c38f5be"
+
+      - name: Check dependency consistency
+        run: |
+          python -m pip check
+
+      - name: Check Python syntax
+        run: |
+          python -m compileall -q \
+            server \
+            tests \
+            EDA \
+            generate_vector_db.py
+
+      - name: Run tests
+        run: |
+          python -m pytest -q
