@@ -123,118 +123,17 @@ The FAISS backend is the serving backend. The NumPy backend is mainly for debugg
 
 The LLM layer is not supposed to invent products. It works from retrieved product candidates and decides whether to recommend a product or gather more information.
 
-## Repository Layout
+## Repository Structure
 
-Important files and directories:
+The repository separates offline product-data preparation, vector-artifact generation, runtime recommendation code, evaluation suites, tests, Docker support, and committed smoke-test artifacts.
 
-```text
-artifacts/
-  smoke_test_vector_db/
-    faiss/
-      embeddings.faiss                       Prebuilt smoke-test FAISS index
-      product_ids.json                       Product IDs aligned with the smoke-test index
-
-EDA/product_blurbs/
-  smoke_blurb_dict.json                      Product metadata for the smoke-test catalog
-
-smoke_test_images/                           Product images for the smoke-test catalog
-smoke_images.csv                             Smoke-test image ID/path mappings
-
-EDA/                                         Offline product-data preparation
-  DescriptionGenerator.py                    Generate product descriptions / blurbs
-  preprocessor.py                            Product metadata preprocessing helpers
-  config.ini                                 EDA/preprocessing configuration
-
-generate_vector_db.py                        Build ImageBind/FAISS vector artifacts
-
-server/
-  gradio_app.py                              Main Gradio application
-
-  recommender_core/                          Primary runtime recommendation package
-    config.py                                Runtime config dataclasses and INI loading
-    conversation_policy.py                   LLM control and recommendation policy
-    diagnostics.py                           Diagnostics data structures/helpers
-    llm_prompts.py                           Prompt construction helpers
-    parsing.py                               Query/embedding-mode parsing helpers
-    product_candidate.py                     Product candidate representation
-    product_images.py                        Product image-path loading helpers
-    product_vector_store.py                  FAISS/product metadata wrapper
-    query_embedder.py                        ImageBind query embedding wrapper
-    recommender_factory.py                   Runtime construction functions
-    reply_types.py                           Structured reply/result models
-    shop_talk_recommender.py                 Main recommender orchestration class
-    vector_db.py                             FAISS artifact loading
-    vector_query.py                          Query-vector combination/search helpers
-
-  evals/                                     Evaluation suites and supporting artifacts
-    search_decision/
-      eval_search_decision.py                Pre-retrieval search-decision evaluation
-      cases/                                 Search-decision test cases
-
-    product_response_decision/
-      eval_product_response_decision.py      Post-retrieval product-response evaluation
-      cases/                                 Product-response test cases
-
-    retrieval_llm_response/
-      retrieval_llm_eval.py                  Generate judgments and score reviewed files
-      retrieval_llm_eval_*.ini               Modality-specific evaluation configurations
-      cases/                                 Text, image, and text-plus-image cases
-      generated/                             Raw generated judgment files
-      reviewed/                              Human-reviewed judgment files
-      results/                               Scored evaluation outputs
-      query_images/                          Evaluation images and source provenance
-      image_case_reviewer/                   Image-search and case-review application
-      run_image_case_reviewer.py             Reviewer application entry point
-
-    retrieval_llm_eval.py                    Compatibility wrapper
-    generate_retrieval_llm_judgments.py      Compatibility wrapper
-    score_retrieval_llm_judgments.py         Compatibility wrapper
-
-  recommender.py                             Compatibility import wrapper
-  gradio_images.py                           Compatibility import wrapper
-  shoptalk_paths.py                          Compatibility import wrapper
-  static/images/                             Runtime product images (generated/downloaded)
-
-tests/                                       Unit and lightweight behavior tests
-
-Dockerfiles/                                 Docker development environment
-  Dockerfile                                 ShopTalk development image
-  docker-compose.yaml                        Compose service definition
-  docker-entrypoint.sh                       Container user/setup entrypoint
-  requirements-docker.txt                    Docker copy of Python dependencies
-  shoptalk_shell.sh                          Docker helper script
-  .env-public                                Non-secret Docker environment defaults
-
-images/                                      Architecture diagrams and editable sources
-
-run_ShopTalk_gradio.sh                       Launch the Gradio app
-run_eval_search_decision.sh                  Run the search-decision evaluation
-run_eval_product_response_decision.sh        Run the product-response evaluation
-run_generate_retrieval_llm_judgments.sh      Generate retrieval/response judgments
-run_score_retrieval_llm_judgments.sh         Score reviewed retrieval/response judgments
-run_image_case_reviewer.sh                   Launch the image-case reviewer
-
-shoptalk_config.ini                          App/evaluation LLM model settings
-shoptalk_smoke_config.ini                    Configuration for the committed smoke test
-.env.example                                 Template for the local OpenAI API key
-requirements.txt                             Python dependencies
-setup.py                                     Package installation metadata
-```
+See [`docs/repository_structure.md`](docs/repository_structure.md) for the expanded directory tree and descriptions of the main files.
 
 ## Full Dataset and Generated Artifacts
-The repository intentionally does not include the full image archive, generated product blurb JSON, image metadata CSV, or vector database artifacts. However, it does include a small, prebuilt smoke-test fixture so that the application can be tested without downloading the full product dataset or generating the complete vector database.
 
-The full application expects the following local paths:
+The repository includes a committed 12-product smoke-test fixture, but intentionally excludes the full Amazon Berkeley Objects image archive and generated full-catalog artifacts.
 
-| Path | Purpose | Source |
-|---|---|---|
-| `EDA/product_blurbs/combined_blurb_dict.json` | Product metadata and generated product blurbs keyed by product ID | Generated by the EDA pipeline |
-| `images.csv` | Mapping from Amazon image IDs to relative image paths | Amazon Berkeley Objects metadata |
-| `server/static/images/` | Product image files used by ImageBind and the UI | Extracted from Amazon Berkeley Objects image archive |
-| `artifacts/vector_db/` | Generated FAISS/NumPy vector artifacts | Created by `generate_vector_db.py` |
-| `.env` | Shared local OpenAI API key for both Docker and conda/local runs | Created locally from `.env.example` |
-
-These are local artifacts, not source files. They are not required when running the committed smoke test.
+See [`docs/data_setup.md`](docs/data_setup.md) for the required paths, dataset preparation steps, product-blurb generation, and FAISS/NumPy vector-database commands.
 
 ## Environment Setup
 
@@ -370,106 +269,9 @@ I need women's dress sandals.
 Inside Docker, the launcher binds to `0.0.0.0` so that the configured port can
 be exposed to the host. On a normal local host, it binds to `127.0.0.1`.
 
-## Data Setup
-
-ShopTalk expects Amazon Berkeley Objects-style images and metadata.
-
-### 1. Download images and metadata
-
-Download [`abo-images-small.tar`](https://amazon-berkeley-objects.s3.amazonaws.com/archives/abo-images-small.tar) from the Amazon Berkeley Objects dataset.
-
-Extract it and move the contents of:
-
-```text
-images/small/
-```
-
-into:
-
-```text
-server/static/images/
-```
-
-After extraction, the project should contain directories like:
-
-```text
-server/static/images/00/
-server/static/images/01/
-...
-server/static/images/ff/
-```
-
-Also place `images.csv` in the project root. If you have `images.csv.gz`, unzip it:
-
-```bash
-gunzip images.csv.gz
-```
-
-The project root should then contain:
-
-```text
-images.csv
-```
-
-### 2. Generate product blurbs
-
-The vector DB generator expects:
-
-```text
-EDA/product_blurbs/combined_blurb_dict.json
-```
-
-A typical generation command is:
-
-```bash
-python EDA/DescriptionGenerator.py
-```
-
-Check `EDA/config.ini` and the EDA scripts for the exact local input/output paths expected by your dataset layout.
-
-## Generate Vector DB Artifacts
-
-From the project root, generate the default FAISS artifacts:
-
-```bash
-python generate_vector_db.py \
-  --vector_backend faiss \
-  --vector_db_output_dir artifacts/vector_db
-```
-
-Useful options:
-
-```bash
-python generate_vector_db.py --help
-```
-
-Common flags:
-
-| Flag | Meaning |
-|---|---|
-| `--product_blurbs` | Path to generated product blurb JSON. Default: `EDA/product_blurbs/combined_blurb_dict.json` |
-| `--image_root` | Root directory containing product images. Default: `server/static/images` |
-| `--images_csv` | Path to image ID to image path CSV. Default: `images.csv` |
-| `--vector_backend` | Artifact backend to write: `faiss` or `numpy` |
-| `--vector_db_output_dir` | Output directory for generated vector artifacts. Default: `artifacts/vector_db` |
-| `--batch_size` | Batch size for ImageBind embedding. Default: `128` |
-| `--cpu` | Force CPU inference |
-| `--skip_missing_images` | Skip products whose referenced image file is missing |
-| `--debug` | Enable debug logging |
-
-For inspection/debugging, generate NumPy artifacts instead:
-
-```bash
-python generate_vector_db.py \
-  --vector_backend numpy \
-  --vector_db_output_dir artifacts/vector_db
-```
-
-Serving currently expects the FAISS backend.
-
 ## LLM Setup
 
-### 1. Configure the OpenAI API key
+### 1. Configure the OpenAI API key (if not already configured for smoke test)
 
 Using OpenAI's LLMs requires one shared local API-key file at the repository root. From the repository root, create it with:
 
@@ -561,132 +363,12 @@ The `tests/` directory contains lightweight unit and behavior tests for verifyin
 python -m pytest -q
 ```
 
-## Run Evaluation Scripts
+## Evaluation Workflows
 
-ShopTalk evaluates the recommendation pipeline at three levels:
+ShopTalk evaluates pre-retrieval search decisions, post-retrieval product-response decisions, and the complete retrieval-and-response pipeline. Reviewed end-to-end outputs are separated from generated judgments and scored reports.
 
-1. whether the current conversation turn requires a product search;
-2. whether retrieved candidates support a recommendation or require another response;
-3. whether the complete retrieval-and-response pipeline retrieves an appropriate product and produces a correct, grounded response.
+See [`docs/evaluation.md`](docs/evaluation.md) for evaluator configurations, commands, output locations, and the human-review and scoring workflow.
 
-The evaluation scripts require an OpenAI API key. Each evaluator uses an INI file that records the complete run configuration.
-
-### Search-Decision Evaluation
-
-```bash
-./run_eval_search_decision.sh
-```
-
-This evaluates whether the LLM policy makes the correct pre-retrieval decision: search now, ask for clarification, or continue without another search.
-
-The complete default run is defined in:
-
-```text
-server/evals/search_decision/search_decision_eval.ini
-```
-
-To reproduce a different run, copy and edit that file, then select it explicitly:
-
-```bash
-./run_eval_search_decision.sh --config path/to/search_decision_eval.ini
-```
-
-The evaluator accepts no per-setting command-line overrides. Results are written to the directory configured in the INI file; the default is:
-
-```text
-server/evals/search_decision/results/
-```
-
-### Product-Response-Decision Evaluation
-
-```bash
-./run_eval_product_response_decision.sh
-```
-
-This evaluates the post-retrieval LLM decision: recommend one of the retrieved products, ask for more information, or report that the request cannot be fulfilled by the available candidates.
-
-The complete run definition is stored in:
-
-```text
-server/evals/product_response_decision/product_response_decision_eval.ini
-```
-
-Use a different complete run configuration with:
-
-```bash
-./run_eval_product_response_decision.sh --config path/to/product_response_decision_eval.ini
-```
-
-Results are written to numbered text files under:
-
-```text
-server/evals/product_response_decision/results/
-```
-
-### Retrieval and LLM Response Evaluation
-
-The end-to-end evaluator measures retrieval quality together with the correctness and grounding of the final LLM response. Separate configurations are provided for text-only, image-only, and combined text-and-image requests.
-
-Generate raw judgments for a modality with:
-
-```bash
-./run_generate_retrieval_llm_judgments.sh \
-  server/evals/retrieval_llm_response/retrieval_llm_eval_text_only_45.ini
-```
-
-```bash
-./run_generate_retrieval_llm_judgments.sh \
-  server/evals/retrieval_llm_response/retrieval_llm_eval_image_only_45.ini
-```
-
-```bash
-./run_generate_retrieval_llm_judgments.sh \
-  server/evals/retrieval_llm_response/retrieval_llm_eval_text_plus_image_45.ini
-```
-
-Each generated file records the user request, retrieval behavior, retrieved candidates, selected product, final response, and evidence available to the LLM.
-
-### Human Review and Scoring Workflow
-
-End-to-end evaluation artifacts move through three directories:
-
-```text
-server/evals/retrieval_llm_response/generated/   Raw retrieval and model outputs
-server/evals/retrieval_llm_response/reviewed/    Human-reviewed judgments
-server/evals/retrieval_llm_response/results/     Scored text and JSON reports
-```
-
-After reviewing a generated judgment file, score it with:
-
-```bash
-./run_score_retrieval_llm_judgments.sh path/to/reviewed_judgments.json
-```
-
-The scorer reports retrieval success, target rank, reciprocal rank, product-decision correctness, response quality, grounding, unsupported or contradicted claims, and behavior on cases where no suitable catalog product exists.
-
-## Notes for Reviewers
-
-This repository is best understood as a portfolio ML systems project and experimental test bed rather than a production-ready shopping application.
-
-The strongest parts are:
-
-- the complete path from product-data preprocessing through multimodal retrieval and grounded LLM response generation;
-- separation of preprocessing, retrieval, conversation policy, UI, and evaluation components;
-- support for text-only, image-only, and combined text-and-image requests;
-- explicit evaluation of pre-retrieval decisions, post-retrieval response decisions, and end-to-end retrieval-and-response quality;
-- a human-review workflow that preserves generated outputs, reviewed judgments, and scored results;
-- automated tests covering the main helpers, configuration paths, retrieval behavior, structured outputs, UI behavior, and evaluation workflows;
-- documentation for both Docker and conda-based development environments;
-- a committed smoke-test fixture for running the complete runtime application without rebuilding the full product database.
-
-The main limitations are:
-
-- the full dataset setup remains large and time-consuming, although the committed smoke test provides a small end-to-end demonstration;
-- the current modality comparison uses a limited hand-constructed evaluation set;
-- image-only behavior and image-referencing text queries require further analysis;
-- the shared ImageBind representation has not yet been compared with dedicated text and image representations;
-- alternative modality weighting, score fusion, and reranking strategies remain untested;
-- the project has not yet been evaluated as a production system for latency, scale, security, or sustained multi-user operation.
 
 ## Suggested Next Development Steps
 
@@ -695,18 +377,11 @@ The main limitations are:
 3. Test alternative text/image weighting within the current shared ImageBind representation.
 4. Compare the shared ImageBind approach with dedicated text and image representations.
 5. Evaluate score fusion or reranking between text and image retrieval channels.
-6. Add screenshots or a short demonstration video of the Gradio application.
-7. Limit further architecture cleanup to changes that directly improve clarity, testing, or experimental reproducibility.
 
 ## License
 
 This project is released under the MIT License. See [LICENSE.md](LICENSE.md).
 
-## Legacy Notes
+## Project Provenance
 
-This project grew out of a capstone project I worked on with Raj Avasarala and Matt Belland, which may be found at [`ShopTalk_v0`](https://github.com/ravasarala/ShopTalk). Older versions of this project used a Flask server entry point. The current app entry point is the Gradio app in:
-
-```text
-server/gradio_app.py
-```
-
+This work grew out of a capstone project I worked on with Raj Avasarala and Matt Belland, which may be found at [`ShopTalk_v0`](https://github.com/ravasarala/ShopTalk). Older versions of this project used a Flask server entry point. 
